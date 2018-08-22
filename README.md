@@ -14,12 +14,9 @@ sander
 > 3.项目目录发生变化，统一以sander为项目根目录            
 
 
-## 本地搭建一个 
+### 编译系统  
 
-### 步骤
-
-```
-
+```         
 cd $GOPATH/src/
 
 git clone https://github.com/studygolang/sander.git
@@ -42,11 +39,7 @@ make
 * 如果之后有出现页面空白，请查看 error.log 是否有错误
 
 
-# 参与我们
 
 fork + PR。如果有修改 js 和 css，请执行 gulp （需要先安装 gulp）。
 
-# 使用该项目搭建的网站
 
-- [Go语言中文网](https://studygolang.com)
-- [Kotlin中国](https://kotlintc.com)
