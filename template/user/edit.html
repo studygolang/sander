@@ -1,0 +1,281 @@
+{{define "title"}}{{.user.Username}} 编辑个人信息 {{end}}
+{{define "content"}}
+<div class="row banner">
+</div>
+<div class="row">
+	<div class="col-lg-9 col-md-8 col-sm-7">
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li><a href="/user/{{.user.Username}}">个人信息</a></li>
+			<li class="active">编辑</li>
+		</ol>
+		<div class="box_white" id="setting">
+			<form class="form-horizontal validate-form" role="form" action="/account/edit">
+				<fieldset>
+					<legend>个人资料设置</legend>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="username">用户名</label>
+						<div class="col-sm-6">
+							<p class="form-control-static">{{.user.Username}}</p>
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="email">Email</label>
+						<div class="col-sm-6">
+							<input class="form-control {required:true,email:true}" type="email" id="email" name="email" placeholder="邮箱" value="{{.user.Email}}">
+							<label>
+								{{if ne .user.Status 1}}
+								邮箱未激活，<a href="#" id="active_email">发激活邮件</a>
+								{{else}}
+								<input type="checkbox" name="open" value="1" {{if .user.Open}}checked{{end}}> 公开Email
+								{{end}}
+							</label>
+						</div>
+						<span class="help-block">更改邮箱需要重新激活</span>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="name">名字</label>
+						<div class="col-sm-6">
+							<input class="form-control" type="text" id="name" name="name" placeholder="名字" value="{{.user.Name}}">
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="city">城市</label>
+						<div class="col-sm-6">
+							<input class="form-control" type="text" id="city" name="city" placeholder="城市" value="{{.user.City}}">
+						</div>
+						<span class="help-block">请用中文填写所在城市</span>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="company">公司</label>
+						<div class="col-sm-6">
+							<input class="form-control" type="text" id="company" name="company" placeholder="公司" value="{{.user.Company}}">
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="github">Github</label>
+						<div class="col-sm-6">
+							<div class="input-group input-group-sm">
+								<span class="input-group-addon">https://github.com/</span>
+								<input type="text" id="github" class="form-control" placeholder="yourname" value="{{.user.Github}}">
+							</div>
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="weibo">微博</label>
+						<div class="col-sm-6">
+							<div class="input-group input-group-sm">
+								<span class="input-group-addon">http://weibo.com/</span>
+								<input type="text" id="weibo" class="form-control" placeholder="yourname" value="{{.user.Weibo}}">
+							</div>
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="website">个人主页</label>
+						<div class="col-sm-6">
+							<input class="form-control {url:true}" type="url" id="website" name="website" placeholder="http://" value="{{.user.Website}}">
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="monlog">签名</label>
+						<div class="col-sm-6">
+							<input class="form-control" type="text" id="monlog" name="monlog" placeholder="个性签名" value="{{.user.Monlog}}">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="introduce">个人介绍</label>
+						<div class="col-sm-6">
+							<textarea class="form-control need-autogrow" rows="3" name="introduce">{{.user.Introduce}}</textarea>
+						</div>
+					</div>
+				</fieldset>
+				<div class="form-group form-group-sm">
+					<div class="col-sm-offset-5 col-sm-6">
+						<button type="submit" class="btn btn-default btn-sm submit">更新资料</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<br>
+		<div class="box_white" id="change-avatar">
+			<div class="select-avatar">
+				<h4 class="title">头像</h4>
+				<p>本站使用 <a href="http://www.qiniu.com/" target="_blank">七牛云存储</a> 来提供头像服务.</p>
+				<p>
+					当前头像 <img class="img-rounded" src="{{gravatar .user.Avatar .user.Email 120 .is_https}}">
+				</p>
+				<p><a href="/account/change_avatar" class="btn btn-default btn-gravatar">使用Gravatar头像</a></p>
+				<ul class="nav nav-tabs" id="avatar-tab" role="tablist" style="margin-bottom: 15px;">
+					{{if .default_avatars}}
+					<li role="presentation"><a href="#default" role="tab" data-toggle="tab">选择默认头像</a></li>
+					{{end}}
+					<li role="presentation" class="active"><a href="#upload" role="tab" data-toggle="tab">上传头像</a></li>
+				</ul>
+				<div class="tab-content">
+					{{if .default_avatars}}
+					<div id="default" class="tab-pane fade" role="tabpanel">
+						<form action="/account/change_avatar" method="post" class="validate-form" role="form" >
+							<div class="form-group">
+								<ul class="list-inline">
+								{{with $root := .}}
+									{{range .default_avatars}}
+									<li>
+										<label>
+											<input type="radio" name="avatar" value="{{.}}" class="required">
+											<img class="img-rounded" src="{{$root.cdn_domain}}/avatar/{{.}}?imageView2/2/w/80" alt="{{.}}">
+										</label>
+									</li>
+									{{end}}
+								{{end}}
+								</ul>
+							<div class="control-group">
+								<div class="controls text-center">
+									<button type="submit" class="btn btn-default btn-sm submit">保存</button>
+								</div>
+							</div>
+							</div>
+						</form>
+					</div>
+					{{end}}
+					<div id="upload" class="tab-pane fade row-fluid active in" role="tabpanel">
+					<form action="/account/change_avatar" method="post" enctype="multipart/form-data" class="form-horizontal validate-form">
+						<input type="hidden" name="avatar" id="upload-avatar">
+						<div class="form-group">
+							<label class="control-label col-md-2" for="upload-img">选择图片文件</label>
+							<div class="col-md-2">
+								<button id="btn-upload-avatar" class="btn btn-default btn-sm">选择文件</button>
+							</div>
+							<span class="help-block">支持500K以内的jpg/png文件</span>
+						</div>
+						<div id="img-preview" class="form-group dn">
+							<div class="col-md-offset-2 col-md-10">
+								<img src="" alt="" width="72px" height="72px">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-md-offset-2 col-md-10">
+								<button type="submit" id="upload-btn" class="btn btn-default btn-sm submit" disabled>保存新头像</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			</div>
+		</div>
+		<br>
+		<div class="box_white" id="changepwd">
+			<form class="form-horizontal validate-form" role="form" action="/account/changepwd">
+				<fieldset>
+					<legend>{{if .has_passwd}}修改{{else}}设置{{end}}密码</legend>
+					{{if .has_passwd}}
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="cur_password">旧密码</label>
+						<div class="col-sm-6">
+							<input class="form-control required" type="password" id="cur_password" name="cur_passwd" placeholder="旧密码">
+						</div>
+					</div>
+					{{end}}
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="passwd">新密码</label>
+						<div class="col-sm-6">
+							<input class="form-control {required:true,rangelength:[6,32]}" type="password" id="passwd" name="passwd" placeholder="新密码">
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="pass2">确认密码</label>
+						<div class="col-sm-6">
+							<input class="form-control {required:true,equalTo:'#passwd'}" type="password" id="pass2" name="pass2" placeholder="确认密码">
+						</div>
+					</div>
+				</fieldset>
+				<div class="form-group form-group-sm">
+					<div class="col-sm-offset-5 col-sm-6">
+						<button type="submit" class="btn btn-default btn-sm submit">修改密码</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<br>
+		<div class="box_white" id="connection">
+			<div class="card-block select-avatar">
+				<h4 class="title">账号关联</h4>
+				<p>您可以使用以下社交账户登录 {{.setting.Name}}。如果您删除了全部关联的社交账户，您仍可以使用<span class="text-danger">已验证的邮箱</span>或者以下用户名登录{{.setting.Name}}：</p>
+				<p>您的用户名为：<span class="text-danger">{{.user.Username}}</span></p>
+
+				<form method="post" action="/account/social/unbind" id="unbind">
+					<fieldset>
+						<div>
+							{{range .bind_users}}
+							<label for="id_account_{{.Id}}">
+								<input id="id_account_{{.Id}}" type="radio" name="bind_id" value="{{.Id}}">
+								<span class="socialaccount_provider {{if eq .Type 0}}github{{end}}">{{if eq .Type 0}}GitHub{{end}}</span> {{.Name}}
+							</label>&nbsp;
+							{{end}}
+						</div>
+						{{if and .bind_users .has_passwd}}
+						<div>
+							<button class="btn btn-danger btn-sm" type="submit">删除</button>
+						</div>
+						{{end}}
+					</fieldset>
+				</form>
+				<hr>
+				<h5 class="mb-3">添加一个第三方账号</h5>
+
+				<ul class="socialaccount_providers list-unstyled list-inline">
+					<li class="list-inline-item">
+					  <a class="btn btn-default btn-sm" title="GitHub" href="/oauth/github/login?process=connect">GitHub</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-3 col-md-4 col-sm-5">
+		
+		<div class="row box_white sidebar">
+			<ul class="list-group mt-3">
+				<li class="list-group-item">
+					<a href="#setting">
+						<i class="fa fa-address-card-o mr-2" aria-hidden="true"></i> 资料设置
+					</a>
+				</li>
+				<li class="list-group-item">
+					<a href="#change-avatar">
+						<i class="fa fa-user-circle mr-2" aria-hidden="true"></i> 修改头像
+					</a>
+				</li>
+				<li class="list-group-item">
+					<a href="#changepwd">
+						<i class="fa fa-key mr-2" aria-hidden="true"></i> 修改密码
+					</a>
+				</li>
+				<li class="list-group-item">
+					<a href="#connection">
+						<i class="fa fa-cogs mr-2" aria-hidden="true"></i> 账号关联
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+{{end}}
+{{define "css"}}
+{{end}}
+{{define "js"}}
+
+{{include "cssjs/publish.js.html" .}}
+<script type="text/javascript" src="{{.static_domain}}/static/dist/js/user.min.js?v=0.1"></script>
+<script type="text/javascript">
+$(function(){
+	// 文本框自动伸缩
+	$('.need-autogrow').autoGrow();
+
+	$('#unbind').submit(function(evt){
+		if ($('input[name=bind_id]:checked').length == 0) {
+			evt.preventDefault();
+			return;
+		}
+	});
+});
+</script>
+{{end}}

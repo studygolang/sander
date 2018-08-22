@@ -1,0 +1,61 @@
+<link rel="stylesheet" href="{{.static_domain}}/static/dist/css/modal.min.css">
+<div class="modal contribute-modal animated" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close">×</button>
+                <h4 class="modal-title">
+                    给该专栏投稿
+                    <a href="/articles/new" class="new-note-btn">写篇新文章</a>
+                </h4>
+                <span class="notice">每篇文章有总共有 5 次投稿机会</span>
+                <div>
+                    <input type="text" placeholder="搜索我的文章" class="search-input">
+                    <a class="search-btn">
+                        <i class="fa fa-search" aria-hidden="true" style="margin: 8px -1px 0 0;display: block;"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-body">
+                <ul id="contribute-note-list"></ul>
+                <div class="modal-notes-placeholder" style="display: none;">
+                    <div class="text"></div>
+                    <div class="btn"></div>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 收入专栏弹窗 -->
+<div class="modal animated add-self" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" data-dismiss="modal" class="close">×</button>
+                <h4 class="modal-title">收入到我管理的专栏
+                    <span class="new-collection-btn"><a href="/subject/new" target="_blank">新建专栏</a></span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="search">
+                    <input type="search" name="search-self" placeholder="搜索我管理的专栏">
+                    <a class="search-btn">
+                        <i class="fa fa-search" aria-hidden="true" style="margin: 6px 1px 0 0;display: block;"></i>
+                    </a>
+                </div>
+                <ul id="self-note-list"></ul>
+                <div class="modal-collections-placeholder" style="display: none;">
+                    <div class="avatar"></div>
+                    <div class="wrap">
+                        <div class="btn"></div>
+                        <div class="name"></div>
+                        <div class="text"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>

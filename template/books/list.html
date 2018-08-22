@@ -1,0 +1,83 @@
+{{define "title"}}图书{{end}}
+{{define "content"}}
+<div class="row banner">
+</div>
+<div class="row">
+	<div class="col-lg-9 col-md-8 col-sm-7">
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li class="active">图书</li>
+		</ol>
+		<div class="books box_white">
+			{{range .books}}
+			<div class="book row">
+				<div class="col-lg-2 col-md-2 col-sm-2 meta-num">
+					<div class="stats">
+						<div class="votes">
+							<strong>{{.Likenum}}</strong>推荐
+						</div>
+						<div class="answered">
+							<strong>{{.Cmtnum}}</strong>评论
+						</div>
+					</div>
+					<div class="views-orange">{{.Viewnum}} 阅读</div>
+				</div>
+				<div class="col-md-8 col-sm-8">
+					<h4><a href="/book/{{.Id}}" target="_blank" title="{{.Name}}">{{.Name}}</a></h4>
+					<div class="author-date">
+						[作] <a>{{.Author}}</a>&nbsp;&nbsp;&nbsp;
+						{{if .Translator}}[译] <a>{{.Translator}}</a>{{end}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						{{.PubDate}}
+					</div>
+					<p class="desc">{{substring .Desc 180 "..."}} <a href="/book/{{.Id}}" target="_blank" title="{{.Name}}">[...]</a></p>
+				</div>
+				<div class="col-md-2 col-sm-2 book-cover-box">
+					<a href="/book/{{.Id}}" target="_blank" title="{{.Name}}">
+						<img class="lazy" src="{{if .Cover}}{{.Cover}}{{else}}http://studygolang.qiniudn.com/img/golang_default_cover.png{{end}}" alt="{{.Name}}" style="display: inline;">
+					</a>
+				</div>
+			</div>
+			<hr class="dashed">
+			{{else}}
+			<div class="row book">暂无图书</div>
+			{{end}}
+
+			{{if .page}}
+			<nav class="text-center"><ul class="pagination pagination-sm">{{.page}}</ul></nav>
+			{{end}}
+		</div>
+	</div>
+	<div class="col-lg-3 col-md-4 col-sm-5">
+		{{include "common/my_info.html" .}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"今日阅读排行","objtype":5,"limit":10,"rank_type":"today"}`)}}
+		
+		{{if .pos_ad.right2}}
+		<div class="box_white sidebar" id="ad-right2">
+			{{if eq .pos_ad.right2.AdType 0}}
+				{{noescape .pos_ad.right2.Code}}
+			{{end}}
+		</div>
+		{{end}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"一周阅读排行","objtype":5,"limit":10,"rank_type":"week"}`)}}
+		
+	</div>
+
+</div>
+{{end}}
+{{define "js"}}
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [
+	"/rank/view",
+];
+</script>
+
+{{if .pos_ad.right1}}
+	{{if eq .pos_ad.right1.AdType 1}}
+		{{noescape .pos_ad.right1.Code}}
+	{{end}}
+{{end}}
+
+{{end}}

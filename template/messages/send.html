@@ -1,0 +1,69 @@
+{{define "title"}}发送消息 {{end}}
+{{define "content"}}
+<div class="row banner">
+</div>
+<div class="row">
+	<ol class="breadcrumb">
+		<li><a href="/">首页</a></li>
+		<li><a href="/message/system">消息</a></li>
+		<li class="active">发送消息</li>
+	</ol>
+	<div class="box_white message">
+		<form class="form-horizontal validate-form" role="form" action="/message/send" data-redirect="/message/outbox" method="post">
+			<input type="hidden" name="to" value="{{.user.Uid}}" />
+			<div class="form-group form-group-sm">
+				<label class="col-lg-2 col-md-3 col-sm-4 control-label" for="title"><abbr>*</abbr>{{if .message}}回复{{else}}发给{{end}}</label>
+				<div class="col-lg-10 col-md-9 col-sm-8">
+					<div class="row" style="margin-top:5px;">
+						<div class="col-sm-10">
+							<a href="/user/{{.user.Username}}" title="{{.user.Username}}" target="_blank">{{.user.Username}}{{if .user.Name}}({{.user.Name}}){{end}}</a>
+							{{if .message}}
+								：{{.message.Content}}
+							{{end}}
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-group form-group-sm">
+				<label class="col-lg-2 col-md-3 col-sm-4 control-label" for="content"><abbr>*</abbr>正文</label>
+				<div class="col-lg-9 col-md-8 col-sm-7">
+					<div class="row clearfix md-toolbar">
+						<ul class="col-md-10 list-inline">
+							<li class="edit cur"><a href="#"><i class="glyphicon glyphicon-edit"></i> 编辑</a></li>
+							<li class="preview"><a href="#" title="预览"><i class="glyphicon glyphicon-eye-open preview"></i> 预览</a></li>
+						</ul>
+						<div class="col-md-2 text-right">
+							<i id="upload-img" class="glyphicon glyphicon-picture upload-img tool-tip" data-toggle="tooltip" data-placement="top" title="上传图片"></i>
+						</div>
+					</div>
+					<textarea class="form-control need-autogrow required" id="content" name="content" rows="15"></textarea>
+					<div class="content-preview"></div>
+				</div>
+			</div>
+			<div class="form-group form-group-sm">
+				<label class="col-lg-5 col-md-4 col-sm-3 control-label">&nbsp;</label>
+				<div class="col-lg-6 col-md-7 col-sm-8">
+					<button type="submit" class="btn btn-default btn-sm" id="submit">发送</button> (Ctrl+Enter)
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+{{end}}
+{{define "css"}}
+{{end}}
+{{define "js"}}
+
+{{include "cssjs/publish.js.html" .}}
+
+<script type="text/javascript" src="{{.static_domain}}/static/dist/js/message.min.js"></script>
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [];
+
+$(function(){
+	// 文本框自动伸缩
+	$('.need-autogrow').autoGrow();
+});
+</script>
+{{end}}

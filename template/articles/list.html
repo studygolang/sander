@@ -1,0 +1,129 @@
+{{define "title"}}文章 {{end}}
+{{define "content"}}
+<div class="row">
+	<div class="col-md-9 col-sm-6">
+		<div class="sep20"></div>
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li class="active">文章</li>
+		</ol>
+		{{range .articles}}
+		<article class="article box_white">
+			<div class="row">
+				{{if .Cover}}
+				<div class="pull-left">
+					<a href="/articles/{{.Id}}" target="_blank" title="{{.Title}}">
+						<img class="lazy" src="{{.Cover}}" width="240" alt="{{.Title}}" style="display: inline;">
+					</a>
+				</div>
+				<div style="margin-left:260px;">
+				{{else}}
+				<div>
+				{{end}}
+					<h2><a href="/articles/{{.Id}}" target="_blank" title="{{.Title}}">
+						{{if .Top}}<font color="red">[置顶]</font>{{end}}{{.Title}}
+					</a></h2>
+					<p class="text">{{substring .Txt 250 "..."}}<a href="/articles/{{.Id}}" target="_blank" title="阅读全文">阅读全文</a></p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-8 metatag">
+					<i class="glyphicon glyphicon-th"></i>
+					<span class="source" title="来源">{{.Name}}</span>
+					<i class="glyphicon glyphicon-calendar"></i>
+					<span class="date" title="发布日期">{{.PubDate}}</span>
+					<i class="glyphicon glyphicon-user"></i>
+					<span class="author" title="作者">{{substring .AuthorTxt 15 " 等"}}</span>
+					{{if .Tags}}
+					{{$tags := explode .Tags ","}}
+					<ul class="list-inline">
+						<i class="glyphicon glyphicon-tags"></i>
+						{{range $tag := $tags}}
+						<li>
+							<a href="/search?q={{$tag}}&f=tag" title="{{$tag}}" target="_blank">
+								{{$tag}}
+							</a>
+						</li>
+						{{end}}
+					</ul>
+					{{end}}
+				</div>
+				<div class="col-md-4 metatag text-right">
+					<span class="view" title="阅读数">
+						<i class="glyphicon glyphicon-eye-open"></i>
+						阅读:<span>{{.Viewnum}}</span>次
+					</span>
+					<a href="/articles/{{.Id}}#commentForm" class="cmt" target="_blank" title="评论数">
+						<i class="glyphicon glyphicon-comment"></i>
+						评论:<span>{{.Cmtnum}}</span>条
+					</a>
+					{{if $.likeflags}}
+					{{$likeFlag := index $.likeflags .Id}}
+					<a href="#" class="like{{if $likeFlag}} hadlike{{end}}" title="{{if $likeFlag}}取消喜欢{{else}}我喜欢{{end}}" data-objid="{{.Id}}" data-objtype="1" data-flag="{{if $likeFlag}}{{$likeFlag}}{{else}}0{{end}}">
+						<i class="glyphicon glyphicon-heart{{if not $likeFlag}}-empty{{end}}"></i>
+					{{else}}
+					<a href="#" class="like" title="我喜欢" data-objid="{{.Id}}" data-objtype="1" data-flag="0">
+						<i class="glyphicon glyphicon-heart-empty"></i>
+					{{end}}
+						<span class="likenum">{{.Likenum}}</span>人喜欢
+					</a>
+				</div>
+			</div>
+		</article>
+		{{else}}
+		<article class="article box_white">
+			<div class="row">暂无博文，<a class="btn btn-default btn-sm" href="/articles/new">撰写文章</a></div>
+		</article>
+		{{end}}
+        <div class="sep20"></div>
+		{{if .page}}
+			<div class="box_white">
+				<div class="inner_content">
+					<nav class="text-center"><ul class="pagination pagination-sm" style="margin: 1px 0;">{{.page}}</ul></nav>
+				</div>
+			</div>
+		{{end}}
+	</div>
+	<div class="col-md-3 col-sm-6">
+		<div class="sep20"></div>
+		{{include "common/my_info.html" .}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"今日阅读排行","objtype":1,"limit":10,"rank_type":"today"}`)}}
+
+		{{if .pos_ad.right1}}
+		<div class="box_white sidebar" id="ad-right1">
+			{{if eq .pos_ad.right1.AdType 0}}
+				{{noescape .pos_ad.right1.Code}}
+			{{end}}
+		</div>
+		{{end}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"一周阅读排行","objtype":1,"limit":10,"rank_type":"week"}`)}}
+		
+		{{if .pos_ad.right2}}
+		<div class="box_white sidebar" id="ad-right2">
+			{{if eq .pos_ad.right2.AdType 0}}
+				{{noescape .pos_ad.right2.Code}}
+			{{end}}
+		</div>
+		{{end}}
+
+	</div>
+
+</div>
+{{end}}
+{{define "js"}}
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [
+	"/rank/view",
+];
+</script>
+
+{{if .pos_ad.right1}}
+	{{if eq .pos_ad.right1.AdType 1}}
+		{{noescape .pos_ad.right1.Code}}
+	{{end}}
+{{end}}
+
+{{end}}

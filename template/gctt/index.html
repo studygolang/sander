@@ -1,0 +1,132 @@
+{{define "title"}}Go中文翻译组 - GCTT {{end}}
+{{define "content"}}
+<div class="row">
+    <div class="col-md-9 col-sm-6">
+        <div class="sep20"></div>
+        <div>
+            <ol class="breadcrumb">
+                <li><a href="/">首页</a></li>
+                <li class="active">GCTT</li>
+            </ol>
+        </div>
+
+        <div class="page box_white">
+            <div class="cell markdown-body">
+                <img src="https://raw.githubusercontent.com/studygolang/GCTT/master/banner.jpg" alt="" class="img-responsive">
+                <h2><a href="#简介" aria-hidden="true" class="anchor" id="user-content-简介"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>简介</h2>
+                <p>GCTT (Go Chinese Translation Team) 是 Go中文网（<a href="https://studygolang.com" rel="nofollow">https://studygolang.com</a>) 翻译组，负责从国外优秀媒体翻译 Go 相关的技术、教程、资讯、杂文等内容。</p>
+                <h2><a href="#gctt-的组成" aria-hidden="true" class="anchor" id="user-content-gctt-的组成"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>GCTT 的组成</h2>
+                <p><strong>选题</strong>，负责选择合适的内容，在 <a href="https://github.com/studygolang/gctt">GCTT</a> 库中提 issue，并打上 「待认领」 标签。</p>
+                <p><strong>译者</strong>，负责从选题中选择内容进行翻译。</p>
+                <p><strong>校对</strong>，负责将初译的文章进行文字润色、技术校对等工作。</p>
+                <p><strong>发布</strong>，负责将校对后的文章，排版发布到 Go 中文网的文章中。</p>
+                <h2><a href="#加入我们" aria-hidden="true" class="anchor" id="user-content-加入我们"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>加入我们</h2>
+                <p>请首先加入翻译组的 QQ 群，群号是：<strong>423373670</strong>，加群时请说明是“志愿者”。加入后记得修改您的群名片为您的 GitHub 的 ID。<strong>同时强烈建议注册 Go 中文网账号并和 GitHub 账号绑定，这样无论是翻译提醒和后期译文发布，都会和你的中文网账号关联。</strong></p>
+                <h2><a href="#如何开始" aria-hidden="true" class="anchor" id="user-content-如何开始"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>如何开始</h2>
+                <p>加入的成员，请先阅读 <a href="https://github.com/studygolang/GCTT/wiki">WIKI 如何开始</a>。</p>
+                <p>为了让大家更好地参与 GCTT，翻译组成员 <a href="https://github.com/cureking">jarry</a> 录制了一套教学视频：</p>
+                <ul>
+                    <li><a href="https://www.bilibili.com/video/av29042507" rel="nofollow">GCTT 翻译流程（Part I-准备工作，获取任务)</a></li>
+                </ul>
+                <h2><a href="#历史" aria-hidden="true" class="anchor" id="user-content-历史"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>历史</h2>
+                <ul>
+                {{range .time_lines}}
+                    <li>{{format .CreatedAt "2006/01/02"}} {{.Content}}</li>
+                {{end}}
+                </ul>
+                <h2><a href="#inspire-by-lctt" aria-hidden="true" class="anchor" id="user-content-inspire-by-lctt"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Inspire By LCTT</h2>
+                <p>感谢 Linux 中国 的 <a href="https://github.com/LCTT/TranslateProject">LCTT 项目</a>，此项目是 LCTT 项目在 Go 领域的一个实现！</p>
+                <h2><a id="user-content-已发布专栏" class="anchor" aria-hidden="true" href="#已发布专栏"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>已发布专栏</h2>
+                <p>GCTT 翻译的文章发布在 Go 中文网 如下专栏：</p>
+                <ul>
+                    <li><a href="https://studygolang.com/subject/1" rel="nofollow">GCTT - Go 中文翻译组</a></li>
+                    <li><a href="https://studygolang.com/subject/2" rel="nofollow">Go 系列教程（Golang tutorial series）</a></li>
+                </ul>
+                <p>更多细分系列专栏：</p>
+                <ul>
+                    <li><a href="https://studygolang.com/subject/74" rel="nofollow">Go 语言机制</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="sep20"></div>
+        <div class="box_white sidebar">
+            <div class="top">
+                <h3 class="title"><i class="glyphicon glyphicon-user"></i>&nbsp;<a href="/gctt-list" title="全部译者">主要成员</a></h3>
+            </div>
+            <div class="sb-content">
+                <div class="user-list">
+                    <ul class="list-unstyled">
+                        {{range .users}}
+                        <li class="pull-left">
+                            <div class="avatar"><a href="/gctt/{{.Username}}" title="{{.Username}}">
+                                <img alt="{{.Username}}" class="img-circle" src="{{.Avatar}}&s=48" width="48px" height="48px"></a>
+                            </div>
+                            <div class="name" style="white-space: nowrap;">
+                                <a style="word-break: normal;" href="/gctt/{{.Username}}" title="{{.Username}}">
+                                    <i class="fa {{.Fa}}" aria-hidden="true"></i>{{.RoleName}}<br>
+                                    {{.Username}}
+                                </a>
+                            </div>
+                        </li>
+                        {{end}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="box_white sidebar">
+            <div class="top">
+                <h3 class="title"><i class="glyphicon glyphicon-list"></i>&nbsp;<a href="/gctt-issue" title="选题列表">选题列表</a></h3>
+            </div>
+            <div class="sb-content">
+                <div class="article-list" data-limit="10">
+                    <ul class="list-unstyled">
+                        {{range .issues}}
+                        <li><a href="https://github.com/studygolang/GCTT/issues/{{.Id}}" target="_blank" data-tooltip="{{.Title}}">{{.Title}}</a></li>
+                        {{end}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{{end}}
+
+{{define "css"}}
+<style>
+.markdown-body {
+    font-size: 1.45rem;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.markdown-body .anchor {
+    float: left;
+    padding-right: 4px;
+    margin-left: -20px;
+    line-height: 1;
+}
+.markdown-body h1 .octicon-link,.markdown-body h2 .octicon-link,.markdown-body h3 .octicon-link,.markdown-body h4 .octicon-link,.markdown-body h5 .octicon-link,.markdown-body h6 .octicon-link {
+    color: #1b1f23;
+    vertical-align: middle;
+    visibility: hidden;
+}
+
+.markdown-body h1:hover .anchor,.markdown-body h2:hover .anchor,.markdown-body h3:hover .anchor,.markdown-body h4:hover .anchor,.markdown-body h5:hover .anchor,.markdown-body h6:hover .anchor {
+    text-decoration: none
+}
+
+.markdown-body h1:hover .anchor .octicon-link,.markdown-body h2:hover .anchor .octicon-link,.markdown-body h3:hover .anchor .octicon-link,.markdown-body h4:hover .anchor .octicon-link,.markdown-body h5:hover .anchor .octicon-link,.markdown-body h6:hover .anchor .octicon-link {
+    visibility: visible
+}
+</style>
+
+<link href="https://cdn.bootcss.com/html5tooltipsjs/1.7.2/html5tooltips.min.css" rel="stylesheet">
+{{end}}
+
+{{define "js"}}
+<script src="https://cdn.bootcss.com/html5tooltipsjs/1.7.2/html5tooltips.min.js"></script>
+{{end}}

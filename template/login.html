@@ -1,0 +1,85 @@
+{{define "title"}}登录 {{end}}
+{{define "content"}}
+<div class="row banner">
+</div>
+<div class="row">
+	<div class="col-lg-9 col-md-8 col-sm-7">
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li><a href="/users">会员</a></li>
+			<li class="active">登录</li>
+		</ol>
+		<div class="box_white cell">
+			<form class="form-horizontal validate-form" role="form" action="/account/login" method="POST">
+				<input type="hidden" name="redirect_uri" value="{{.redirect_uri}}">
+				<fieldset>
+					<legend>登录</legend>
+					{{if .error}}
+					<div class="alert alert-block alert-error" id="alert_info">
+						{{.error}}
+					</div>
+					{{end}}
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="username">用户名</label>
+						<div class="col-sm-6">
+							<input class="form-control required" type="text" id="username" name="username" placeholder="请输入用户名或邮箱" value="{{.username}}">
+						</div>
+					</div>
+					<div class="form-group form-group-sm">
+						<label class="col-sm-3 control-label" for="passwd">密码</label>
+						<div class="col-sm-6">
+							<input class="form-control required" type="password" id="passwd" name="passwd" placeholder="请输入密码">
+						</div>
+					</div>
+					<div class="form-group form-group-sm" style="margin-left: 6px;">
+						<div class="col-sm-offset-3 col-col-sm-6">
+							<div class="checkbox">
+								<label>
+									<input id="user_remember_me" name="remember_me" type="checkbox" value="1" checked="checked" />	记住登录状态
+								</label>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+				<div class="form-group form-group-sm">
+					<div class="col-sm-offset-5 col-sm-6">
+						<button type="submit" class="btn btn-default btn-sm submit">登录</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="col-lg-3 col-md-4 col-sm-5">
+		<div class="row box_white sidebar">
+			<div class="top">
+				<h3 class="title"><i class="glyphicon glyphicon-user"></i>&nbsp;第三方账号登录</h3>
+			</div>
+			<div class="sb-content">
+				<ul class="list-unstyled">
+					<li>
+						<a href="/oauth/github/login" class="btn btn-default" style="display: block; margin: 0 auto; text-align: center; width: 90%;">
+						<i class="fa fa-github" aria-hidden="true"></i>
+						GitHub
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="row box_white sidebar">
+			<div class="top">
+				<h3 class="title"><i class="glyphicon glyphicon-list-alt"></i>&nbsp;还没有帐号？</h3>
+			</div>
+			<div class="sb-content">
+				<ul>
+					<li><a href="/account/register">注册</a></li>
+					<li><a href="/account/forgetpwd">忘记了密码？</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+{{end}}
+{{define "css"}}
+{{end}}
+{{define "js"}}
+{{end}}

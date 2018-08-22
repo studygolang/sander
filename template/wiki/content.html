@@ -1,0 +1,111 @@
+{{define "title"}}{{.wiki.Title}}{{end}}
+{{define "seo"}}<meta name="keywords" content="{{.setting.SeoKeywords}}">
+<meta name="description" content="{{substring .wiki.Content 200 "..."}}">{{end}}
+{{define "content"}}
+<div class="row">
+  <div class="col-md-9 col-sm-6">
+    <div class="sep20"></div>
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li><a href="/wiki">Wiki</a></li>
+    </ol>
+    <div class="page">
+      <div class="box_white">
+        <div class="title">
+          <h1>
+            {{.wiki.Title}}
+          </h1>
+          <small class="c9">
+            {{$user := index .wiki.Users .wiki.Uid}}
+            <a href="/user/{{$user.Username}}">{{$user.Username}}</a>
+             · <span title="{{.wiki.Ctime}}" class="timeago"></span> · {{.wiki.Viewnum}} 次点击 &nbsp; &nbsp;
+            {{if canEdit .me .wiki}}
+            <a id="edit" class="op" href="/wiki/modify?id={{.wiki.Id}}" title="编辑">编辑</a>
+            {{end}}
+          </small>
+        </div>
+        <div class="cell">
+          <div class="content">{{.wiki.Content}}</div>
+        </div>
+        <div class="cell">
+          <h5>本页贡献者:</h5>
+          <div>
+            {{range .wiki.Users}}
+            <a href="/user/{{.Username}}" title="{{.Username}}"><img alt="{{.Username}}" class="uface" src="{{gravatar .Avatar .Email 32 $.is_https}}" with="32" height="32"></a>
+            {{end}}
+          </div>
+        </div>
+        
+      </div>
+      <!-- content END -->
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="sep20"></div>
+
+    {{if .me.IsAdmin}}
+    <div class="box_white sidebar">
+      <div class="sb-content text-center" style="padding: 15px 0;">
+        <a href="/wiki/new" class="btn btn-default">创建Wiki</a>
+      </div>
+    </div>
+    {{end}}
+
+    {{include "sidebar/topic.html" .}}
+
+    {{if .pos_ad.right1}}
+    <div class="box_white sidebar" id="ad-right1">
+      {{if eq .pos_ad.right1.AdType 0}}
+        {{noescape .pos_ad.right1.Code}}
+      {{end}}
+    </div>
+    {{end}}
+
+    {{if .pos_ad.right2}}
+    <div class="box_white sidebar" id="ad-right2">
+      {{if eq .pos_ad.right2.AdType 0}}
+        {{noescape .pos_ad.right2.Code}}
+      {{end}}
+    </div>
+    {{end}}
+
+  </div>
+</div>
+{{end}}
+{{define "css"}}
+{{include "cssjs/prism.css.html" .}}
+<style type="text/css">
+.wiki.attrs {background: #f6f6f6;border: 1px solid #eee;padding: 5px 10px;margin: 15px 0;font-weight: bold;line-height: 22px;}
+.wiki .attrs a {font-weight: normal;}
+.wiki .attrs a:hover {color: #C00; text-decoration: none;}
+
+.editors {margin-left: 25px; padding-bottom: 20px;}
+</style>
+{{end}}
+{{define "js"}}
+
+{{include "cssjs/prism.js.html" .}}
+<script type="text/javascript" src="{{.static_domain}}/static/dist/js/wiki.min.js"></script>
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [
+  "/articles/recent",
+  "/topics/recent",
+  "/comments/recent"
+];
+
+$(function(){
+  // 解析 desc
+  new SG.Wiki().parseDesc();
+
+  // loadComments();
+});
+</script>
+
+{{if .pos_ad.right1}}
+  {{if eq .pos_ad.right1.AdType 1}}
+    {{noescape .pos_ad.right1.Code}}
+  {{end}}
+{{end}}
+
+{{end}}

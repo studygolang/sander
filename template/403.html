@@ -1,0 +1,31 @@
+{{define "title"}}对不起，没有操作权限 {{end}}
+{{define "content"}}
+<div class="row box_white">
+	<div class="col-md-12">
+		<h2>对不起，您没有操作权限</h2>
+		<p>
+		{{if .msg}}
+			{{noescape .msg}}
+		{{else}}
+			将在<span id="jumpTo">3</span>秒后跳转到<a href="/">首页</a></p>
+		{{end}}
+  </div>
+</div>
+{{end}}
+{{define "js"}}
+<script type="text/javascript">
+function countDown(secs, surl){
+	var jumpTo = document.getElementById('jumpTo');
+	if (jumpTo == null) {
+		return;
+	}
+	jumpTo.innerHTML=secs;
+	if(--secs>0){
+		setTimeout("countDown("+secs+",'"+surl+"')",1000);
+	} else {
+		location.href=surl;
+	}
+} 
+countDown(3,'/');
+</script>
+{{end}}

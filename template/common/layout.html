@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<title>{{template "title" .}} {{.setting.TitleSuffix}}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+	<meta charset="utf-8">
+	<link rel="shortcut icon" href="{{.setting.Favicon}}">
+	<link rel="apple-touch-icon" type="image/png" href="{{.static_domain}}/static/img/logo2.png">
+	{{template "seo" .}}
+	<meta name="author" content="polaris <polaris@studygolang.com>">
+	<link rel="canonical" href="{{.app.BaseURL}}" />
+
+	<link rel="stylesheet" href="//cdn.bootcss.com/bootswatch/3.2.0/css/cosmo/bootstrap.min.css">
+	<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="{{.static_domain}}/static/dist/css/sg_libs.min.css?v=20180305"/>
+	<link rel="stylesheet" href="{{.static_domain}}/static/dist/css/sg_styles.min.css?v=20180305"/>
+
+	{{template "css" .}}
+
+	<!--[if lt IE 9]-->
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+	<!--[endif]-->
+</head>
+<body>
+	<header class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<a href="/" class="navbar-brand" title="{{.setting.Name}}"><img alt="{{.setting.Name}}" src="{{.setting.Logo}}" style="margin-top: -7px; height: 45px;"></a>
+				<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse" id="navbar-main">
+				<ul class="nav navbar-nav">
+					<li class="{{.activeTopics}}">
+						<a href="/topics">主题</a>
+					</li>
+					<li class="{{.activeArticles}}">
+						<a href="/articles">文章</a>
+					</li>
+					<li class="{{.activeProjects}}">
+						<a href="/projects">项目</a>
+					</li>
+					<li class="{{.activeResources}}">
+						<a href="/resources">资源</a>
+					</li>
+					<li class="{{.activeBooks}}">
+						<a href="/books">图书</a>
+					</li>
+					<li class="dropdown {{.activeReadings}}">
+						{{if .setting.ReadingMenu}}
+						<a href="/readings">{{.setting.ReadingMenu}}</a>
+						{{else}}
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#" id="readings">晨读 <span class="caret"></span></a>
+						<ul class="dropdown-menu" aria-labelledby="readings">
+							<li><a href="/readings">Go晨读</a></li>
+							<li><a href="/readings?rtype=1">综合晨读</a></li>
+						</ul>
+						{{end}}
+					</li>
+					<li class="{{.activeDl}}">
+						<a href="/dl">下载<i class="newfuture"></i></a>
+					</li>
+					<li class="dropdown {{.activeDoc}}">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#" id="docs">官方文档 <span class="caret"></span></a>
+						<ul class="dropdown-menu" aria-labelledby="docs">
+						{{range .setting.DocMenus}}
+							<li><a href="{{.Url}}" target="_blank">{{.Name}}</a></li>
+						{{else}}
+							<li><a href="http://docs.studygolang.com" target="_blank">英文文档</a></li>
+							<li><a href="http://docscn.studygolang.com" target="_blank">中文文档</a></li>
+							<li><a href="/pkgdoc">标准库中文版</a></li>
+							<li role="presentation" class="divider"></li>
+							<li><a href="http://tour.studygolang.com" target="_blank">Go指南</a></li>
+						{{end}}
+						</ul>
+					</li>
+				</ul>
+				<form class="navbar-form navbar-left" action="/search" role="search" target="_blank">
+					<input type="text" name="q" class="form-control search-query" placeholder="搜索" value="{{if .q}}{{.q}}{{end}}">
+				</form>
+				<ul class="nav navbar-nav navbar-right" id="userbar">
+					{{if .me.Uid}}
+					<li>
+						<a href="/message/system" id="user_message_count"><span class="badge{{if .me.MsgNum}} badge-warning{{end}}">{{.me.MsgNum}}</span></a>
+					</li>
+					<li class="dropdown" id="user_menu">
+						<a href="#user_menu" class="dropdown-toggle" data-toggle="dropdown">{{.me.Username}} <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li class="first"><a href="/user/{{.me.Username}}">我的主页</a></li>
+							<li><a href="/account/edit">个人资料设置</a></li>
+							<li><a href="/favorites/{{.me.Username}}">我的收藏</a></li>
+							<li><a href="/balance">我的财富</a></li>
+							<li role="presentation" class="divider"></li>
+							{{if .me.IsAdmin}}
+							<li><a href="/admin" target="_blank">管理后台</a></li>
+							{{end}}
+							<li class="last"><a href="/account/logout">退出</a></li>
+						</ul>
+					</li>
+					{{else}}
+					<li class="first"><a href="/account/register">注册</a></li><li class="last"><a href="/account/login">登录</a></li>
+					{{end}}
+				</ul>
+			</div>
+		</div>
+	</header>
+	<div class="wrapper" id="wrapper">
+		<div class="container" role="main">
+		{{if .me.Uid}}
+			{{if eq .me.Status 0}}
+			<div class="row">
+				<div class="alert alert-warning text-center" role="alert" style="margin-bottom: 0px;">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					您的账号未激活，不允许发布内容。<a href="/account/edit" class="alert-link">现在就去激活</a>
+				</div>
+			</div>
+			{{else if eq .me.Balance 0}}
+			<div class="row">
+				<div class="alert alert-warning text-center" role="alert" style="margin-bottom: 0px;">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					您的账号铜币不足，不允许发布内容，可 <a href="/balance" class="alert-link">领取</a> 初始资本，或去 <a href="/balance/add" class="alert-link">充值</a>
+				</div>
+			</div>
+			{{end}}
+		{{end}}
+
+			{{template "content" .}}
+		</div>
+	</div>
+	<div class="sep10"></div>
+	<footer id="bottom">
+		<div class="container nav-content">
+			<div class="inner_content">
+				<div class="sep10"></div>
+				<strong>
+					{{range $i, $el := .setting.FooterNavs}}
+					<a href="{{.Url}}" class="dark">{{.Name}}</a> &nbsp; <span class="snow">•</span> &nbsp;
+					{{end}}
+					<span id="onlineusers">{{.online_users.online}}</span> 人在线
+				</strong>
+				&nbsp;<span class="cc">最高记录 <span id="maxonline">{{.online_users.maxonline}}</span></span>
+				<div class="sep20"></div>
+				&copy;{{.app.Copyright}} {{.setting.Slogan}}
+				<div class="sep5"></div>
+				Powered by <a href="https://github.com/studygolang/studygolang">StudyGolang(Golang + MySQL)</a> &nbsp;<span class="snow">•</span>&nbsp;<span class="snow">·</span>&nbsp;CDN 采用 <a href="https://portal.qiniu.com/signup?code=3lfz4at7pxfma" title="七牛云" class="dark" target="_blank">七牛云</a>
+				<div class="sep20"></div>
+				<span class="small cc">VERSION: {{.app.Version}}&nbsp;<span class="snow">·</span>&nbsp;{{.resp_time}}&nbsp;<span class="snow">·</span>&nbsp;<strong>为了更好的体验，本站推荐使用 Chrome 或 Firefox 浏览器</strong></span>
+				<div class="sep20"></div>
+				<span class="f12 c9"><a href="http://www.miibeian.gov.cn/" target="_blank" rel="nofollow">{{.setting.Beian}}</a></span>
+				<div class="sep10"></div>
+			</div>
+		</div>
+	</footer>
+
+	<div id="gotop"></div>
+
+	{{if .me.Uid}}
+	<input type="hidden" id="is_login_status" value="1" />
+	{{else}}
+	<input type="hidden" id="is_login_status" value="0" />
+	<div class="pop login-pop" id="login-pop">
+		<div style="position: relative;"><span class="close" style="position: absolute; right: -15px; top: -15px; cursor: pointer; color: #000; font-size: 13px;">X</span></div>
+		<div class="login-form">
+			<div class="error text-center"></div>
+			<div class="text-center" style="margin-bottom: 5px;">登录和大家一起探讨吧</div>
+			<form action="#" method="post" class="form-horizontal" role="form">
+				<div class="form-group">
+					<label for="username" class="col-sm-3 control-label">用户名</label>
+					<div class="col-sm-9 form-input">
+						<input type="text" class="form-control" id="form_username" name="username" placeholder="请填写用户名或邮箱">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="passwd" class="col-sm-3 control-label">密码</label>
+					<div class="col-sm-9 form-input">
+						<input type="password" class="form-control" id="form_passwd" name="passwd" placeholder="密码">
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						<div class="checkbox">
+							<label>
+								<input id="user_remember_me" name="remember_me" type="checkbox" value="1" checked="checked" />	记住登录状态
+							</label>
+							<button type="submit" id="login-btn" class="btn btn-default btn-sm">登录</button>
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						<a id="login-github" href="/oauth/github/login" class="btn btn-default btn-sm pull-left">
+							<i class="fa fa-github" aria-hidden="true"></i>
+							GitHub 登录
+						</a>
+						<div class="forget">
+							<a href="/account/forgetpwd" title="点击找回密码">忘记密码？</a>
+						</div>
+						<div class="register">
+							<span>还不是会员</span><a href="/account/register">现在注册</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div id="sg-overlay"></div>
+	{{end}}
+
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdn.bootcss.com/jquery-timeago/1.6.1/jquery.timeago.min.js"></script>
+	<script src="https://cdn.bootcss.com/zoom.js/0.0.1/zoom.min.js"></script>
+	<script src="https://cdn.bootcss.com/marked/0.3.6/marked.min.js"></script>
+	<script src="https://cdn.bootcss.com/Caret.js/0.3.1/jquery.caret.min.js"></script>
+	<script src="https://cdn.bootcss.com/emojify.js/1.1.0/js/emojify.min.js"></script>
+
+	<script type="text/javascript">
+	var uid = {{.me.Uid}};
+	var isHttps = {{.is_https}},
+		cdnDomain = "{{.cdn_domain}}";
+	if (isHttps) {
+		var wsUrl = 'wss://{{.wshost}}/ws?uid='+uid;
+	} else {
+		var wsUrl = 'ws://{{.wshost}}/ws?uid='+uid;
+	}
+	var GLaunchTime = {{timestamp .app.LaunchTime}}*1000;
+	</script>
+	<script src="https://cdn.bootcss.com/lscache/1.1.0/lscache.min.js"></script>
+	<script src="https://cdn.bootcss.com/jsrender/0.9.90/jsrender.min.js"></script>
+	<script src="https://cdn.bootcss.com/plupload/3.1.1/plupload.full.min.js"></script>
+	<script type="text/javascript">
+	$.views.settings.delimiters("[%", "%]");
+	// $.views.settings.debugMode(true);
+	</script>
+
+	<script src="{{.static_domain}}/static/dist/js/sg_libs.min.js"></script>
+	<script src="{{.static_domain}}/static/dist/js/sg_base.min.js?v=0.3"></script>
+
+	{{template "js" .}}
+
+	<script type="text/javascript" src="{{.static_domain}}/static/dist/js/sidebar.min.js"></script>
+
+	{{if .is_pro}}
+		<!-- 统计分析、广告脚本等 -->
+		{{include "common/analytics.html" .}}
+	{{end}}
+
+</body>
+</html>

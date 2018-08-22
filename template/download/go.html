@@ -1,0 +1,842 @@
+{{define "title"}}Go下载{{end}}
+{{define "seo"}}<meta name="keywords" content="Go下载,{{.setting.SeoKeywords}}">
+<meta name="description" content="提供 Go 语言全部版本的安装包下载，各个平台以及源码都可以在这里下到">{{end}}
+{{define "content"}}
+<div class="row">
+	<div class="col-sm-12">
+		<div class="sep20"></div>
+
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li><a href="/dl">下载</a></li>
+			<li class="active">Go 安装包下载</li>
+		</ol>
+
+		<div class="box_white">
+			<h1>Go 安装包下载</h1>
+
+			<p>
+			为你的系统下载了相应的安装包后，请按照 <a href="http://docs.studygolang.com/doc/install" target="_blank">安装说明</a> 进行安装。
+			</p>
+
+			<p>
+			如果你选择从源码构建，请参考 <a href="http://docs.studygolang.com/doc/install/source" target="_blank">从源码进行安装</a>。
+			</p>
+
+			<p>
+			查看 <a href="http://docs.studygolang.com/doc/devel/release.html" target="_blank">发布历史</a> 了解更多关于 Go 各版本的发布说明。
+			</p>
+
+			<h3 id="featured">推荐下载 <a class="permalink" href="#featured">¶</a></h3>
+
+			{{range .featured}}
+			<a class="download downloadBox" href="/dl/golang/{{.Filename}}">
+				{{if eq .OS "Windows"}}
+				<div class="platform">Microsoft Windows</div>
+				<div class="reqs">Windows XP SP2 or later, Intel 64-bit 处理器</div>
+				{{else if eq .OS "Linux"}}
+				<div class="platform">Linux</div>
+				<div class="reqs">Linux 2.6.23 or later, Intel 64-bit 处理器</div>
+				{{else if eq .OS "macOS"}}
+				<div class="platform">Apple macOS</div>
+				<div class="reqs">macOS 10.8 or later, Intel 64-bit 处理器</div>
+				{{else}}
+				<div class="platform">源码</div>
+				{{end}}
+				<div>
+					<span class="filename">{{.Filename}}</span>
+					<span class="size">({{.Size}}MB)</span>
+				</div>
+			</a>
+			{{end}}
+
+			<div style="clear: both;"></div>
+
+			<h3 id="stable">稳定版本 <a class="permalink" href="#stable">¶</a></h3>
+			
+			{{range .stable_versions}}
+			<div class="toggleVisible" id="{{.}}">
+					<div class="collapsed">
+						<h2 class="toggleButton" title="Click to show downloads for this version">{{.}} ▹</h2>
+					</div>
+					<div class="expanded">
+						<h2 class="toggleButton" title="Click to hide downloads for this version">{{.}} ▾</h2>
+						
+						<table class="codetable">
+							<thead>
+							<tr class="first">
+								<th>文件名</th>
+								<th>类型</th>
+								<th>操作系统(OS)</th>
+								<th>架构(Arch)</th>
+								<th>大小</th>
+								<th>SHA256 Checksum</th>
+							</tr>
+							</thead>
+
+							<tbody>
+						{{with $downloads := index $.stables .}}
+						
+						{{range $downloads}}
+							<tr {{if .IsRecommend}}class="highlight"{{end}}>
+								<td class="filename"><a class="download" href="/dl/golang/{{.Filename}}">{{.Filename}}</a></td>
+								<td>{{.Kind}}</td>
+								<td>{{.OS}}</td>
+								<td>{{.Arch}}</td>
+								<td>{{if .Size}}{{.Size}}MB{{end}}</td>
+								<td><tt>{{.Checksum}}</tt></td>
+							</tr>
+						{{end}}
+
+						{{end}}
+
+					</tbody></table>
+				</div>
+			</div>
+			{{end}}
+
+			{{if .unstables}}
+			<h3 id="unstable">不稳定版本 <a class="permalink" href="#unstable">¶</a></h3>
+
+			{{range $version, $downloads := .unstables}}
+			<div class="toggle" id="{{$version}}">
+				<div class="collapsed">
+					<h2 class="toggleButton" title="Click to show downloads for this version">{{$version}} ▹</h2>
+				</div>
+				<div class="expanded">
+					<h2 class="toggleButton" title="Click to hide downloads for this version">{{$version}} ▾</h2>
+					
+						<p>这是 Go 一个 <b>不稳定</b> 的版本。请谨慎使用。</p>
+						<p>如果你已经安装了 Go，你可以通过运行如下命令安装此版本：</p>
+			<pre>go get golang.org/x/build/version/{{$version}}
+			</pre>
+						<p>之后，使用命令 <code>{{$version}}</code> 代替使用命令 <code>go</code> 来试用 {{$version}}。</p>
+					
+			<table class="codetable">
+			<thead>
+			<tr class="first">
+				<th>文件名</th>
+				<th>类型</th>
+				<th>操作系统(OS)</th>
+				<th>架构(Arch)</th>
+				<th>大小</th>
+				<th>SHA256 Checksum</th>
+			</tr>
+			</thead>
+
+				
+			<tbody>
+				{{range $downloads}}
+					<tr {{if .IsRecommend}}class="highlight"{{end}}>
+						<td class="filename"><a class="download" href="/dl/golang/{{.Filename}}">{{.Filename}}</a></td>
+						<td>{{.Kind}}</td>
+						<td>{{.OS}}</td>
+						<td>{{.Arch}}</td>
+						<td>{{if .Size}}{{.Size}}MB{{end}}</td>
+						<td><tt>{{.Checksum}}</tt></td>
+					</tr>
+				{{end}}
+				
+			</tbody></table>
+
+				</div>
+			</div>
+			{{end}}
+			{{end}}
+
+
+			<div class="toggle" id="archive">
+				<div class="collapsed">
+				<h3 class="toggleButton" title="Click to show versions">历史版本归档▹</h3>
+				</div>
+				<div class="expanded">
+				<h3 class="toggleButton" title="Click to hide versions">历史版本归档▾</h3>
+
+				{{range .archived_versions}}
+				<div class="toggle" id="{{.}}">
+						<div class="collapsed">
+							<h2 class="toggleButton" title="Click to show downloads for this version">{{.}} ▹</h2>
+						</div>
+						<div class="expanded">
+							<h2 class="toggleButton" title="Click to hide downloads for this version">{{.}} ▾</h2>
+							
+					<table class="codetable">
+						<thead>
+						<tr class="first">
+							<th>文件名</th>
+							<th>类型</th>
+							<th>操作系统(OS)</th>
+							<th>架构(Arch)</th>
+							<th>大小</th>
+							<th>SHA256 Checksum</th>
+						</tr>
+						</thead>
+
+						<tbody>
+					{{with $downloads := index $.archiveds .}}
+					
+					{{range $downloads}}
+						<tr {{if .IsRecommend}}class="highlight"{{end}}>
+							<td class="filename"><a class="download" href="/dl/golang/{{.Filename}}">{{.Filename}}</a></td>
+							<td>{{.Kind}}</td>
+							<td>{{.OS}}</td>
+							<td>{{.Arch}}</td>
+							<td>{{if .Size}}{{.Size}}MB{{end}}</td>
+							<td><tt>{{.Checksum}}</tt></td>
+						</tr>
+					{{end}}
+
+					{{end}}
+
+
+				</tbody></table>
+
+			</div>
+		</div>
+		{{end}}
+			
+	</div>
+</div>
+
+</div>
+
+</div>
+</div>
+{{end}}
+
+{{define "css"}}
+<style type="text/css">
+.box_white a:link, .box_white a:visited, .box_white a:active,
+.exampleHeading .text {
+	color: #375EAB;
+	text-decoration: none;
+}
+.box_white a:hover,
+.exampleHeading .text:hover {
+	text-decoration: underline;
+}
+
+.permalink {
+	display: none;
+}
+:hover > .permalink {
+	display: inline;
+}
+
+p, li {
+	max-width: 800px;
+	word-wrap: break-word;
+}
+p,
+pre {
+	margin: 20px;
+}
+pre {
+	background: #EFEFEF;
+	padding: 10px;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+.rootHeading {
+	margin: 20px 0 20px;
+	padding: 0;
+	color: #375EAB;
+	font-weight: bold;
+}
+h1 {
+	font-size: 28px;
+	line-height: 1;
+}
+h1 .text-muted {
+	color:#777;
+}
+h2 {
+	font-size: 20px;
+	background: #E0EBF5;
+	padding: 8px;
+	line-height: 1.25;
+	font-weight: normal;
+}
+h2 a {
+	font-weight: bold;
+}
+h3 {
+	font-size: 20px;
+}
+h3,
+h4 {
+	margin: 20px 5px;
+}
+h4 {
+	font-size: 16px;
+}
+.rootHeading {
+	font-size: 20px;
+	margin: 0;
+}
+
+dl {
+	margin: 20px;
+}
+dd {
+	margin: 0 0 0 20px;
+}
+dl,
+dd {
+	font-size: 14px;
+}
+div#nav table td {
+	vertical-align: top;
+}
+
+
+.pkg-dir {
+	padding: 0 10px;
+}
+.pkg-dir table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+.pkg-name {
+	padding-right: 10px;
+}
+.alert {
+	color: #AA0000;
+}
+
+.top-heading {
+	float: left;
+	padding: 21px 0;
+	font-size: 20px;
+	font-weight: normal;
+}
+.top-heading a {
+	color: #222;
+	text-decoration: none;
+}
+
+div#topbar {
+	background: #E0EBF5;
+	height: 64px;
+	overflow: hidden;
+}
+
+.download {
+	width: 150px;
+}
+
+.vertical-flip {
+	transform: rotate(-180deg);
+}
+
+div.left {
+	float: left;
+	clear: left;
+	margin-right: 2.5%;
+}
+div.right {
+	float: right;
+	clear: right;
+	margin-left: 2.5%;
+}
+div.left,
+div.right {
+	width: 45%;
+}
+
+div#learn,
+div#about {
+	padding-top: 20px;
+}
+div#learn h2,
+div#about {
+	margin: 0;
+}
+div#about {
+	font-size: 20px;
+	margin: 0 auto 30px;
+}
+div#gopher {
+	background: url(/doc/gopher/frontpage.png) no-repeat;
+	background-position: center top;
+	height: 155px;
+}
+a#start {
+	display: block;
+	padding: 10px;
+
+	text-align: center;
+	text-decoration: none;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+a#start .big {
+	display: block;
+	font-weight: bold;
+	font-size: 20px;
+}
+a#start .desc {
+	display: block;
+	font-size: 14px;
+	font-weight: normal;
+	margin-top: 5px;
+}
+
+div#learn .popout {
+	float: right;
+	display: block;
+	cursor: pointer;
+	font-size: 12px;
+	background: url(/doc/share.png) no-repeat;
+	background-position: right top;
+	padding: 5px 27px;
+}
+div#learn pre,
+div#learn textarea {
+	padding: 0;
+	margin: 0;
+	font-family: Menlo, monospace;
+	font-size: 14px;
+}
+div#learn .input {
+	padding: 10px;
+	margin-top: 10px;
+	height: 150px;
+
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+div#learn .input textarea {
+	width: 100%;
+	height: 100%;
+	border: none;
+	outline: none;
+	resize: none;
+}
+div#learn .output {
+	border-top: none !important;
+
+	padding: 10px;
+	height: 59px;
+	overflow: auto;
+
+	-webkit-border-bottom-right-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-bottomright: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+div#learn .output pre {
+	padding: 0;
+
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+}
+div#learn .input,
+div#learn .input textarea,
+div#learn .output,
+div#learn .output pre {
+	background: #FFFFD8;
+}
+div#learn .input,
+div#learn .output {
+	border: 1px solid #375EAB;
+}
+div#learn .buttons {
+	float: right;
+	padding: 20px 0 10px 0;
+	text-align: right;
+}
+div#learn .buttons a {
+	height: 16px;
+	margin-left: 5px;
+	padding: 10px;
+}
+div#learn .toys {
+	margin-top: 8px;
+}
+div#learn .toys select {
+	border: 1px solid #375EAB;
+	margin: 0;
+}
+div#learn .output .exit {
+	display: none;
+}
+
+div#video {
+	max-width: 100%;
+}
+div#blog,
+div#video {
+	margin-top: 40px;
+}
+div#blog > a,
+div#blog > div,
+div#blog > h2,
+div#video > a,
+div#video > div,
+div#video > h2 {
+	margin-bottom: 10px;
+}
+div#blog .title,
+div#video .title {
+	display: block;
+	font-size: 20px;
+}
+div#blog .when {
+	color: #666;
+	font-size: 14px;
+}
+div#blog .read {
+	text-align: right;
+}
+
+.toggleButton { cursor: pointer; }
+.toggle > .collapsed { display: block; }
+.toggle > .expanded { display: none; }
+.toggleVisible > .collapsed { display: none; }
+.toggleVisible > .expanded { display: block; }
+
+table.codetable { margin-left: auto; margin-right: auto; border-style: none; }
+table.codetable td { padding-right: 10px; }
+hr { border-style: none; border-top: 1px solid black; }
+
+img.gopher {
+	float: right;
+	margin-left: 10px;
+	margin-bottom: 10px;
+	z-index: -1;
+}
+h2 { clear: right; }
+
+/* example and drop-down playground */
+div.play {
+	padding: 0 20px 40px 20px;
+}
+div.play pre,
+div.play textarea,
+div.play .lines {
+	padding: 0;
+	margin: 0;
+	font-family: Menlo, monospace;
+	font-size: 14px;
+}
+div.play .input {
+	padding: 10px;
+	margin-top: 10px;
+
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+
+	overflow: hidden;
+}
+div.play .input textarea {
+	width: 100%;
+	height: 100%;
+	border: none;
+	outline: none;
+	resize: none;
+
+	overflow: hidden;
+}
+div#playground .input textarea {
+	overflow: auto;
+	resize: auto;
+}
+div.play .output {
+	border-top: none !important;
+
+	padding: 10px;
+	max-height: 200px;
+	overflow: auto;
+
+	-webkit-border-bottom-right-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-bottomright: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+div.play .output pre {
+	padding: 0;
+
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+}
+div.play .input,
+div.play .input textarea,
+div.play .output,
+div.play .output pre {
+	background: #FFFFD8;
+}
+div.play .input,
+div.play .output {
+	border: 1px solid #375EAB;
+}
+div.play .buttons {
+	float: right;
+	padding: 20px 0 10px 0;
+	text-align: right;
+}
+div.play .buttons a {
+	height: 16px;
+	margin-left: 5px;
+	padding: 10px;
+	cursor: pointer;
+}
+.output .stderr {
+	color: #933;
+}
+.output .system {
+	color: #999;
+}
+
+/* drop-down playground */
+#playgroundButton,
+div#playground {
+	/* start hidden; revealed by javascript */
+	display: none;
+}
+div#playground {
+	position: absolute;
+	top: 63px;
+	right: 20px;
+	padding: 0 10px 10px 10px;
+	z-index: 1;
+	text-align: left;
+	background: #E0EBF5;
+
+	border: 1px solid #B0BBC5;
+	border-top: none;
+
+	-webkit-border-bottom-left-radius: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	-moz-border-radius-bottomright: 5px;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+div#playground .code {
+	width: 520px;
+	height: 200px;
+}
+div#playground .output {
+	height: 100px;
+}
+
+/* Inline runnable snippets (play.js/initPlayground) */
+#content .code pre, #content .playground pre, #content .output pre {
+		margin: 0;
+		padding: 0;
+		background: none;
+		border: none;
+	outline: 0px solid transparent;
+		overflow: auto;
+}
+#content .playground .number, #content .code .number {
+		color: #999;
+}
+#content .code, #content .playground, #content .output {
+	width: auto;
+		margin: 20px;
+		padding: 10px;
+		-webkit-border-radius: 5px;
+		-moz-border-radius: 5px;
+		border-radius: 5px;
+}
+#content .code, #content .playground {
+		background: #e9e9e9;
+}
+#content .output {
+		background: #202020;
+}
+#content .output .stdout, #content .output pre {
+		color: #e6e6e6;
+}
+#content .output .stderr, #content .output .error {
+		color: rgb(244, 74, 63);
+}
+#content .output .system, #content .output .exit {
+		color: rgb(255, 209, 77)
+}
+#content .buttons {
+		position: relative;
+		float: right;
+		top: -50px;
+		right: 30px;
+}
+#content .output .buttons {
+		top: -60px;
+		right: 0;
+		height: 0;
+}
+#content .buttons .kill {
+		display: none;
+		visibility: hidden;
+}
+a.error {
+	font-weight: bold;
+		color: white;
+	background-color: darkred;
+		border-bottom-left-radius: 4px;
+		border-bottom-right-radius: 4px;
+		border-top-left-radius: 4px;
+		border-top-right-radius: 4px;
+		padding: 2px 4px 2px 4px; /* TRBL */
+}
+
+
+#heading-narrow {
+	display: none;
+}
+
+.downloading {
+	background: #F9F9BE;
+	padding: 10px;
+	text-align: center;
+	border-radius: 5px;
+}
+
+@media (max-width: 930px) {
+	#heading-wide {
+		display: none;
+	}
+	#heading-narrow {
+		display: block;
+	}
+}
+
+
+@media (max-width: 760px) {
+	.container .left,
+	.container .right {
+		width: auto;
+		float: none;
+	}
+
+	div#about {
+		max-width: 500px;
+		text-align: center;
+	}
+}
+
+@media (max-width: 700px) {
+	pre,
+	code {
+		font-size: 13px;
+	}
+
+	
+	p,
+	pre {
+		margin: 10px;
+	}
+
+	.pkg-synopsis {
+		display: none;
+	}
+
+	img.gopher {
+		display: none;
+	}
+}
+
+@media print {
+	pre {
+		background: #FFF;
+		border: 1px solid #BBB;
+		white-space: pre-wrap;
+	}
+}
+</style>
+<style type="text/css">
+.box_white { padding-left: 10px; padding-right: 10px; }
+table.codetable {
+	margin-left: 20px; margin-right: 20px;
+	border-collapse: collapse;
+}
+table.codetable tr {
+	background-color: #f0f0f0;
+}
+table.codetable tr:nth-child(2n), table.codetable tr.first {
+	background-color: white;
+}
+table.codetable td, table.codetable th {
+	white-space: nowrap;
+	padding: 6px 10px;
+}
+table.codetable tt {
+	font-size: xx-small;
+}
+table.codetable tr.highlight td {
+	font-weight: bold;
+}
+.box_white a.downloadBox {
+	display: block;
+	color: #222;
+	border: 1px solid #375EAB;
+	border-radius: 5px;
+	background: #E0EBF5;
+	width: 280px;
+	float: left;
+	margin-left: 10px;
+	margin-bottom: 10px;
+	padding: 10px;
+	word-break: normal;
+}
+.box_white a.downloadBox:hover {
+	text-decoration: none;
+}
+.downloadBox .platform {
+	font-size: large;
+}
+.downloadBox .filename {
+	color: #375EAB;
+	font-weight: bold;
+	line-height: 1.5em;
+}
+a.downloadBox:hover .filename {
+	text-decoration: underline;
+}
+.downloadBox .size {
+	font-size: small;
+	font-weight: normal;
+}
+.downloadBox .reqs {
+	font-size: small;
+	font-style: italic;
+}
+.downloadBox .checksum {
+	font-size: 5pt;
+}
+</style>
+{{end}}
+
+{{define "js"}}
+<script type="text/javascript" src="{{.static_domain}}/static/dist/js/godl.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('table').addClass('table').wrap('<div class="table-responsive"></div>');
+});
+</script>
+{{end}}

@@ -1,0 +1,161 @@
+{{define "title"}}{{.project.Name}}首页、文档和下载 - {{.project.Category}} {{end}}
+{{define "seo"}}<meta name="keywords" content="{{.project.Name}},{{.project.Name}}是什么,{{.project.Name}}下载,{{.project.Name}}论坛,{{.project.Name}}汉化,{{.project.Category}}">
+<meta name="description" content="{{substring .project.Desc 200 "..."}}">{{end}}
+{{define "content"}}
+<div class="row">
+	<div class="col-md-9 col-sm-6">
+		<div class="sep20"></div>
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li><a href="/projects">开源项目</a></li>
+		</ol>
+		<div class="page">
+			<div class="box_white">
+				<div class="title">
+					<div class="pull-right">
+						<a href="/user/{{.project.User.Username}}" title="{{.project.User.Username}}">
+							<img src="{{gravatar .project.User.Avatar .project.User.Email 62 .is_https}}" alt="{{if .project.User.Name}}{{.project.User.Name}}{{else}}{{.project.User.Username}}{{end}}" width="62px" height="62px">
+						</a>
+					</div>
+					<h1>
+					{{if .project.Logo}}
+						<img src="{{if hasPrefix .project.Logo "http"}}{{.project.Logo}}{{else}}{{.cdn_domain}}/{{.project.Logo}}{{end}}" alt="{{.project.Name}}" width="80px" />
+					{{end}}
+						{{.project.Category}} <u>{{.project.Name}}</u>
+					</h1>
+					<small class="c9">
+						<a href="/user/{{.project.Username}}">{{.project.Username}}</a> • <span title="{{.project.Ctime}}" class="timeago"></span> • {{.project.Viewnum}} 次点击 &nbsp; &nbsp;
+						{{if canEdit .me .project}}
+						<a class="op" href="/project/modify?id={{.project.Id}}" title="编辑">编辑</a>
+						{{end}}
+					</small>
+				</div>
+				{{if gt (distanceDay .project.Ctime) 100 }}
+				<div class="outdated">这是一个分享于 <span title="{{.project.Ctime}}" class="timeago"></span> 的项目，其中的信息可能已经有所发展或是发生改变。</div>
+				{{end}}
+				<div class="cell">
+					<div class="content project">
+						<div class="desc">{{.project.Desc}}</div>
+						{{if .project.Repo}}
+						<div class="github-widget" data-repo="{{.project.Repo}}"></div>
+						{{end}}
+						<dl class="dl-horizontal attrs">
+							<dt>授权协议：</dt><dd><a>{{.project.Licence}}</a></dd>
+							<dt>开发语言：</dt><dd><a>{{.project.Lang}}</a>&nbsp;<a href="{{.project.Src}}" title="{{.project.Name}} 源码" target="_blank">查看源码»</a></dd>
+							{{if .project.Os}}
+							<dt>操作系统：</dt><dd><a>{{.project.Os}}</a></dd>
+							{{end}}
+						</dl>
+						<ul class="urls list-inline text-center">
+							<li><a href="{{.project.Home}}" title="{{.project.Name}} 网站" class="btn btn-default btn-sm" target="_blank">项目首页</a></li>
+							<li><a href="{{.project.Doc}}" title="{{.project.Name}} 文档" class="btn btn-default btn-sm" target="_blank">项目文档</a></li>
+							{{if .project.Download}}
+							<li><a href="{{.project.Download}}" title="下载 {{.project.Name}}" class="btn btn-default btn-sm" target="_blank">软件下载</a></li>
+							{{end}}
+						</ul>
+					</div>
+				</div>
+				
+				<div class="content-buttons">
+					<div class="pull-right c9 f11" style="line-height: 12px; padding-top: 3px; text-shadow: 0px 1px 0px #fff;">{{.project.Viewnum}} 次点击 &nbsp;{{if .project.Likenum}}∙&nbsp; {{.project.Likenum}} 赞 &nbsp; {{end}}</div>
+					<a class="tb collect" href="javascript:;" title="{{if .hadcollect}}取消收藏{{else}}加入收藏{{end}}" data-objid="{{.project.Id}}" data-objtype="4" data-collect="{{.hadcollect}}">{{if .hadcollect}}取消收藏{{else}}加入收藏{{end}}</a> 
+					<a href="javascript:" onclick="window.open('http://service.weibo.com/share/share.php?url=http{{if .is_https}}s{{end}}://{{.setting.Domain}}/p/{{if .project.Uri}}{{.project.Uri}}{{else}}{{.project.Id}}{{end}}&title={{.setting.Name}} - {{.project.Category}} {{.project.Name}}', '_blank', 'width=550,height=370');" class="tb">微博</a>
+					<div id="content-thank">
+						<a class="tb" href="javascript:;" title="{{if .likeflag}}取消赞{{else}}赞{{end}}" data-objid="{{.project.Id}}" data-objtype="4" data-flag="{{.likeflag}}">{{if .likeflag}}取消赞{{else}}赞{{end}}</a>
+					</div>
+				</div>
+			</div>
+			<!-- content END -->
+			<div class="sep20"></div>
+
+			<!-- 评论列表 -->
+			<div id="replies" class="box_white">
+				<div class="cell">
+					<div class="pull-right" style="margin: -3px -5px 0px 0px;">
+					{{if .project.Tags}}
+						{{$tags := explode .project.Tags ","}}
+						{{range $tags}}
+						<a href="/tag/{{.}}" class="tag"><li class="fa fa-tag"></li> {{.}}</a>
+						{{end}}
+					{{end}}
+					</div>
+					<span class="c9"><span class="cmtnum">{{.project.Cmtnum}}</span> 回复 {{if .project.Cmtnum}}&nbsp;<strong class="snow">|</strong> &nbsp;直到 {{end}}</span>
+				</div>
+				<div class="comment-list cell" data-objid="{{.project.Id}}" data-objtype="4" {{if .me.Uid}}data-username="{{.me.Username}}" data-uid="{{.me.Uid}}" data-avatar="{{gravatar .me.Avatar .me.Email 48 .is_https}}"{{end}}>
+					<div class="words hide"><div class="text-center">暂无回复</div></div>
+				</div>
+			</div>
+
+			<!-- 评论框 -->
+			{{template "comment" .}}
+
+			{{include "common/view_stat.html" .}}
+			
+		</div>
+	</div>
+	<div class="col-md-3 col-sm-6">
+		<div class="sep20"></div>
+		{{include "common/my_info.html" .}}
+
+		{{if .pos_ad.right1}}
+		<div class="box_white sidebar" id="ad-right1">
+			{{if eq .pos_ad.right1.AdType 0}}
+				{{noescape .pos_ad.right1.Code}}
+			{{end}}
+		</div>
+		{{end}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"今日阅读排行","objtype":4,"limit":10,"rank_type":"today"}`)}}
+		
+		{{if .pos_ad.right2}}
+		<div class="box_white sidebar" id="ad-right2">
+			{{if eq .pos_ad.right2.AdType 0}}
+				{{noescape .pos_ad.right2.Code}}
+			{{end}}
+		</div>
+		{{end}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"一周阅读排行","objtype":4,"limit":10,"rank_type":"week"}`)}}
+		
+	</div>
+</div>
+{{end}}
+{{define "css"}}
+<style type="text/css">
+.project .attrs {background: #f6f6f6;border: 1px solid #eee;padding: 5px 10px;margin: 15px 0;font-weight: bold;line-height: 22px;}
+.project .attrs a {font-weight: normal; color: #778088; text-decoration: none;}
+.project .attrs a:hover {color: #474747; text-decoration: none;}
+</style>
+{{end}}
+{{define "js"}}
+
+{{include "cssjs/prism.js.html" .}}
+<script type="text/javascript" src="{{.static_domain}}/static/dist/js/projects.min.js"></script>
+
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [
+	"/rank/view",
+];
+
+var keyprefix = 'project';
+var objid = {{.project.Id}};
+
+$(function(){
+	// 解析 desc
+	new SG.Projects().parseDesc();
+
+	// 文本框自动伸缩
+	$('.need-autogrow').autoGrow();
+	
+	loadComments();
+});
+</script>
+
+{{if .pos_ad.right1}}
+	{{if eq .pos_ad.right1.AdType 1}}
+		{{noescape .pos_ad.right1.Code}}
+	{{end}}
+{{end}}
+
+{{end}}

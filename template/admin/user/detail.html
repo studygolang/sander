@@ -1,0 +1,200 @@
+{{define "content"}}
+<div class="pageheader notab">
+	<h1 class="pagetitle">用户详情</h1>
+</div><!--pageheader-->
+
+<div id="contentwraapper" class="contentwrapper">
+	<div id="tooltip" class="red"></div>
+	<form method="POST" action="/admin/user/user/modify" class="stdform">
+		<input type="hidden" id="uid" name="uid" value="{{.user.Uid}}" />
+		<div class="contenttitle2">
+			<h3>基本信息</h3>
+		</div>
+		<div>
+			<p>
+				<label for="name">UID</label>
+				<span class="field txt">
+					{{.user.Uid}}
+				</span>
+			</p>
+		</div>
+		<div>
+			<p>
+				<label for="name">用户名</label>
+				<span class="field txt">
+					{{.user.Username}}
+				</span>
+			</p>
+		</div>
+		{{if .user.Name}}
+		<div>
+			<p>
+				<label for="name">姓名</label>
+				<span class="field txt">
+					{{.user.Name}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		<div>
+			<p>
+				<label for="name">电子邮箱</label>
+				<span class="field txt">
+					{{.user.Email}}&nbsp;({{if eq .user.Open 0}}不{{end}}公开)
+				</span>
+			</p>
+		</div>
+		<div>
+			<p>
+				<label for="name">头像</label>
+				<span class="field txt">
+					{{if .user.Avatar}}{{else}}默认{{end}}
+				</span>
+			</p>
+		</div>
+		{{if .user.City}}
+		<div>
+			<p>
+				<label for="name">居住地</label>
+				<span class="field txt">
+					{{.user.City}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		{{if .user.Company}}
+		<div>
+			<p>
+				<label for="name">公司</label>
+				<span class="field txt">
+					{{.user.Company}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		{{if .user.Github}}
+		<div>
+			<p>
+				<label for="name">Github</label>
+				<span class="field txt">
+					{{.user.Github}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		{{if .user.Weibo}}
+		<div>
+			<p>
+				<label for="name">微博</label>
+				<span class="field txt">
+					{{.user.Weibo}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		{{if .user.Website}}
+		<div>
+			<p>
+				<label for="name">个人网站(博客)</label>
+				<span class="field txt">
+					{{.user.Website}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		{{if .user.Monlog}}
+		<div>
+			<p>
+				<label for="name">最新签名</label>
+				<span class="field txt">
+					{{.user.Monlog}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		{{if .user.Introduce}}
+		<div>
+			<p>
+				<label for="name">个人简介</label>
+				<span class="field txt">
+					{{.user.Introduce}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		<div>
+			<p>
+				<label for="name">最近更新时间</label>
+				<span class="field txt">
+					{{.user.Mtime}}
+				</span>
+			</p>
+		</div>
+		<div class="contenttitle2">
+			<h3>DAU 权限设置</h3>
+		</div>
+		<div>
+			<p>
+				<label for="dau">&nbsp;</label>
+				<span class="field">
+					发布主题：<input type="checkbox" name="topic" value="1" {{if canPublish .user.DauAuth 0}}checked{{end}}>&nbsp;&nbsp;
+					发布文章：<input type="checkbox" name="article" value="1" {{if canPublish .user.DauAuth 1}}checked{{end}}>&nbsp;&nbsp;
+					分享资源：<input type="checkbox" name="resource" value="1" {{if canPublish .user.DauAuth 2}}checked{{end}}>&nbsp;&nbsp;
+					发布Wiki：<input type="checkbox" name="wiki" value="1" {{if canPublish .user.DauAuth 3}}checked{{end}}>&nbsp;&nbsp;
+					发布项目：<input type="checkbox" name="project" value="1" {{if canPublish .user.DauAuth 4}}checked{{end}}>&nbsp;&nbsp;
+					发布图书：<input type="checkbox" name="book" value="1" {{if canPublish .user.DauAuth 5}}checked{{end}}>&nbsp;&nbsp;
+					发布评论：<input type="checkbox" name="comment" value="1" {{if canPublish .user.DauAuth 100}}checked{{end}}>&nbsp;&nbsp;
+					置顶：<input type="checkbox" name="top" value="1" {{if canPublish .user.DauAuth 101}}checked{{end}}>
+				</span>
+			</p>
+		</div>
+		<div class="contenttitle2">
+			<h3>充值</h3>
+		</div>
+		<div>
+			<p>
+				<label for="recharge">&nbsp;</label>
+				<span class="field">
+					<input id="amount" type="text" name="amount" class="smallinput" placeholder="输入充值金额" />
+					<input id="copper" type="text" name="copper" class="smallinput" placeholder="输入获得铜币" />
+					<input id="channel" type="text" name="channel" class="smallinput" placeholder="输入充值渠道" />
+					<input id="time" type="text" name="time" class="smallinput" placeholder="输入充值时间" />
+				</span>
+			</p>
+		</div>
+		<div class="contenttitle2">
+			<h3>角色信息</h3>
+		</div>
+		{{range $name := .user.Rolenames}}
+		<div>
+			<p>
+				<label for="name">角色</label>
+				<span class="field txt">
+					{{$name}}
+				</span>
+			</p>
+		</div>
+		{{end}}
+		<div>
+			<p>
+				<label for="name">分配角色</label>
+				<span class="field">
+					<select multiple="multiple" name="roleids" size="10">
+						{{range .roles}}
+						<option value="{{.Roleid}}">{{.Name}}</option>
+						{{end}}
+					</select>
+				</span>
+			</p>
+		</div>
+		<div style="margin: 0 auto; width: 500px;"><input class="submit_btn" type="submit" name="save" value="提交" /></a></div>
+	</form>
+	<img id="loaders" src="/static/img/loaders/loader7.gif" alt="" class="hide"><blockquote></blockquote>
+</div><!--contentwrapper-->
+{{end}}
+
+{{define "js"}}
+<script src="https://cdn.bootcss.com/jquery-validate/1.17.0/jquery.validate.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery-validate/1.17.0/localization/messages_zh.min.js"></script>
+<script	type="text/javascript" src="/static/js/admin/forms.js"></script>
+{{end}}

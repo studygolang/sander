@@ -1,0 +1,104 @@
+{{define "title"}}{{if .wiki.Id}}编辑{{else}}新建{{end}}Wiki页 {{end}}
+{{define "content"}}
+<div class="row">
+  <div class="col-md-9 col-sm-6">
+    <div class="sep20"></div>
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li><a href="/wiki">Wiki</a></li>
+      <li class="active">{{if .wiki.Id}}编辑{{else}}新建{{end}}Wiki页</li>
+    </ol>
+    <div class="page box_white">
+      <form class="form-horizontal validate-form" role="form" action="/wiki/{{if .wiki.Id}}modify{{else}}new{{end}}" data-redirect="/wiki">
+        {{if .wiki.Id}}
+        <input type="hidden" name="id" value="{{.wiki.Id}}" />
+        {{end}}
+        <div class="form-group form-group-sm">
+          <label class="col-sm-2 control-label" for="title"><abbr>*</abbr>标题</label>
+          <div class="col-sm-9">
+            <div class="row">
+              <span class="col-sm-9">
+                <input class="form-control required" type="text" id="title" name="title" placeholder="标题" value="{{.wiki.Title}}">
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group form-group-sm">
+          <label class="col-sm-2 control-label" for="uri">Wiki访问地址</label>
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon">{{if .is_https}}https{{else}}http{{end}}://{{.setting.Domain}}/wiki/{{.wiki.Uri}}</span>
+              {{if not .wiki.Id}}
+              <input class="form-control {remote:'/wiki/uri'}" type="text" id="uri" name="uri" placeholder="Wiki访问地址">
+              {{end}}
+            </div>
+          </div>
+        </div>
+        <div class="form-group form-group-sm">
+          <label class="col-sm-2 control-label" for="content"><abbr>*</abbr>正文</label>
+          <div class="col-sm-9">
+            <div class="row clearfix md-toolbar">
+              <ul class="col-md-10 list-inline">
+                <li class="edit cur"><a href="#"><i class="glyphicon glyphicon-edit"></i> 编辑</a></li>
+                <li class="preview"><a href="#" title="预览"><i class="glyphicon glyphicon-eye-open preview"></i> 预览</a></li>
+                <li class="wide"><a href="/wide/playground" target="_blank" title="通过Wide编辑代码"><i class="glyphicon glyphicon-cloud"></i> Wide</a></li>
+              </ul>
+              <div class="col-md-2 text-right">
+                <i id="upload-img" class="glyphicon glyphicon-picture upload-img tool-tip" data-toggle="tooltip" data-placement="top" title="上传图片"></i>
+              </div>
+            </div>
+            <textarea class="form-control need-autogrow required main-textarea" id="content" name="content" rows="15">{{.wiki.Content}}</textarea>
+            <div class="content-preview"></div>
+          </div>
+        </div>
+        <div class="form-group form-group-sm">
+          <label class="col-sm-5 control-label">&nbsp;</label>
+          <div class="col-sm-6">
+            <button type="submit" class="btn btn-default btn-sm" id="submit">{{if .wiki.Id}}提交修改{{else}}发布Wiki{{end}}</button> (Ctrl+Enter)
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="sep20"></div>
+
+    <div class="box_white sidebar sb-author">
+      <div class="top">
+        <h3 class="title"><i class="glyphicon glyphicon-list-alt"></i>&nbsp;发布Wiki说明</h3>
+      </div>
+      <div class="sb-content">
+        <span class="help-block">
+          <ul>
+            <li>支持 Markdown 格式, <strong>**粗体**</strong>、~~删除线~~、<code>`单行代码`</code></li>
+            <li>http://example.org 自动加链接</li>
+            <li>代码支持高亮，如：```go func main() {}``` 则是Go语法高亮</li>
+            <li>![alt 文本](http://foo.com/bar.jpg) 显示图片</li>
+            <li>:smile: 支持 <strong>emoji 表情</strong>，见<a href="http://www.emoji-cheat-sheet.com/" target="_blank">Emoji cheat sheet</a></li>
+            <li>完整 Markdwon 语法说明：<a href="http://wowubuntu.com/markdown/" target="_blank">语法说明 (简体中文版)</a></li>
+            <li>支持嵌入 Wide 的Playground 代码直接运行</li>
+          </ul>
+        </span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{{end}}
+{{define "css"}}
+{{include "cssjs/prism.css.html" .}}
+{{end}}
+{{define "js"}}
+{{include "cssjs/prism.js.html" .}}
+{{include "cssjs/publish.js.html" .}}
+<script type="text/javascript" src="{{.static_domain}}/static/dist/js/wiki.min.js"></script>
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [];
+
+$(function(){
+  // 文本框自动伸缩
+  $('.need-autogrow').autoGrow();
+});
+</script>
+{{end}}

@@ -1,0 +1,160 @@
+{{define "title"}}{{.book.Name}} {{end}}
+{{define "seo"}}<meta name="keywords" content="{{.book.Name}},{{.setting.SeoKeywords}}">
+<meta name="description" content="{{substring .book.Desc 200 ""}}">{{end}}
+{{define "content"}}
+<div class="row">
+	<div class="col-md-9 col-sm-6">
+		<div class="sep20"></div>
+		<ol class="breadcrumb">
+			<li><a href="/">首页</a></li>
+			<li><a href="/books">图书</a></li>
+		</ol>
+		<div class="page">
+			<div class="box_white book">
+				<div class="col-md-2">
+					<div class="book-cover-col">
+						<div class="book-cover-box wide">
+							<a href="{{if .book.Cover}}{{.book.Cover}}{{else}}http://studygolang.qiniudn.com/img/golang_default_cover.png{{end}}" style="float: none;">
+								<img src="{{if .book.Cover}}{{.book.Cover}}{{else}}http://studygolang.qiniudn.com/img/golang_default_cover.png{{end}}" class="bookcover">
+							</a>
+							<span class="ebook"></span>
+						</div>
+						{{if .book.Price}}
+						<div class="book-sales">
+							<b>¥ {{.book.Price}}</b>
+						</div>
+						{{end}}
+						<div class="book-like">
+							<div class="like">
+								<a class="share-btn like-btn {{if .likeflag}}hadlike{{end}}" href="javascript:;" title="{{if .likeflag}}取消推荐{{else}}推荐{{end}}" data-objid="{{.book.Id}}" data-objtype="5" data-flag="{{.likeflag}}">{{if .likeflag}}取消推荐{{else}}推荐{{end}}</a>
+								<strong>{{.book.Likenum}}</strong>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-10">
+					<div class="book-header">
+						<h3>{{.book.Name}}<span class="lang">({{if .book.Lang}}英文版{{else}}中文版{{end}})</span></h3>
+						{{if .book.Ename}}
+						<small>英文书名：<strong>{{.book.Ename}}</strong></small>
+						{{end}}
+					</div>
+					<div class="meta" style="margin: 0;">
+						<div class="p-author">
+							<i class="glyphicon glyphicon-calendar"></i>
+							<span title="发布日期">{{.book.PubDate}}</span>&nbsp;
+							<i class="glyphicon glyphicon-user"></i>
+							{{.book.Author}} (作者) 　
+							{{if .book.Translator}}
+								{{.book.Translator}} (译者)
+							{{end}}
+						</div>
+						<!-- p-author END -->
+
+						<div class="p-comment text-right">
+							<span class="view" title="阅读数">
+								<i class="glyphicon glyphicon-eye-open"></i>
+								阅读 <span>{{.book.Viewnum}}</span> 次&nbsp;
+							</span>
+							<a href="/book/{{.book.Id}}#commentForm" title="我要评论"><i class="glyphicon glyphicon-comment"></i> <span class="cmtnum">{{.book.Cmtnum}}</span> 条评论</a>
+						</div>
+						<!-- p-comment END -->
+					</div>
+					<div class="tags" style="margin: 0;">
+						<ul class="list-inline">
+							{{if .book.OnlineUrl}}
+							<li><a href="{{.book.OnlineUrl}}" target="_blank">在线阅读</a></li>
+							{{end}}
+							{{if .book.DownloadUrl}}
+							<li><a href="{{.book.DownloadUrl}}" target="_blank">下载</a></li>
+							{{end}}
+							{{if .book.BuyUrl}}
+							<li><a href="{{.book.BuyUrl}}" target="_blank">去购买</a></li>
+							{{end}}
+						</ul>
+					</div>
+					<div class="desc">
+						<h4>简介</h4>
+						{{.book.Desc}}
+					</div>
+					{{if .book.Catalogue}}
+					<div class="catalogue">
+						<h4>目录</h4>
+						{{noescape .book.Catalogue}}
+					</div>
+					{{end}}
+				</div>
+			</div>
+
+			<div class="sep20"></div>
+
+			<!-- 评论列表 -->
+			<div id="replies" class="box_white">
+				<div class="cell">
+					<div class="pull-right" style="margin: -3px -5px 0px 0px;">
+					{{if .book.Tags}}
+						{{$tags := explode .book.Tags ","}}
+						{{range $tags}}
+						<a href="/tag/{{.}}" class="tag"><li class="fa fa-tag"></li> {{.}}</a>
+						{{end}}
+					{{end}}
+					</div>
+					<span class="c9"><span class="cmtnum">{{.book.Cmtnum}}</span> 回复 {{if .book.Cmtnum}}&nbsp;<strong class="snow">|</strong> &nbsp;直到 {{end}}</span>
+				</div>
+				<div class="comment-list cell" data-objid="{{.book.Id}}" data-objtype="5" {{if .me.Uid}}data-username="{{.me.Username}}" data-uid="{{.me.Uid}}" data-avatar="{{gravatar .me.Avatar .me.Email 48 .is_https}}"{{end}}>
+					<div class="words hide"><div class="text-center">暂无回复</div></div>
+				</div>
+			</div>
+
+			<!-- 评论框 -->
+			{{template "comment" .}}
+			
+			{{include "common/view_stat.html" .}}
+
+		</div>
+	</div>
+	<div class="col-md-3 col-sm-6">
+		<div class="sep20"></div>
+		{{include "common/my_info.html" .}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"今日阅读排行","objtype":5,"limit":10,"rank_type":"today"}`)}}
+
+		{{if .pos_ad.right1}}
+		<div class="box_white sidebar" id="ad-right1">
+			{{if eq .pos_ad.right1.AdType 0}}
+				{{noescape .pos_ad.right1.Code}}
+			{{end}}
+		</div>
+		{{end}}
+
+		{{include "sidebar/view_rank.html" (parseJSON `{"rank_title":"一周阅读排行","objtype":5,"limit":10,"rank_type":"week"}`)}}
+	</div>
+	
+</div>
+
+{{end}}
+{{define "js"}}
+<script type="text/javascript">
+// 需要加载的侧边栏
+SG.SIDE_BARS = [
+	"/rank/view",
+];
+
+var keyprefix = 'book';
+var objid = {{.book.Id}};
+
+$(function(){
+	// 文本框自动伸缩
+	$('.need-autogrow').autoGrow();
+	
+	loadComments();
+});
+</script>
+
+{{if .pos_ad.right1}}
+	{{if eq .pos_ad.right1.AdType 1}}
+		{{noescape .pos_ad.right1.Code}}
+	{{end}}
+{{end}}
+
+{{end}}

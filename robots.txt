@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: 
+Disallow:/dl/golang/
