@@ -13,13 +13,13 @@ import (
 	"strings"
 	"time"
 
+	"sander/config"
 	. "sander/db"
-	"sander/util"
 	"sander/model"
+	"sander/util"
 
 	"github.com/tidwall/gjson"
 	"golang.org/x/net/context"
-	"github.com/polaris1119/config"
 )
 
 type WechatLogic struct{}

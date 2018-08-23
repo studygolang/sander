@@ -15,12 +15,12 @@ import (
 	"strings"
 	"time"
 
+	"sander/config"
 	. "sander/db"
 	"sander/global"
 	"sander/model"
 	"sander/util"
 
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/email"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"

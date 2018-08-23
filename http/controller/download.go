@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
+	"sander/config"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
-	"github.com/polaris1119/config"
 )
 
 const GoStoragePrefix = "https://dl.google.com/go/"

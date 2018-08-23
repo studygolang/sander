@@ -12,11 +12,11 @@ import (
 	"text/template"
 	"time"
 
+	"sander/config"
 	. "sander/db"
 	"sander/model"
 	"sander/util"
 
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/logger"
 )
 

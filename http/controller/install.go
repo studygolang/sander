@@ -14,13 +14,13 @@ import (
 	"runtime"
 	"strconv"
 
+	"sander/config"
 	"sander/db"
 	"sander/global"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 )
 

@@ -4,8 +4,9 @@ import (
 	"log"
 	"time"
 
+	. "sander/config"
+
 	"github.com/garyburd/redigo/redis"
-	. "github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 )
 

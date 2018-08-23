@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"sander/cmd"
+	"sander/config"
 	"sander/db"
 	"sander/global"
 	"sander/logic"
 	"sander/model"
 
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/logger"
 	"github.com/robfig/cron"
 )

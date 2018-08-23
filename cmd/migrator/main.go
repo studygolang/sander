@@ -7,8 +7,8 @@ package main
 
 import (
 	"sander/cmd"
+	"sander/config"
 
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/logger"
 )
 

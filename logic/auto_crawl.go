@@ -16,12 +16,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	
+
+	"sander/config"
 	. "sander/db"
 	"sander/model"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/logger"
 	"github.com/tidwall/gjson"
 	"golang.org/x/net/context"

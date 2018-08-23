@@ -10,11 +10,11 @@ import (
 	"net/http"
 	"strings"
 
+	"sander/config"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/logger"
 )
 

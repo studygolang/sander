@@ -14,12 +14,12 @@ import (
 	"net/url"
 	"strings"
 
+	"sander/config"
 	. "sander/http"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"
 )

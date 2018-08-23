@@ -3,14 +3,12 @@ package logic
 import (
 	"bytes"
 	"io/ioutil"
-	
-	"sander/model"
+
+	"sander/config"
 	. "sander/db"
+	"sander/model"
 
-	"github.com/polaris1119/config"
 	"golang.org/x/net/context"
-
-
 )
 
 type InstallLogic struct{}

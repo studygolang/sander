@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -11,10 +12,11 @@ import (
 )
 
 var (
+	// ConfigFile .
 	ConfigFile *goconfig.ConfigFile
-
+	// ROOT .
 	ROOT string
-
+	// TemplateDir .
 	TemplateDir string
 )
 
@@ -22,6 +24,7 @@ const mainIniPath = "/config/env.ini"
 
 func init() {
 	curFilename := os.Args[0]
+
 	binaryPath, err := exec.LookPath(curFilename)
 	if err != nil {
 		panic(err)
@@ -33,9 +36,7 @@ func init() {
 	}
 
 	ROOT = filepath.Dir(filepath.Dir(binaryPath))
-
-	configPath := ROOT + mainIniPath
-
+	configPath := path.Join(ROOT, mainIniPath)
 	if !fileExist(configPath) {
 		curDir, _ := os.Getwd()
 		pos := strings.LastIndex(curDir, "src")
@@ -48,12 +49,10 @@ func init() {
 			configPath = ROOT + mainIniPath
 		}
 	}
-
 	TemplateDir = ROOT + "/template/"
 
 	ConfigFile, err = goconfig.LoadConfigFile(configPath)
 	if err != nil {
-		// panic(err)
 		fmt.Println("load config file error:", err)
 		ConfigFile, _ = goconfig.LoadFromData([]byte(""))
 	}
@@ -65,6 +64,7 @@ func init() {
 	go signalReload()
 }
 
+// ReloadConfigFile reload config file .
 func ReloadConfigFile() {
 	var err error
 	configPath := ROOT + mainIniPath
@@ -81,6 +81,7 @@ func ReloadConfigFile() {
 	fmt.Println("reload config file successfully！")
 }
 
+// SaveConfigFile save config file.
 func SaveConfigFile() error {
 	err := goconfig.SaveConfigFile(ConfigFile, ROOT+mainIniPath)
 	if err != nil {

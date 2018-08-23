@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"sander/config"
 	xhttp "sander/http"
 	"sander/http/internal/helper"
 	"sander/http/middleware"
@@ -23,7 +24,6 @@ import (
 	"github.com/dchest/captcha"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"
 	guuid "github.com/twinj/uuid"

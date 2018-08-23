@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"sander/config"
 	"sander/global"
 	"sander/logic"
 	"sander/model"
@@ -24,7 +25,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"

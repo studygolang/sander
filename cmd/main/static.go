@@ -7,8 +7,9 @@
 package main
 
 import (
+	"sander/config"
+
 	"github.com/labstack/echo"
-	"github.com/polaris1119/config"
 )
 
 type staticRootConf struct {

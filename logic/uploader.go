@@ -23,10 +23,10 @@ import (
 	"sync"
 	"time"
 
+	"sander/config"
 	. "sander/db"
 	"sander/model"
 
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"

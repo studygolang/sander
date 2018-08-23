@@ -266,18 +266,6 @@
 			"revisionTime": "2018-05-06T12:14:14Z"
 		},
 		{
-			"checksumSHA1": "f1jUgTGJ6RWhgY9vAblGNBcmLKo=",
-			"path": "github.com/polaris1119/config",
-			"revision": "06a751e884f30c6ca264fd45bb158e154fa865e4",
-			"revisionTime": "2016-06-09T09:52:18Z"
-		},
-		{
-			"checksumSHA1": "qoepyTPyhvNMjinvFuLJH+mlrMA=",
-			"path": "github.com/polaris1119/echoutils",
-			"revision": "5e14d4b37f74bad4fee32be3674c6d7bf7c1f5c3",
-			"revisionTime": "2017-03-12T11:30:56Z"
-		},
-		{
 			"checksumSHA1": "XwHuAVgOn3Ji7STc7dLpA+CfP1U=",
 			"path": "github.com/polaris1119/email",
 			"revision": "9c57dd3e3e7d2beecc1106a538045800710fc694",
@@ -300,18 +288,6 @@
 			"path": "github.com/polaris1119/logger",
 			"revision": "0233d014769ef3cb57a033df69c0be9a314b1f44",
 			"revisionTime": "2017-04-22T06:11:49Z"
-		},
-		{
-			"checksumSHA1": "nzmIV4GueULrHQcLnDuX0bAKyzA=",
-			"path": "github.com/polaris1119/middleware",
-			"revision": "50158e4104f135d93494fd62bf8f80c0c9043490",
-			"revisionTime": "2016-06-08T14:00:53Z"
-		},
-		{
-			"checksumSHA1": "CCR/O0+n6N/thv9CeP8qEc6Z+yA=",
-			"path": "github.com/polaris1119/nosql",
-			"revision": "2d71a76456388a39ff6672a94607eb054d1b3583",
-			"revisionTime": "2017-10-28T02:56:47Z"
 		},
 		{
 			"checksumSHA1": "3OzHX+Ylvz5jvXMwi7uiGa0zv3M=",
@@ -470,8 +446,10 @@
 			"revisionTime": "2018-08-02T22:19:15Z"
 		},
 		{
+			"checksumSHA1": "F+tqxPGFt5x7DKZakbbMmENX1oQ=",
 			"path": "golang.org/x/net/websocket",
-			"revision": ""
+			"revision": "922f4815f713f213882e8ef45e0d315b164d705c",
+			"revisionTime": "2018-08-02T22:19:15Z"
 		},
 		{
 			"checksumSHA1": "j0z/2h06wsvTkGiLaZ5XFLbMKfo=",

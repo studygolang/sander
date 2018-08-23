@@ -11,12 +11,11 @@ import (
 	"errors"
 	"io/ioutil"
 
-	"sander/model"	
+	"sander/config"
 	. "sander/db"
+	"sander/model"
 
 	"github.com/polaris1119/logger"
-
-	"github.com/polaris1119/config"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )

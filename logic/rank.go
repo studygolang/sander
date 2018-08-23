@@ -12,11 +12,11 @@ import (
 	"time"
 
 	. "sander/db"
+	"sander/db/nosql"
 	"sander/model"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/polaris1119/logger"
-	"github.com/polaris1119/nosql"
 	"github.com/polaris1119/times"
 )
 

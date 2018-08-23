@@ -14,13 +14,13 @@ import (
 	"strings"
 	"time"
 
-	"sander/util"
-	"sander/model"
+	"sander/config"
 	. "sander/db"
+	"sander/model"
+	"sander/util"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/lunny/html2md"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 	"golang.org/x/net/context"

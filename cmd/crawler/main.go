@@ -11,8 +11,8 @@ import (
 
 	"math/rand"
 	"sander/cmd"
+	"sander/config"
 
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/keyword"
 	"github.com/polaris1119/logger"
 )

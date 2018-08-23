@@ -31,9 +31,8 @@ import (
 	"sync"
 	"time"
 
+	"sander/config"
 	"sander/model"
-
-	"github.com/polaris1119/config"
 )
 
 const (

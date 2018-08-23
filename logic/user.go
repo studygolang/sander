@@ -14,18 +14,17 @@ import (
 	"strings"
 	"time"
 
-	"sander/util"
-	"sander/model"
+	"sander/config"
 	. "sander/db"
+	"sander/model"
+	"sander/util"
 
-	"github.com/polaris1119/slices"
 	"github.com/go-validator/validator"
 	"github.com/go-xorm/xorm"
-	"github.com/polaris1119/config"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"
+	"github.com/polaris1119/slices"
 	"golang.org/x/net/context"
-
 )
 
 type UserLogic struct{}

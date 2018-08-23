@@ -13,6 +13,7 @@ import (
 	"time"
 
 	. "sander/db"
+	"sander/db/nosql"
 	"sander/model"
 	"sander/util"
 
@@ -20,7 +21,6 @@ import (
 	"github.com/go-xorm/xorm"
 	"github.com/polaris1119/goutils"
 	"github.com/polaris1119/logger"
-	"github.com/polaris1119/nosql"
 	"github.com/polaris1119/times"
 	"golang.org/x/net/context"
 )
