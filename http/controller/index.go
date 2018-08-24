@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"sander/config"
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/logic"
 	"sander/model"
 
@@ -42,7 +42,7 @@ func (IndexController) Index(ctx echo.Context) error {
 
 	tab := ctx.QueryParam("tab")
 	if tab == "" {
-		tab = GetFromCookie(ctx, "INDEX_TAB")
+		tab = xhttp.GetFromCookie(ctx, "INDEX_TAB")
 	}
 
 	if tab == "" {
@@ -52,7 +52,7 @@ func (IndexController) Index(ctx echo.Context) error {
 
 	data := logic.DefaultIndex.FindData(ctx, tab, paginator)
 
-	SetCookie(ctx, "INDEX_TAB", data["tab"].(string))
+	xhttp.SetCookie(ctx, "INDEX_TAB", data["tab"].(string))
 
 	data["all_nodes"] = logic.GenNodes()
 
@@ -139,7 +139,7 @@ func (IndexController) WrapUrl(ctx echo.Context) error {
 	}
 	tUrl += "utm_campaign=studygolang.com&utm_medium=studygolang.com&utm_source=studygolang.com"
 
-	if CheckIsHttps(ctx) {
+	if xhttp.CheckIsHttps(ctx) {
 		return ctx.Redirect(http.StatusSeeOther, tUrl)
 	}
 

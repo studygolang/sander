@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 	"sander/util"
 
@@ -39,7 +39,7 @@ func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.V
 	project := &model.OpenProject{}
 
 	if isModify {
-		_, err = MasterDB.Id(id).Get(project)
+		_, err = db.MasterDB.Id(id).Get(project)
 		if err != nil {
 			objLog.Errorln("Publish Project find error:", err)
 			return
@@ -82,9 +82,9 @@ func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.V
 
 	var affected int64
 	if !isModify {
-		affected, err = MasterDB.Insert(project)
+		affected, err = db.MasterDB.Insert(project)
 	} else {
-		affected, err = MasterDB.Id(id).Update(project)
+		affected, err = db.MasterDB.Id(id).Update(project)
 	}
 
 	if err != nil {
@@ -107,7 +107,7 @@ func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.V
 
 // UriExists 通过 uri 是否存在 project
 func (ProjectLogic) UriExists(ctx context.Context, uri string) bool {
-	total, err := MasterDB.Where("uri=?", uri).Count(new(model.OpenProject))
+	total, err := db.MasterDB.Where("uri=?", uri).Count(new(model.OpenProject))
 	if err != nil || total == 0 {
 		return false
 	}
@@ -117,7 +117,7 @@ func (ProjectLogic) UriExists(ctx context.Context, uri string) bool {
 
 // Total 开源项目总数
 func (ProjectLogic) Total() int64 {
-	total, err := MasterDB.Count(new(model.OpenProject))
+	total, err := db.MasterDB.Count(new(model.OpenProject))
 	if err != nil {
 		logger.Errorln("ProjectLogic Total error:", err)
 	}
@@ -128,7 +128,7 @@ func (ProjectLogic) Total() int64 {
 func (ProjectLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.OpenProject {
 	objLog := GetLogger(ctx)
 
-	dbSession := MasterDB.Where("status IN(?,?)", model.ProjectStatusNew, model.ProjectStatusOnline)
+	dbSession := db.MasterDB.Where("status IN(?,?)", model.ProjectStatusNew, model.ProjectStatusOnline)
 	if len(lastIds) > 0 && lastIds[0] > 0 {
 		dbSession.And("id<?", lastIds[0])
 	}
@@ -150,7 +150,7 @@ func (ProjectLogic) FindByIds(ids []int) []*model.OpenProject {
 	}
 
 	projects := make([]*model.OpenProject, 0)
-	err := MasterDB.In("id", ids).Find(&projects)
+	err := db.MasterDB.In("id", ids).Find(&projects)
 	if err != nil {
 		logger.Errorln("ProjectLogic FindByIds error:", err)
 		return nil
@@ -165,7 +165,7 @@ func (ProjectLogic) findByIds(ids []int) map[int]*model.OpenProject {
 	}
 
 	projects := make(map[int]*model.OpenProject)
-	err := MasterDB.In("id", ids).Find(&projects)
+	err := db.MasterDB.In("id", ids).Find(&projects)
 	if err != nil {
 		logger.Errorln("ProjectLogic FindByIds error:", err)
 		return nil
@@ -187,7 +187,7 @@ func (ProjectLogic) FindOne(ctx context.Context, val interface{}) *model.OpenPro
 	}
 
 	project := &model.OpenProject{}
-	_, err := MasterDB.Where(field+"=? AND status IN(?,?)", val, model.ProjectStatusNew, model.ProjectStatusOnline).Get(project)
+	_, err := db.MasterDB.Where(field+"=? AND status IN(?,?)", val, model.ProjectStatusNew, model.ProjectStatusOnline).Get(project)
 	if err != nil {
 		objLog.Errorln("project service FindProject error:", err)
 		return nil
@@ -201,7 +201,7 @@ func (ProjectLogic) FindOne(ctx context.Context, val interface{}) *model.OpenPro
 // FindRecent 获得某个用户最近发布的开源项目
 func (ProjectLogic) FindRecent(ctx context.Context, username string) []*model.OpenProject {
 	projectList := make([]*model.OpenProject, 0)
-	err := MasterDB.Where("username=?", username).Limit(5).OrderBy("id DESC").Find(&projectList)
+	err := db.MasterDB.Where("username=?", username).Limit(5).OrderBy("id DESC").Find(&projectList)
 	if err != nil {
 		logger.Errorln("project logic FindRecent error:", err)
 		return nil
@@ -214,7 +214,7 @@ func (self ProjectLogic) FindAll(ctx context.Context, paginator *Paginator, orde
 	objLog := GetLogger(ctx)
 
 	projects := make([]*model.OpenProject, 0)
-	session := MasterDB.OrderBy(orderBy)
+	session := db.MasterDB.OrderBy(orderBy)
 	if querystring != "" {
 		session.Where(querystring, args...)
 	}
@@ -237,9 +237,9 @@ func (ProjectLogic) Count(ctx context.Context, querystring string, args ...inter
 		err   error
 	)
 	if querystring == "" {
-		total, err = MasterDB.Count(new(model.OpenProject))
+		total, err = db.MasterDB.Count(new(model.OpenProject))
 	} else {
-		total, err = MasterDB.Where(querystring, args...).Count(new(model.OpenProject))
+		total, err = db.MasterDB.Where(querystring, args...).Count(new(model.OpenProject))
 	}
 
 	if err != nil {
@@ -286,7 +286,7 @@ func (ProjectLogic) fillUser(projects []*model.OpenProject) {
 // getOwner 通过objid获得 project 的所有者
 func (ProjectLogic) getOwner(ctx context.Context, id int) int {
 	project := &model.OpenProject{}
-	_, err := MasterDB.Id(id).Get(project)
+	_, err := db.MasterDB.Id(id).Get(project)
 	if err != nil {
 		logger.Errorln("project logic getOwner Error:", err)
 		return 0
@@ -377,7 +377,7 @@ func (ProjectLogic) ParseOneProject(projectUrl string) error {
 
 	project := &model.OpenProject{}
 
-	_, err = MasterDB.Where("uri=?", uri).Get(project)
+	_, err = db.MasterDB.Where("uri=?", uri).Get(project)
 	// 已经存在
 	if project.Id != 0 {
 		logger.Infoln("url", projectUrl, "has exists!")
@@ -463,7 +463,7 @@ func (ProjectLogic) ParseOneProject(projectUrl string) error {
 	project.Status = model.ProjectStatusOnline
 	project.Ctime = model.OftenTime(time.Now())
 
-	_, err = MasterDB.Insert(project)
+	_, err = db.MasterDB.Insert(project)
 	if err != nil {
 		return errors.New("insert into open project error:" + err.Error())
 	}
@@ -478,7 +478,7 @@ type ProjectComment struct{}
 // cid：评论id；objid：被评论对象id；uid：评论者；cmttime：评论时间
 func (self ProjectComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
 	// 更新评论数（TODO：暂时每次都更新表）
-	_, err := MasterDB.Table(new(model.OpenProject)).Id(objid).Incr("cmtnum", 1).Update(map[string]interface{}{
+	_, err := db.MasterDB.Table(new(model.OpenProject)).Id(objid).Incr("cmtnum", 1).Update(map[string]interface{}{
 		"lastreplyuid":  uid,
 		"lastreplytime": cmttime,
 	})
@@ -518,7 +518,7 @@ type ProjectLike struct{}
 // objid：被喜欢对象id；num: 喜欢数(负数表示取消喜欢)
 func (self ProjectLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
-	_, err := MasterDB.Id(objid).Incr("likenum", num).Update(new(model.OpenProject))
+	_, err := db.MasterDB.Id(objid).Incr("likenum", num).Update(new(model.OpenProject))
 	if err != nil {
 		logger.Errorln("更新项目喜欢数失败：", err)
 	}

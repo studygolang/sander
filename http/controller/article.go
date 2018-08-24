@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strings"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -122,7 +122,7 @@ func (ArticleController) Detail(ctx echo.Context) error {
 		data["likeflag"] = logic.DefaultLike.HadLike(ctx, me.Uid, article.Id, model.TypeArticle)
 		data["hadcollect"] = logic.DefaultFavorite.HadFavorite(ctx, me.Uid, article.Id, model.TypeArticle)
 
-		logic.Views.Incr(Request(ctx), model.TypeArticle, article.Id, me.Uid)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeArticle, article.Id, me.Uid)
 
 		if !article.IsSelf || me.Uid != article.User.Uid {
 			go logic.DefaultViewRecord.Record(article.Id, model.TypeArticle, me.Uid)
@@ -133,7 +133,7 @@ func (ArticleController) Detail(ctx echo.Context) error {
 			data["view_source"] = logic.DefaultViewSource.FindOne(ctx, article.Id, model.TypeArticle)
 		}
 	} else {
-		logic.Views.Incr(Request(ctx), model.TypeArticle, article.Id)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeArticle, article.Id)
 	}
 
 	// 为了阅读数即时看到

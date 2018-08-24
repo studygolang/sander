@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/logger"
@@ -61,7 +61,7 @@ func (self ArticleLogic) ParseArticleByAccuracy(articleUrl string) (*model.Artic
 		Url:       articleUrl,
 	}
 
-	_, err = MasterDB.Insert(article)
+	_, err = db.MasterDB.Insert(article)
 	if err != nil {
 		logger.Errorln("insert article error:", err)
 		return nil, err

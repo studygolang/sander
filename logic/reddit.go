@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/PuerkitoBio/goquery"
@@ -116,7 +116,7 @@ func (this *RedditLogic) dealRedditOneResource(contentSelection *goquery.Selecti
 		resourceUrl = this.domain + resourceUrl
 	}
 
-	_, err := MasterDB.Where("url=?", resourceUrl).Get(resource)
+	_, err := db.MasterDB.Where("url=?", resourceUrl).Get(resource)
 	if err != nil {
 		return err
 	}
@@ -196,7 +196,7 @@ func (this *RedditLogic) dealRedditOneResource(contentSelection *goquery.Selecti
 	resource.Ctime = model.OftenTime(ctime)
 
 	if resource.Id == 0 {
-		session := MasterDB.NewSession()
+		session := db.MasterDB.NewSession()
 		defer session.Close()
 		session.Begin()
 
@@ -217,7 +217,7 @@ func (this *RedditLogic) dealRedditOneResource(contentSelection *goquery.Selecti
 
 		DefaultFeed.publish(resource, resourceEx)
 	} else {
-		if _, err = MasterDB.Id(resource.Id).Update(resource); err != nil {
+		if _, err = db.MasterDB.Id(resource.Id).Update(resource); err != nil {
 			return errors.New("update resource:" + strconv.Itoa(resource.Id) + " error:" + err.Error())
 		}
 	}

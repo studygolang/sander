@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
@@ -237,7 +237,7 @@ func (this *UploaderLogic) TransferUrl(ctx context.Context, origUrl string, pref
 
 func (this *UploaderLogic) findImage(md5 string) (*model.Image, error) {
 	objImage := &model.Image{}
-	_, err := MasterDB.Where("md5=?", md5).Get(objImage)
+	_, err := db.MasterDB.Where("md5=?", md5).Get(objImage)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +261,7 @@ func (this *UploaderLogic) saveImage(buf []byte, path string) {
 		objImage.Height = img.Bounds().Dy()
 	}
 
-	_, err = MasterDB.Insert(objImage)
+	_, err = db.MasterDB.Insert(objImage)
 	if err != nil {
 		logger.Errorln("image insert err:", err)
 	}

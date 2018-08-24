@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"sander/db"
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/logic"
 	"sander/model"
 	"sander/util"
@@ -28,7 +28,7 @@ func AutoLogin() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			// github.com/gorilla/sessions 要求必须 Clear
-			defer context.Clear(Request(ctx))
+			defer context.Clear(xhttp.Request(ctx))
 
 			ctx.Set("req_start_time", time.Now())
 
@@ -46,13 +46,13 @@ func AutoLogin() echo.MiddlewareFunc {
 				}
 			}
 
-			session := GetCookieSession(ctx)
+			session := xhttp.GetCookieSession(ctx)
 			username, ok := session.Values["username"]
 			if ok {
 				getCurrentUser(username)
 			} else {
 				// App（手机） 登录
-				uid, ok := ParseToken(ctx.FormValue("token"))
+				uid, ok := xhttp.ParseToken(ctx.FormValue("token"))
 				if ok {
 					getCurrentUser(uid)
 				}
@@ -115,15 +115,15 @@ func AppNeedLogin() echo.MiddlewareFunc {
 			user, ok := ctx.Get("user").(*model.Me)
 			if ok {
 				// 校验 token 是否有效
-				if !ValidateToken(ctx.QueryParam("token")) {
-					return outputAppJSON(ctx, NeedReLoginCode, "token无效，请重新登录！")
+				if !xhttp.ValidateToken(ctx.QueryParam("token")) {
+					return outputAppJSON(ctx, xhttp.NeedReLoginCode, "token无效，请重新登录！")
 				}
 
 				if user.Status != model.UserStatusAudit {
 					return outputAppJSON(ctx, 1, "账号未审核通过、被冻结或被停号，请联系我们")
 				}
 			} else {
-				return outputAppJSON(ctx, NeedReLoginCode, "请先登录！")
+				return outputAppJSON(ctx, xhttp.NeedReLoginCode, "请先登录！")
 			}
 
 			if err := next(ctx); err != nil {
@@ -136,6 +136,6 @@ func AppNeedLogin() echo.MiddlewareFunc {
 }
 
 func outputAppJSON(ctx echo.Context, code int, msg string) error {
-	AccessControl(ctx)
+	xhttp.AccessControl(ctx)
 	return ctx.JSON(http.StatusForbidden, map[string]interface{}{"code": strconv.Itoa(code), "msg": msg})
 }

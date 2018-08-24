@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 	"sander/util"
 
@@ -53,7 +53,7 @@ func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.W
 
 	openid := openidResult.String()
 	wechatUser := &model.WechatUser{}
-	_, err = MasterDB.Where("openid=?", openid).Get(wechatUser)
+	_, err = db.MasterDB.Where("openid=?", openid).Get(wechatUser)
 	if err != nil {
 		objLog.Errorln("WechatLogic WxLogin find wechat user error:", err)
 		return nil, err
@@ -62,7 +62,7 @@ func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.W
 	if wechatUser.Id == 0 {
 		wechatUser.Openid = openid
 		wechatUser.SessionKey = result.Get("session_key").String()
-		_, err = MasterDB.Insert(wechatUser)
+		_, err = db.MasterDB.Insert(wechatUser)
 		if err != nil {
 			objLog.Errorln("WechatLogic WxLogin insert wechat user error:", err)
 			return nil, err
@@ -83,7 +83,7 @@ func (self WechatLogic) Bind(ctx context.Context, id, uid int, userInfo string) 
 		Avatar:   result.Get("avatarUrl").String(),
 		OpenInfo: userInfo,
 	}
-	_, err := MasterDB.Id(id).Update(wechatUser)
+	_, err := db.MasterDB.Id(id).Update(wechatUser)
 	if err != nil {
 		objLog.Errorln("WechatLogic Bind update error:", err)
 		return nil, err

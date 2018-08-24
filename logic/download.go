@@ -7,11 +7,11 @@
 package logic
 
 import (
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
-	"golang.org/x/net/context"
 	"github.com/polaris1119/logger"
+	"golang.org/x/net/context"
 )
 
 type DownloadLogic struct{}
@@ -20,7 +20,7 @@ var DefaultDownload = DownloadLogic{}
 
 func (DownloadLogic) FindAll(ctx context.Context) []*model.Download {
 	downloads := make([]*model.Download, 0)
-	err := MasterDB.Desc("seq").Find(&downloads)
+	err := db.MasterDB.Desc("seq").Find(&downloads)
 	if err != nil {
 		logger.Errorln("DownloadLogic FindAll Error:", err)
 	}

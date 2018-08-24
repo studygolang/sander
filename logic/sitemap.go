@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 	"sander/util"
 
@@ -73,7 +73,7 @@ func GenSitemap() {
 	for {
 		sitemapFile := "sitemap_article_" + strconv.Itoa(large) + ".xml"
 
-		err = MasterDB.Where("id BETWEEN ? AND ? AND status!=?", little, large, model.ArticleStatusOffline).Select("id,mtime").Find(&articles)
+		err = db.MasterDB.Where("id BETWEEN ? AND ? AND status!=?", little, large, model.ArticleStatusOffline).Select("id,mtime").Find(&articles)
 		little = large + 1
 		large = little + step
 
@@ -105,7 +105,7 @@ func GenSitemap() {
 	for {
 		sitemapFile := "sitemap_topic_" + strconv.Itoa(large) + ".xml"
 
-		err = MasterDB.Where("tid BETWEEN ? AND ? AND flag IN(?,?)", little, large, 0, 1).Select("tid,mtime").Find(&topics)
+		err = db.MasterDB.Where("tid BETWEEN ? AND ? AND flag IN(?,?)", little, large, 0, 1).Select("tid,mtime").Find(&topics)
 		little = large + 1
 		large = little + step
 
@@ -137,7 +137,7 @@ func GenSitemap() {
 	for {
 		sitemapFile := "sitemap_resource_" + strconv.Itoa(large) + ".xml"
 
-		err = MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,mtime").Find(&resources)
+		err = db.MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,mtime").Find(&resources)
 		little = large + 1
 		large = little + step
 
@@ -170,7 +170,7 @@ func GenSitemap() {
 	for {
 		sitemapFile := "sitemap_project_" + strconv.Itoa(large) + ".xml"
 
-		err = MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,uri,mtime").Find(&projects)
+		err = db.MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,uri,mtime").Find(&projects)
 		little = large + 1
 		large = little + step
 
@@ -202,7 +202,7 @@ func GenSitemap() {
 	for {
 		sitemapFile := "sitemap_book_" + strconv.Itoa(large) + ".xml"
 
-		err = MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,updated_at").Find(&books)
+		err = db.MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,updated_at").Find(&books)
 		little = large + 1
 		large = little + step
 
@@ -234,7 +234,7 @@ func GenSitemap() {
 	for {
 		sitemapFile := "sitemap_wiki_" + strconv.Itoa(large) + ".xml"
 
-		err = MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,uri,mtime").Find(&wikis)
+		err = db.MasterDB.Where("id BETWEEN ? AND ?", little, large).Select("id,uri,mtime").Find(&wikis)
 		little = large + 1
 		large = little + step
 

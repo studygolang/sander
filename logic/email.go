@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/global"
 	"sander/model"
 	"sander/util"
@@ -196,7 +196,7 @@ func (self EmailLogic) EmailNotice() {
 	monthDayNum := util.MonthDayNum(time.Now())
 
 	for {
-		err = MasterDB.Where("uid>?", lastUid).Asc("uid").Limit(limit).Find(&users)
+		err = db.MasterDB.Where("uid>?", lastUid).Asc("uid").Limit(limit).Find(&users)
 		if err != nil {
 			logger.Errorln("find user error:", err)
 			continue

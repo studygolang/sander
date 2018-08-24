@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/global"
 	"sander/model"
 
@@ -54,7 +54,7 @@ func (self ArticleLogic) ParseArticle(ctx context.Context, articleUrl string, au
 	articleUrl = self.cleanUrl(articleUrl, auto)
 
 	tmpArticle := &model.Article{}
-	_, err := MasterDB.Where("url=?", articleUrl).Get(tmpArticle)
+	_, err := db.MasterDB.Where("url=?", articleUrl).Get(tmpArticle)
 	if err != nil || tmpArticle.Id != 0 {
 		logger.Infoln(articleUrl, "has exists:", err)
 		return nil, errors.New("has exists!")
@@ -71,7 +71,7 @@ func (self ArticleLogic) ParseArticle(ctx context.Context, articleUrl string, au
 	}
 
 	rule := &model.CrawlRule{}
-	_, err = MasterDB.Where("domain=?", domain).Get(rule)
+	_, err = db.MasterDB.Where("domain=?", domain).Get(rule)
 	if err != nil {
 		logger.Errorln("find rule by domain error:", err)
 		return nil, err
@@ -221,7 +221,7 @@ func (self ArticleLogic) ParseArticle(ctx context.Context, articleUrl string, au
 		}
 	}
 
-	_, err = MasterDB.Insert(article)
+	_, err = db.MasterDB.Insert(article)
 	if err != nil {
 		logger.Errorln("insert article error:", err)
 		return nil, err
@@ -279,7 +279,7 @@ func (self ArticleLogic) ParseZhihuArticle(ctx context.Context, articleUrl strin
 		Lang:      rule.Lang,
 	}
 
-	_, err = MasterDB.Insert(article)
+	_, err = db.MasterDB.Insert(article)
 	if err != nil {
 		logger.Errorln("insert article error:", err)
 		return nil, err
@@ -328,7 +328,7 @@ func (self ArticleLogic) Publish(ctx context.Context, me *model.Me, form url.Val
 	if article.GCTT {
 		translator := form.Get("translator")
 		gcttUser := &model.GCTTUser{}
-		_, err := MasterDB.Where("username=?", translator).Get(gcttUser)
+		_, err := db.MasterDB.Where("username=?", translator).Get(gcttUser)
 		if err != nil {
 			objLog.Errorln("article publish find gctt user error:", err)
 		}
@@ -345,7 +345,7 @@ func (self ArticleLogic) Publish(ctx context.Context, me *model.Me, form url.Val
 		}
 	}
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -410,7 +410,7 @@ func (self ArticleLogic) PublishFromAdmin(ctx context.Context, me *model.Me, for
 		Cover:     form.Get("cover"),
 	}
 
-	_, err = MasterDB.Insert(article)
+	_, err = db.MasterDB.Insert(article)
 	if err != nil {
 		objLog.Errorln("insert article error:", err)
 		return err
@@ -472,7 +472,7 @@ func (ArticleLogic) convertByExt(extMap map[string]string, article *model.Articl
 
 func (ArticleLogic) FindLastList(beginTime string, limit int) ([]*model.Article, error) {
 	articles := make([]*model.Article, 0)
-	err := MasterDB.Where("ctime>? AND status!=?", beginTime, model.ArticleStatusOffline).
+	err := db.MasterDB.Where("ctime>? AND status!=?", beginTime, model.ArticleStatusOffline).
 		OrderBy("cmtnum DESC, likenum DESC, viewnum DESC").Limit(limit).Find(&articles)
 
 	return articles, err
@@ -480,7 +480,7 @@ func (ArticleLogic) FindLastList(beginTime string, limit int) ([]*model.Article,
 
 // Total 博文总数
 func (ArticleLogic) Total() int64 {
-	total, err := MasterDB.Count(new(model.Article))
+	total, err := db.MasterDB.Count(new(model.Article))
 	if err != nil {
 		logger.Errorln("ArticleLogic Total error:", err)
 	}
@@ -491,7 +491,7 @@ func (ArticleLogic) Total() int64 {
 func (self ArticleLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.Article {
 	objLog := GetLogger(ctx)
 
-	dbSession := MasterDB.Where("status IN(?,?)", model.ArticleStatusNew, model.ArticleStatusOnline)
+	dbSession := db.MasterDB.Where("status IN(?,?)", model.ArticleStatusNew, model.ArticleStatusOnline)
 
 	if len(lastIds) > 0 && lastIds[0] > 0 {
 		dbSession.And("id<?", lastIds[0])
@@ -505,7 +505,7 @@ func (self ArticleLogic) FindBy(ctx context.Context, limit int, lastIds ...int) 
 	}
 
 	topArticles := make([]*model.Article, 0)
-	err = MasterDB.Where("top=?", 1).OrderBy("id DESC").Find(&topArticles)
+	err = db.MasterDB.Where("top=?", 1).OrderBy("id DESC").Find(&topArticles)
 	if err != nil {
 		objLog.Errorln("ArticleLogic Find Top Articles Error:", err)
 		return nil
@@ -523,7 +523,7 @@ func (self ArticleLogic) FindTaGCTTArticles(ctx context.Context, translator stri
 	objLog := GetLogger(ctx)
 
 	articleGCTTs := make([]*model.ArticleGCTT, 0)
-	err := MasterDB.Where("translator=?", translator).OrderBy("article_id DESC").Find(&articleGCTTs)
+	err := db.MasterDB.Where("translator=?", translator).OrderBy("article_id DESC").Find(&articleGCTTs)
 	if err != nil {
 		objLog.Errorln("ArticleLogic FindTaGCTTArticles gctt error:", err)
 		return nil
@@ -534,7 +534,7 @@ func (self ArticleLogic) FindTaGCTTArticles(ctx context.Context, translator stri
 	}
 
 	articleMap := make(map[int]*model.Article, 0)
-	err = MasterDB.In("id", articleIds).Find(&articleMap)
+	err = db.MasterDB.In("id", articleIds).Find(&articleMap)
 	if err != nil {
 		objLog.Errorln("ArticleLogic FindTaGCTTArticles article error:", err)
 		return nil
@@ -556,7 +556,7 @@ func (self ArticleLogic) FindByUser(ctx context.Context, username string, limit 
 	objLog := GetLogger(ctx)
 
 	articles := make([]*model.Article, 0)
-	err := MasterDB.Where("author_txt=?", username).OrderBy("id DESC").Limit(limit).Find(&articles)
+	err := db.MasterDB.Where("author_txt=?", username).OrderBy("id DESC").Limit(limit).Find(&articles)
 	if err != nil {
 		objLog.Errorln("ArticleLogic FindByUser Error:", err)
 		return nil
@@ -569,7 +569,7 @@ func (self ArticleLogic) SearchMyArticles(ctx context.Context, me *model.Me, sid
 	objLog := GetLogger(ctx)
 
 	articles := make([]*model.Article, 0)
-	session := MasterDB.Where("author_txt=?", me.Username).OrderBy("id DESC").Limit(8)
+	session := db.MasterDB.Where("author_txt=?", me.Username).OrderBy("id DESC").Limit(8)
 	if kw != "" {
 		session.Where("title LIKE ?", "%"+kw+"%")
 	}
@@ -581,7 +581,7 @@ func (self ArticleLogic) SearchMyArticles(ctx context.Context, me *model.Me, sid
 
 	subjectArticles := make([]*model.SubjectArticle, 0)
 	articleIds := slices.StructsIntSlice(articles, "Id")
-	err = MasterDB.Where("sid=?", sid).In("article_id", articleIds).Find(&subjectArticles)
+	err = db.MasterDB.Where("sid=?", sid).In("article_id", articleIds).Find(&subjectArticles)
 	if err != nil {
 		objLog.Errorln("ArticleLogic SearchMyArticles find subject article Error:", err)
 		return nil
@@ -615,7 +615,7 @@ func (self ArticleLogic) FindAll(ctx context.Context, paginator *Paginator, orde
 	objLog := GetLogger(ctx)
 
 	articles := make([]*model.Article, 0)
-	session := MasterDB.OrderBy(orderBy)
+	session := db.MasterDB.OrderBy(orderBy)
 	if querystring != "" {
 		session.Where(querystring, args...)
 	}
@@ -638,9 +638,9 @@ func (ArticleLogic) Count(ctx context.Context, querystring string, args ...inter
 		err   error
 	)
 	if querystring == "" {
-		total, err = MasterDB.Count(new(model.Article))
+		total, err = db.MasterDB.Count(new(model.Article))
 	} else {
-		total, err = MasterDB.Where(querystring, args...).Count(new(model.Article))
+		total, err = db.MasterDB.Where(querystring, args...).Count(new(model.Article))
 	}
 
 	if err != nil {
@@ -654,7 +654,7 @@ func (ArticleLogic) Count(ctx context.Context, querystring string, args ...inter
 func (ArticleLogic) FindArticleByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.Article, int) {
 	objLog := GetLogger(ctx)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
 		session.And(k+"=?", v)
@@ -685,7 +685,7 @@ func (self ArticleLogic) FindByIds(ids []int) []*model.Article {
 		return nil
 	}
 	articles := make([]*model.Article, 0)
-	err := MasterDB.In("id", ids).Find(&articles)
+	err := db.MasterDB.In("id", ids).Find(&articles)
 	if err != nil {
 		logger.Errorln("ArticleLogic FindByIds error:", err)
 		return nil
@@ -702,7 +702,7 @@ func (self ArticleLogic) MoveToTopic(ctx context.Context, id interface{}, me *mo
 	objLog := GetLogger(ctx)
 
 	article := &model.Article{}
-	_, err := MasterDB.Id(id).Get(article)
+	_, err := db.MasterDB.Id(id).Get(article)
 	if err != nil {
 		objLog.Errorln("ArticleLogic MoveToTopic find article error:", err)
 		return err
@@ -714,7 +714,7 @@ func (self ArticleLogic) MoveToTopic(ctx context.Context, id interface{}, me *mo
 
 	user := DefaultUser.FindOne(ctx, "username", article.AuthorTxt)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -898,7 +898,7 @@ func (ArticleLogic) findByIds(ids []int) map[int]*model.Article {
 		return nil
 	}
 	articles := make(map[int]*model.Article)
-	err := MasterDB.In("id", ids).Find(&articles)
+	err := db.MasterDB.In("id", ids).Find(&articles)
 	if err != nil {
 		logger.Errorln("ArticleLogic findByIds error:", err)
 		return nil
@@ -917,7 +917,7 @@ func (ArticleLogic) FindByIdAndPreNext(ctx context.Context, id int) (curArticle 
 
 	articles := make([]*model.Article, 0)
 
-	err = MasterDB.Where("id BETWEEN ? AND ? AND status!=?", id-5, id+5, model.ArticleStatusOffline).Find(&articles)
+	err = db.MasterDB.Where("id BETWEEN ? AND ? AND status!=?", id-5, id+5, model.ArticleStatusOffline).Find(&articles)
 	if err != nil {
 		objLog.Errorln("ArticleLogic FindByIdAndPreNext Error:", err)
 		return
@@ -971,7 +971,7 @@ func (ArticleLogic) FindArticleGCTT(ctx context.Context, article *model.Article)
 
 	objLog := GetLogger(ctx)
 
-	_, err := MasterDB.Where("article_id=?", article.Id).Get(articleGCTT)
+	_, err := db.MasterDB.Where("article_id=?", article.Id).Get(articleGCTT)
 	if err != nil {
 		objLog.Errorln("ArticleLogic FindArticleGCTT error:", err)
 	}
@@ -989,7 +989,7 @@ func (ArticleLogic) Modify(ctx context.Context, user *model.Me, form url.Values)
 	id := form.Get("id")
 
 	article := &model.Article{}
-	_, err = MasterDB.Id(id).Get(article)
+	_, err = db.MasterDB.Id(id).Get(article)
 	if err != nil {
 		errMsg = "对不起，服务器内部错误，请稍后再试！"
 		return
@@ -1016,7 +1016,7 @@ func (ArticleLogic) Modify(ctx context.Context, user *model.Me, form url.Values)
 		}
 	}
 
-	_, err = MasterDB.Table(new(model.Article)).Id(id).Update(change)
+	_, err = db.MasterDB.Table(new(model.Article)).Id(id).Update(change)
 	if err != nil {
 		logger.Errorf("更新文章 【%s】 信息失败：%s\n", id, err)
 		errMsg = "对不起，服务器内部错误，请稍后再试！"
@@ -1031,7 +1031,7 @@ func (ArticleLogic) Modify(ctx context.Context, user *model.Me, form url.Values)
 // FindById 获取单条博文
 func (ArticleLogic) FindById(ctx context.Context, id interface{}) (*model.Article, error) {
 	article := &model.Article{}
-	_, err := MasterDB.Id(id).Get(article)
+	_, err := db.MasterDB.Id(id).Get(article)
 	if err != nil {
 		logger.Errorln("article logic FindById Error:", err)
 	}
@@ -1042,7 +1042,7 @@ func (ArticleLogic) FindById(ctx context.Context, id interface{}) (*model.Articl
 // getOwner 通过objid获得 article 的所有者
 func (ArticleLogic) getOwner(id int) int {
 	article := &model.Article{}
-	_, err := MasterDB.Id(id).Get(article)
+	_, err := db.MasterDB.Id(id).Get(article)
 	if err != nil {
 		logger.Errorln("article logic getOwner Error:", err)
 		return 0
@@ -1062,7 +1062,7 @@ type ArticleComment struct{}
 // cid：评论id；objid：被评论对象id；uid：评论者；cmttime：评论时间
 func (self ArticleComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
 	// 更新最后回复信息
-	_, err := MasterDB.Table(new(model.Article)).Id(objid).Incr("cmtnum", 1).Update(map[string]interface{}{
+	_, err := db.MasterDB.Table(new(model.Article)).Id(objid).Incr("cmtnum", 1).Update(map[string]interface{}{
 		"lastreplyuid":  uid,
 		"lastreplytime": cmttime,
 	})
@@ -1102,7 +1102,7 @@ type ArticleLike struct{}
 // objid：被喜欢对象id；num: 喜欢数(负数表示取消喜欢)
 func (self ArticleLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
-	_, err := MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.Article))
+	_, err := db.MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.Article))
 	if err != nil {
 		logger.Errorln("更新文章喜欢数失败：", err)
 	}

@@ -10,7 +10,7 @@ import (
 	"html/template"
 	"net/http"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -77,7 +77,7 @@ func (ResourceController) Detail(ctx echo.Context) error {
 		data["likeflag"] = logic.DefaultLike.HadLike(ctx, me.Uid, id, model.TypeResource)
 		data["hadcollect"] = logic.DefaultFavorite.HadFavorite(ctx, me.Uid, id, model.TypeResource)
 
-		logic.Views.Incr(Request(ctx), model.TypeResource, id, me.Uid)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeResource, id, me.Uid)
 
 		if me.Uid != resource["uid"].(int) {
 			go logic.DefaultViewRecord.Record(id, model.TypeResource, me.Uid)
@@ -88,7 +88,7 @@ func (ResourceController) Detail(ctx echo.Context) error {
 			data["view_source"] = logic.DefaultViewSource.FindOne(ctx, id, model.TypeResource)
 		}
 	} else {
-		logic.Views.Incr(Request(ctx), model.TypeResource, id)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeResource, id)
 	}
 
 	return render(ctx, "resources/detail.html,common/comment.html", data)

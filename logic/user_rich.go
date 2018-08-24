@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/db/nosql"
 	"sander/model"
 	"sander/util"
@@ -103,14 +103,14 @@ func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc st
 	if award > 0 && (typ == model.MissionTypeReplied || typ == model.MissionTypeActive) {
 		// 老用户，因为之前的主题被人回复而增加财富，自动帮其领取初始资本
 		// 因为活跃奖励铜币，自动帮其领取初始资本
-		total, err = MasterDB.Where("uid=?", user.Uid).Count(new(model.UserBalanceDetail))
+		total, err = db.MasterDB.Where("uid=?", user.Uid).Count(new(model.UserBalanceDetail))
 		if err != nil {
 			logger.Errorln("IncrUserRich count error:", err)
 			return
 		}
 	}
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -156,7 +156,7 @@ func (UserRichLogic) FindBalanceDetail(ctx context.Context, me *model.Me, types 
 	objLog := GetLogger(ctx)
 
 	balanceDetails := make([]*model.UserBalanceDetail, 0)
-	session := MasterDB.Where("uid=?", me.Uid)
+	session := db.MasterDB.Where("uid=?", me.Uid)
 	if len(types) > 0 {
 		session.And("type=?", types[0])
 	}
@@ -171,7 +171,7 @@ func (UserRichLogic) FindBalanceDetail(ctx context.Context, me *model.Me, types 
 }
 
 func (UserRichLogic) Total(ctx context.Context, uid int) int64 {
-	total, err := MasterDB.Where("uid=?", uid).Count(new(model.UserBalanceDetail))
+	total, err := db.MasterDB.Where("uid=?", uid).Count(new(model.UserBalanceDetail))
 	if err != nil {
 		logger.Errorln("UserRichLogic Total error:", err)
 	}
@@ -181,7 +181,7 @@ func (UserRichLogic) Total(ctx context.Context, uid int) int64 {
 func (self UserRichLogic) FindRecharge(ctx context.Context, me *model.Me) int {
 	objLog := GetLogger(ctx)
 
-	total, err := MasterDB.Where("uid=?", me.Uid).SumInt(new(model.UserRecharge), "amount")
+	total, err := db.MasterDB.Where("uid=?", me.Uid).SumInt(new(model.UserRecharge), "amount")
 	if err != nil {
 		objLog.Errorln("UserRichLogic FindRecharge error:", err)
 		return 0
@@ -202,7 +202,7 @@ func (self UserRichLogic) Recharge(ctx context.Context, uid string, form url.Val
 		CreatedAt: createdAt,
 	}
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	session.Begin()
 
 	_, err := session.Insert(userRecharge)

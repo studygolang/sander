@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	. "sander/config"
+	"sander/config"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/polaris1119/goutils"
@@ -16,7 +16,7 @@ var redisConfig map[string]string
 
 func init() {
 	var err error
-	redisConfig, err = ConfigFile.GetSection("redis")
+	redisConfig, err = config.ConfigFile.GetSection("redis")
 	if err != nil {
 		log.Println("config parse redis section error:", err)
 		return
@@ -43,7 +43,7 @@ func NewRedisClient() *RedisClient {
 
 // NewRedisClientWithSection 通过传递进来的 section 配置获取 redis 连接实例
 func NewRedisClientWithSection(section string) *RedisClient {
-	sectionConfig, err := ConfigFile.GetSection(section)
+	sectionConfig, err := config.ConfigFile.GetSection(section)
 	if err != nil {
 		return &RedisClient{err: err}
 	}

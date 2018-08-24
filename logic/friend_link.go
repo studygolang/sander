@@ -7,7 +7,7 @@
 package logic
 
 import (
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -21,7 +21,7 @@ func (FriendLinkLogic) FindAll(ctx context.Context, limits ...int) []*model.Frie
 	objLog := GetLogger(ctx)
 
 	friendLinks := make([]*model.FriendLink, 0)
-	session := MasterDB.OrderBy("seq asc")
+	session := db.MasterDB.OrderBy("seq asc")
 	if len(limits) > 0 {
 		session.Limit(limits[0])
 	}

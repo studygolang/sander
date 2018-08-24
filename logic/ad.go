@@ -7,8 +7,8 @@
 package logic
 
 import (
+	"sander/db"
 	"sander/model"
-	. "sander/db"
 
 	"github.com/polaris1119/set"
 	"golang.org/x/net/context"
@@ -22,7 +22,7 @@ func (AdLogic) FindAll(ctx context.Context, path string) map[string]*model.Adver
 	objLog := GetLogger(ctx)
 
 	pageAds := make([]*model.PageAd, 0)
-	err := MasterDB.Where("(path=? OR path=?) AND is_online=1", path, "*").Find(&pageAds)
+	err := db.MasterDB.Where("(path=? OR path=?) AND is_online=1", path, "*").Find(&pageAds)
 	if err != nil {
 		objLog.Errorln("AdLogic FindAll PageAd error:", err)
 		return nil
@@ -38,7 +38,7 @@ func (AdLogic) FindAll(ctx context.Context, path string) map[string]*model.Adver
 	}
 
 	adMap := make(map[int]*model.Advertisement)
-	err = MasterDB.In("id", set.IntSlice(adIdSet)).Find(&adMap)
+	err = db.MasterDB.In("id", set.IntSlice(adIdSet)).Find(&adMap)
 	if err != nil {
 		objLog.Errorln("AdLogic FindAll Advertisement error:", err)
 		return nil

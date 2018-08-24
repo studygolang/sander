@@ -7,8 +7,8 @@
 package logic
 
 import (
+	"sander/db"
 	"sander/model"
-	. "sander/db"
 
 	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
@@ -20,7 +20,7 @@ var DefaultViewRecord = ViewRecordLogic{}
 
 func (ViewRecordLogic) Record(objid, objtype, uid int) {
 
-	total, err := MasterDB.Where("objid=? AND objtype=? AND uid=?", objid, objtype, uid).Count(new(model.ViewRecord))
+	total, err := db.MasterDB.Where("objid=? AND objtype=? AND uid=?", objid, objtype, uid).Count(new(model.ViewRecord))
 	if err != nil {
 		logger.Errorln("ViewRecord logic Record count error:", err)
 		return
@@ -36,7 +36,7 @@ func (ViewRecordLogic) Record(objid, objtype, uid int) {
 		Uid:     uid,
 	}
 
-	if _, err = MasterDB.Insert(viewRecord); err != nil {
+	if _, err = db.MasterDB.Insert(viewRecord); err != nil {
 		logger.Errorln("ViewRecord logic Record insert Error:", err)
 		return
 	}
@@ -47,7 +47,7 @@ func (ViewRecordLogic) Record(objid, objtype, uid int) {
 func (ViewRecordLogic) FindUserNum(ctx context.Context, objid, objtype int) int64 {
 	objLog := GetLogger(ctx)
 
-	total, err := MasterDB.Where("objid=? AND objtype=?", objid, objtype).Count(new(model.ViewRecord))
+	total, err := db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).Count(new(model.ViewRecord))
 	if err != nil {
 		objLog.Errorln("ViewRecordLogic FindUserNum error:", err)
 	}

@@ -7,7 +7,7 @@
 package controller
 
 import (
-	. "sander/http"
+	xhttp "sander/http"
 
 	"github.com/dchest/captcha"
 	"github.com/labstack/echo"
@@ -23,6 +23,6 @@ func (self CaptchaController) RegisterRoute(g *echo.Group) {
 }
 
 func (CaptchaController) Server(ctx echo.Context) error {
-	captchaHandler.ServeHTTP(ResponseWriter(ctx), Request(ctx))
+	captchaHandler.ServeHTTP(xhttp.ResponseWriter(ctx), xhttp.Request(ctx))
 	return nil
 }

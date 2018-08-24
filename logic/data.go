@@ -10,7 +10,7 @@ import (
 	"errors"
 	"sync"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/logger"
@@ -49,7 +49,7 @@ var (
 // 将所有 权限 加载到内存中；后台修改权限时，重新加载一次
 func LoadAuthorities() error {
 	authorities := make([]*model.Authority, 0)
-	err := MasterDB.Find(&authorities)
+	err := db.MasterDB.Find(&authorities)
 	if err != nil {
 		logger.Errorln("LoadAuthorities authority read fail:", err)
 		return err
@@ -68,7 +68,7 @@ func LoadAuthorities() error {
 // 将所有 角色拥有的权限 加载到内存中；后台修改时，重新加载一次
 func LoadRoleAuthorities() error {
 	roleAuthorities := make([]*model.RoleAuthority, 0)
-	err := MasterDB.Find(&roleAuthorities)
+	err := db.MasterDB.Find(&roleAuthorities)
 	if err != nil {
 		logger.Errorln("LoadRoleAuthorities role_authority read fail:", err)
 		return err
@@ -97,7 +97,7 @@ func LoadRoleAuthorities() error {
 // 将所有 角色 加载到内存中；后台修改角色时，重新加载一次
 func LoadRoles() error {
 	roles := make([]*model.Role, 0)
-	err := MasterDB.Find(&roles)
+	err := db.MasterDB.Find(&roles)
 	if err != nil {
 		logger.Errorln("LoadRoles role read fail:", err)
 		return err
@@ -133,7 +133,7 @@ func LoadNodes() error {
 	}
 
 	nodeList := make([]*model.TopicNode, 0)
-	err := MasterDB.Asc("seq").Find(&nodeList)
+	err := db.MasterDB.Asc("seq").Find(&nodeList)
 	if err != nil {
 		logger.Errorln("LoadNodes node read fail:", err)
 		return err
@@ -172,7 +172,7 @@ func LoadNodes() error {
 }
 
 func LoadWebsiteSetting() error {
-	_, err := MasterDB.Get(WebsiteSetting)
+	_, err := db.MasterDB.Get(WebsiteSetting)
 	if err != nil {
 		logger.Errorln("LoadWebsiteSetting read fail:", err)
 		return err
@@ -185,7 +185,7 @@ func LoadWebsiteSetting() error {
 
 func LoadUserSetting() error {
 	userSettings := make([]*model.UserSetting, 0)
-	err := MasterDB.Find(&userSettings)
+	err := db.MasterDB.Find(&userSettings)
 	if err != nil {
 		logger.Errorln("LoadUserSetting Find fail:", err)
 		return err
@@ -206,7 +206,7 @@ func LoadUserSetting() error {
 
 func LoadDefaultAvatar() error {
 	defaultAvatars := make([]*model.DefaultAvatar, 0)
-	err := MasterDB.Find(&defaultAvatars)
+	err := db.MasterDB.Find(&defaultAvatars)
 	if err != nil {
 		logger.Errorln("LoadDefaultAvatar Find fail:", err)
 		return err
@@ -386,7 +386,7 @@ func GenNodes() []map[string][]map[string]interface{} {
 // 将所有 资源分类信息 加载到内存中：后台修改节点时，重新加载一次
 func LoadCategories() (err error) {
 	categories := make([]*model.ResourceCat, 0)
-	err = MasterDB.Find(&categories)
+	err = db.MasterDB.Find(&categories)
 	if err != nil {
 		logger.Errorln("LoadCategories category read fail:", err)
 		return
@@ -425,7 +425,7 @@ func GetCurIndexNav(tab string) *model.IndexNav {
 
 func loadRecommendNodes() bool {
 	nodeList := make([]*model.NodeInfo, 0)
-	err := MasterDB.Join("LEFT OUTER", "topics_node", "topics_node.nid=recommend_node.nid").
+	err := db.MasterDB.Join("LEFT OUTER", "topics_node", "topics_node.nid=recommend_node.nid").
 		Asc("recommend_node.seq").Find(&nodeList)
 	if err != nil {
 		logger.Errorln("loadRecommendNodes node read fail:", err)

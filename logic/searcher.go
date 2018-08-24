@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 	"sander/util"
 
@@ -55,10 +55,10 @@ func (self SearcherLogic) IndexingArticle(isAll bool) {
 	for {
 		articleList = make([]*model.Article, 0)
 		if isAll {
-			err = MasterDB.Where("id>?", id).Limit(self.maxRows).OrderBy("id ASC").Find(&articleList)
+			err = db.MasterDB.Where("id>?", id).Limit(self.maxRows).OrderBy("id ASC").Find(&articleList)
 		} else {
 			timeAgo := time.Now().Add(-5 * time.Minute).Format("2006-01-02 15:04:05")
-			err = MasterDB.Where("mtime>?", timeAgo).Find(&articleList)
+			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&articleList)
 		}
 		if err != nil {
 			logger.Errorln("IndexingArticle error:", err)
@@ -80,7 +80,7 @@ func (self SearcherLogic) IndexingArticle(isAll bool) {
 				// 自动生成
 				article.Tags = model.AutoTag(article.Title, article.Txt, 4)
 				if article.Tags != "" {
-					MasterDB.Id(article.Id).Cols("tags").Update(article)
+					db.MasterDB.Id(article.Id).Cols("tags").Update(article)
 				}
 			}
 
@@ -117,10 +117,10 @@ func (self SearcherLogic) IndexingTopic(isAll bool) {
 		topicExList = make(map[int]*model.TopicUpEx)
 
 		if isAll {
-			err = MasterDB.Where("tid>?", id).OrderBy("tid ASC").Limit(self.maxRows).Find(&topicList)
+			err = db.MasterDB.Where("tid>?", id).OrderBy("tid ASC").Limit(self.maxRows).Find(&topicList)
 		} else {
 			timeAgo := time.Now().Add(-5 * time.Minute).Format("2006-01-02 15:04:05")
-			err = MasterDB.Where("mtime>?", timeAgo).Find(&topicList)
+			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&topicList)
 		}
 		if err != nil {
 			logger.Errorln("IndexingTopic error:", err)
@@ -133,7 +133,7 @@ func (self SearcherLogic) IndexingTopic(isAll bool) {
 
 		tids := util.Models2Intslice(topicList, "Tid")
 
-		err = MasterDB.In("tid", tids).Find(&topicExList)
+		err = db.MasterDB.In("tid", tids).Find(&topicExList)
 		if err != nil {
 			logger.Errorln("IndexingTopic error:", err)
 			break
@@ -150,7 +150,7 @@ func (self SearcherLogic) IndexingTopic(isAll bool) {
 				// 自动生成
 				topic.Tags = model.AutoTag(topic.Title, topic.Content, 4)
 				if topic.Tags != "" {
-					MasterDB.Id(topic.Tid).Cols("tags").Update(topic)
+					db.MasterDB.Id(topic.Tid).Cols("tags").Update(topic)
 				}
 			}
 
@@ -186,10 +186,10 @@ func (self SearcherLogic) IndexingResource(isAll bool) {
 		resourceExList = make(map[int]*model.ResourceEx)
 
 		if isAll {
-			err = MasterDB.Where("id>?", id).OrderBy("id ASC").Limit(self.maxRows).Find(&resourceList)
+			err = db.MasterDB.Where("id>?", id).OrderBy("id ASC").Limit(self.maxRows).Find(&resourceList)
 		} else {
 			timeAgo := time.Now().Add(-5 * time.Minute).Format("2006-01-02 15:04:05")
-			err = MasterDB.Where("mtime>?", timeAgo).Find(&resourceList)
+			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&resourceList)
 		}
 		if err != nil {
 			logger.Errorln("IndexingResource error:", err)
@@ -202,7 +202,7 @@ func (self SearcherLogic) IndexingResource(isAll bool) {
 
 		ids := util.Models2Intslice(resourceList, "Id")
 
-		err = MasterDB.In("id", ids).Find(&resourceExList)
+		err = db.MasterDB.In("id", ids).Find(&resourceExList)
 		if err != nil {
 			logger.Errorln("IndexingResource error:", err)
 			break
@@ -219,7 +219,7 @@ func (self SearcherLogic) IndexingResource(isAll bool) {
 				// 自动生成
 				resource.Tags = model.AutoTag(resource.Title+resource.CatName, resource.Content, 4)
 				if resource.Tags != "" {
-					MasterDB.Id(resource.Id).Cols("tags").Update(resource)
+					db.MasterDB.Id(resource.Id).Cols("tags").Update(resource)
 				}
 			}
 
@@ -253,10 +253,10 @@ func (self SearcherLogic) IndexingOpenProject(isAll bool) {
 		projectList = make([]*model.OpenProject, 0)
 
 		if isAll {
-			err = MasterDB.Where("id>?", id).OrderBy("id ASC").Limit(self.maxRows).Find(&projectList)
+			err = db.MasterDB.Where("id>?", id).OrderBy("id ASC").Limit(self.maxRows).Find(&projectList)
 		} else {
 			timeAgo := time.Now().Add(-5 * time.Minute).Format("2006-01-02 15:04:05")
-			err = MasterDB.Where("mtime>?", timeAgo).Find(&projectList)
+			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&projectList)
 		}
 		if err != nil {
 			logger.Errorln("IndexingArticle error:", err)
@@ -278,7 +278,7 @@ func (self SearcherLogic) IndexingOpenProject(isAll bool) {
 				// 自动生成
 				project.Tags = model.AutoTag(project.Name+project.Category, project.Desc, 4)
 				if project.Tags != "" {
-					MasterDB.Id(project.Id).Cols("tags").Update(project)
+					db.MasterDB.Id(project.Id).Cols("tags").Update(project)
 				}
 			}
 
@@ -326,15 +326,15 @@ func (this *SearcherLogic) DoSearch(q, field string, start, rows int) (*model.Re
 		field = ""
 	} else {
 		searchStat := &model.SearchStat{}
-		MasterDB.Where("keyword=?", q).Get(searchStat)
+		db.MasterDB.Where("keyword=?", q).Get(searchStat)
 		if searchStat.Id > 0 {
-			MasterDB.Where("keyword=?", q).Incr("times", 1).Update(new(model.SearchStat))
+			db.MasterDB.Where("keyword=?", q).Incr("times", 1).Update(new(model.SearchStat))
 		} else {
 			searchStat.Keyword = q
 			searchStat.Times = 1
-			_, err := MasterDB.Insert(searchStat)
+			_, err := db.MasterDB.Insert(searchStat)
 			if err != nil {
-				MasterDB.Where("keyword=?", q).Incr("times", 1).Update(new(model.SearchStat))
+				db.MasterDB.Where("keyword=?", q).Incr("times", 1).Update(new(model.SearchStat))
 			}
 		}
 	}

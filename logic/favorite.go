@@ -9,7 +9,7 @@ package logic
 import (
 	"errors"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -27,7 +27,7 @@ func (FavoriteLogic) Save(ctx context.Context, uid, objid, objtype int) error {
 	favorite.Objid = objid
 	favorite.Objtype = objtype
 
-	affectedNum, err := MasterDB.Insert(favorite)
+	affectedNum, err := db.MasterDB.Insert(favorite)
 	if err != nil {
 		objLog.Errorln("save favorite error:", err)
 		return errors.New("内部服务错误")
@@ -42,7 +42,7 @@ func (FavoriteLogic) Save(ctx context.Context, uid, objid, objtype int) error {
 }
 
 func (FavoriteLogic) Cancel(ctx context.Context, uid, objid, objtype int) error {
-	_, err := MasterDB.Where("uid=? AND objtype=? AND objid=?", uid, objtype, objid).Delete(new(model.Favorite))
+	_, err := db.MasterDB.Where("uid=? AND objtype=? AND objid=?", uid, objtype, objid).Delete(new(model.Favorite))
 	return err
 }
 
@@ -51,7 +51,7 @@ func (FavoriteLogic) HadFavorite(ctx context.Context, uid, objid, objtype int) i
 	objLog := GetLogger(ctx)
 
 	favorite := &model.Favorite{}
-	_, err := MasterDB.Where("uid=? AND objid=? and objtype=?", uid, objid, objtype).Get(favorite)
+	_, err := db.MasterDB.Where("uid=? AND objid=? and objtype=?", uid, objid, objtype).Get(favorite)
 	if err != nil {
 		objLog.Errorln("FavoriteLogic HadFavorite error:", err)
 		return 0
@@ -68,13 +68,13 @@ func (FavoriteLogic) FindUserFavorites(ctx context.Context, uid, objtype, start,
 	objLog := GetLogger(ctx)
 
 	favorites := make([]*model.Favorite, 0)
-	err := MasterDB.Where("uid=? AND objtype=?", uid, objtype).Limit(rows, start).OrderBy("objid DESC").Find(&favorites)
+	err := db.MasterDB.Where("uid=? AND objtype=?", uid, objtype).Limit(rows, start).OrderBy("objid DESC").Find(&favorites)
 	if err != nil {
 		objLog.Errorln("FavoriteLogic FindUserFavorites error:", err)
 		return nil, 0
 	}
 
-	total, err := MasterDB.Where("uid=? AND objtype=?", uid, objtype).Count(new(model.Favorite))
+	total, err := db.MasterDB.Where("uid=? AND objtype=?", uid, objtype).Count(new(model.Favorite))
 	if err != nil {
 		objLog.Errorln("FavoriteLogic FindUserFavorites count error:", err)
 		return nil, 0

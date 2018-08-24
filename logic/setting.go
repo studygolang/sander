@@ -12,8 +12,8 @@ import (
 	"net/url"
 	"strings"
 
+	"sander/db"
 	"sander/model"
-	. "sander/db"
 
 	"github.com/polaris1119/goutils"
 	"golang.org/x/net/context"
@@ -168,7 +168,7 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 		WebsiteSetting.FriendsLogo = string(friendLogosBytes)
 	}
 
-	_, err := MasterDB.Update(WebsiteSetting)
+	_, err := db.MasterDB.Update(WebsiteSetting)
 	if err != nil {
 		objLog.Errorln("Update setting error:", err)
 		return err
@@ -210,7 +210,7 @@ func (SettingLogic) UpdateIndexTabChildren(ctx context.Context, form url.Values)
 
 	WebsiteSetting.IndexNav = string(indexNavsBytes)
 
-	_, err = MasterDB.Update(WebsiteSetting)
+	_, err = db.MasterDB.Update(WebsiteSetting)
 	if err != nil {
 		objLog.Errorln("Update index child tab error:", err)
 		return err

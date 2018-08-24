@@ -14,7 +14,7 @@ import (
 	"sync"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
@@ -47,7 +47,7 @@ func (this *view) flush() {
 	this.locker.Lock()
 	defer this.locker.Unlock()
 
-	session := MasterDB.Id(this.objid)
+	session := db.MasterDB.Id(this.objid)
 	switch this.objtype {
 	case model.TypeTopic:
 		session.Incr("view", this.num).Update(new(model.TopicUpEx))

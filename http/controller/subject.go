@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"sander/global"
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -46,7 +46,7 @@ func (SubjectController) Index(ctx echo.Context) error {
 		return ctx.Redirect(http.StatusSeeOther, "/")
 	}
 	if subject.Cover != "" && !strings.HasPrefix(subject.Cover, "http") {
-		cdnDomain := global.App.CanonicalCDN(CheckIsHttps(ctx))
+		cdnDomain := global.App.CanonicalCDN(xhttp.CheckIsHttps(ctx))
 		subject.Cover = cdnDomain + subject.Cover
 	}
 

@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -37,7 +37,7 @@ func (self CommentController) RegisterRoute(g *echo.Group) {
 // AtUsers 评论或回复 @ 某人 suggest
 func (CommentController) AtUsers(ctx echo.Context) error {
 	term := ctx.QueryParam("term")
-	isHttps := CheckIsHttps(ctx)
+	isHttps := xhttp.CheckIsHttps(ctx)
 	users := logic.DefaultUser.GetUserMentions(term, 10, isHttps)
 	return ctx.JSON(http.StatusOK, users)
 }

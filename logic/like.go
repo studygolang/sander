@@ -10,11 +10,10 @@ import (
 	"errors"
 	"fmt"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"golang.org/x/net/context"
-
 )
 
 type LikeLogic struct{}
@@ -26,7 +25,7 @@ func (LikeLogic) HadLike(ctx context.Context, uid, objid, objtype int) int {
 	objLog := GetLogger(ctx)
 
 	like := &model.Like{}
-	_, err := MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid, objtype).Get(like)
+	_, err := db.MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid, objtype).Get(like)
 	if err != nil {
 		objLog.Errorln("LikeLogic HadLike error:", err)
 		return 0
@@ -50,7 +49,7 @@ func (LikeLogic) FindUserLikeObjects(ctx context.Context, uid, objtype int, obji
 	}
 
 	likes := make([]*model.Like, 0)
-	err := MasterDB.Where("uid=? AND objtype=? AND objid BETWEEN ? AND ?", uid, objtype, littleId, greatId).
+	err := db.MasterDB.Where("uid=? AND objtype=? AND objid BETWEEN ? AND ?", uid, objtype, littleId, greatId).
 		Find(&likes)
 	if err != nil {
 		objLog.Errorln("LikeLogic FindUserLikeObjects error:", err)
@@ -75,7 +74,7 @@ func (LikeLogic) LikeObject(ctx context.Context, uid, objid, objtype, likeFlag i
 	go DefaultUser.IncrUserWeight("uid", uid, 3)
 
 	like := &model.Like{}
-	_, err := MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid, objtype).Get(like)
+	_, err := db.MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid, objtype).Get(like)
 	if err != nil {
 		objLog.Errorln("LikeLogic LikeObject get error:", err)
 		return err
@@ -90,8 +89,8 @@ func (LikeLogic) LikeObject(ctx context.Context, uid, objid, objtype, likeFlag i
 
 		// 取消喜欢
 		if likeFlag == model.FlagCancel {
-			// MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid,objtype).Delete(like)
-			_, err = MasterDB.Delete(like)
+			// db.MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid,objtype).Delete(like)
+			_, err = db.MasterDB.Delete(like)
 			if err != nil {
 				objLog.Errorln("LikeLogic LikeObject delete error:", err)
 				return err
@@ -113,7 +112,7 @@ func (LikeLogic) LikeObject(ctx context.Context, uid, objid, objtype, likeFlag i
 	like.Objtype = objtype
 	like.Flag = likeFlag
 
-	affectedRows, err := MasterDB.Insert(like)
+	affectedRows, err := db.MasterDB.Insert(like)
 	if err != nil {
 		objLog.Errorln("LikeLogic LikeObject error:", err)
 		return err

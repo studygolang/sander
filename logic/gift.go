@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/go-xorm/xorm"
@@ -26,7 +26,7 @@ func (self GiftLogic) FindAllOnline(ctx context.Context) []*model.Gift {
 	objLog := GetLogger(ctx)
 
 	gifts := make([]*model.Gift, 0)
-	err := MasterDB.Where("state=?", model.GiftStateOnline).Find(&gifts)
+	err := db.MasterDB.Where("state=?", model.GiftStateOnline).Find(&gifts)
 	if err != nil {
 		objLog.Errorln("GiftLogic FindAllOnline error:", err)
 		return nil
@@ -46,7 +46,7 @@ func (self GiftLogic) Exchange(ctx context.Context, me *model.Me, giftId int) er
 	objLog := GetLogger(ctx)
 
 	gift := &model.Gift{}
-	_, err := MasterDB.Id(giftId).Get(gift)
+	_, err := db.MasterDB.Id(giftId).Get(gift)
 	if err != nil {
 		objLog.Errorln("GiftLogic Exchange error:", err)
 		return err
@@ -56,7 +56,7 @@ func (self GiftLogic) Exchange(ctx context.Context, me *model.Me, giftId int) er
 		return errors.New("已兑完")
 	}
 
-	total, err := MasterDB.Where("gift_id=? AND uid=?", giftId, me.Uid).Count(new(model.UserExchangeRecord))
+	total, err := db.MasterDB.Where("gift_id=? AND uid=?", giftId, me.Uid).Count(new(model.UserExchangeRecord))
 	if err != nil {
 		objLog.Errorln("GiftLogic Count UserExchangeRecord error:", err)
 		return err
@@ -79,7 +79,7 @@ func (self GiftLogic) FindExchangeRecords(ctx context.Context, me *model.Me) []*
 	objLog := GetLogger(ctx)
 
 	records := make([]*model.UserExchangeRecord, 0)
-	err := MasterDB.Where("uid=?", me.Uid).Desc("id").Find(&records)
+	err := db.MasterDB.Where("uid=?", me.Uid).Desc("id").Find(&records)
 	if err != nil {
 		objLog.Errorln("GiftLogic FindExchangeRecords error:", err)
 		return nil
@@ -101,7 +101,7 @@ func (self GiftLogic) UserCanExchange(ctx context.Context, me *model.Me, gifts [
 	}
 
 	exchangeRecords := make([]*model.UserExchangeRecord, 0)
-	err := MasterDB.In("gift_id", giftIds).And("uid=?", me.Uid).Find(&exchangeRecords)
+	err := db.MasterDB.In("gift_id", giftIds).And("uid=?", me.Uid).Find(&exchangeRecords)
 	if err != nil {
 		objLog.Errorln("GiftLogic FindUserGifts error:", err)
 		return
@@ -118,7 +118,7 @@ func (self GiftLogic) UserCanExchange(ctx context.Context, me *model.Me, gifts [
 
 func (self GiftLogic) exchangeRedeem(gift *model.Gift, me *model.Me) error {
 	giftRedeem := &model.GiftRedeem{}
-	_, err := MasterDB.Where("gift_id=? AND exchange=0", gift.Id).Get(giftRedeem)
+	_, err := db.MasterDB.Where("gift_id=? AND exchange=0", gift.Id).Get(giftRedeem)
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (self GiftLogic) doExchange(gift *model.Gift, me *model.Me, remark string, 
 		return errors.New("兑换失败：铜币不够！")
 	}
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 
 	session.Begin()
@@ -155,7 +155,7 @@ func (self GiftLogic) doExchange(gift *model.Gift, me *model.Me, remark string, 
 		Remark:     remark,
 		ExpireTime: gift.ExpireTime,
 	}
-	_, err := MasterDB.Insert(exchangeRecord)
+	_, err := db.MasterDB.Insert(exchangeRecord)
 	if err != nil {
 		session.Rollback()
 		return err
@@ -186,5 +186,5 @@ func (self GiftLogic) doExchange(gift *model.Gift, me *model.Me, remark string, 
 }
 
 func (self GiftLogic) doExpire(gift *model.Gift) {
-	MasterDB.Table(gift).Where("id=?", gift.Id).Update(map[string]interface{}{"state": gift.State})
+	db.MasterDB.Table(gift).Where("id=?", gift.Id).Update(map[string]interface{}{"state": gift.State})
 }

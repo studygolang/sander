@@ -7,13 +7,12 @@
 package logic
 
 import (
-
 	"errors"
 	"net/url"
 	"strconv"
 	"strings"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/logger"
@@ -26,7 +25,7 @@ var DefaultReading = ReadingLogic{}
 
 func (ReadingLogic) FindLastList(beginTime string) ([]*model.MorningReading, error) {
 	readings := make([]*model.MorningReading, 0)
-	err := MasterDB.Where("ctime>? AND rtype=0", beginTime).OrderBy("id DESC").Find(&readings)
+	err := db.MasterDB.Where("ctime>? AND rtype=0", beginTime).OrderBy("id DESC").Find(&readings)
 
 	return readings, err
 }
@@ -35,7 +34,7 @@ func (ReadingLogic) FindLastList(beginTime string) ([]*model.MorningReading, err
 func (ReadingLogic) FindBy(ctx context.Context, limit, rtype int, lastIds ...int) []*model.MorningReading {
 	objLog := GetLogger(ctx)
 
-	dbSession := MasterDB.Where("rtype=?", rtype)
+	dbSession := db.MasterDB.Where("rtype=?", rtype)
 	if len(lastIds) > 0 && lastIds[0] > 0 {
 		dbSession.And("id<?", lastIds[0])
 	}
@@ -55,7 +54,7 @@ func (ReadingLogic) IReading(ctx context.Context, id int) string {
 	objLog := GetLogger(ctx)
 
 	reading := &model.MorningReading{}
-	_, err := MasterDB.Id(id).Get(reading)
+	_, err := db.MasterDB.Id(id).Get(reading)
 	if err != nil {
 		objLog.Errorln("reading logic IReading error:", err)
 		return "/readings"
@@ -65,7 +64,7 @@ func (ReadingLogic) IReading(ctx context.Context, id int) string {
 		return "/readings"
 	}
 
-	go MasterDB.Id(id).Incr("clicknum", 1).Update(reading)
+	go db.MasterDB.Id(id).Incr("clicknum", 1).Update(reading)
 
 	if reading.Inner == 0 {
 		return "/wr?u=" + reading.Url
@@ -78,7 +77,7 @@ func (ReadingLogic) IReading(ctx context.Context, id int) string {
 func (ReadingLogic) FindReadingByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.MorningReading, int) {
 	objLog := GetLogger(ctx)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
 		session.And(k+"=?", v)
@@ -116,9 +115,9 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 	readings := make([]*model.MorningReading, 0)
 	if reading.Inner != 0 {
 		reading.Url = ""
-		err = MasterDB.Where("`inner`=?", reading.Inner).OrderBy("id DESC").Find(&readings)
+		err = db.MasterDB.Where("`inner`=?", reading.Inner).OrderBy("id DESC").Find(&readings)
 	} else {
-		err = MasterDB.Where("url=?", reading.Url).OrderBy("id DESC").Find(&readings)
+		err = db.MasterDB.Where("url=?", reading.Url).OrderBy("id DESC").Find(&readings)
 	}
 	if err != nil {
 		logger.Errorln("reading SaveReading MasterDB.Where() error", err)
@@ -135,14 +134,14 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 
 	logger.Debugln(reading.Rtype, "id=", reading.Id)
 	if reading.Id != 0 {
-		_, err = MasterDB.Id(reading.Id).Update(reading)
+		_, err = db.MasterDB.Id(reading.Id).Update(reading)
 	} else {
 		if len(readings) > 0 {
 			logger.Errorln("reading report:", reading)
 			errMsg, err = "已经存在了!!", errors.New("已经存在了!!")
 			return
 		}
-		_, err = MasterDB.Insert(reading)
+		_, err = db.MasterDB.Insert(reading)
 	}
 
 	if err != nil {
@@ -157,7 +156,7 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 // FindById 获取单条晨读
 func (ReadingLogic) FindById(ctx context.Context, id int) *model.MorningReading {
 	reading := &model.MorningReading{}
-	_, err := MasterDB.Id(id).Get(reading)
+	_, err := db.MasterDB.Id(id).Get(reading)
 	if err != nil {
 		logger.Errorln("reading logic FindReadingById Error:", err)
 		return nil

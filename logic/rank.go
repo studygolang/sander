@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/db/nosql"
 	"sander/model"
 
@@ -194,7 +194,7 @@ func (self RankLogic) FindRichRank(ctx context.Context) []*model.User {
 	objLog := GetLogger(ctx)
 
 	userList := make([]*model.User, 0)
-	err := MasterDB.Where("balance>?", 0).Desc("balance").Limit(25).Find(&userList)
+	err := db.MasterDB.Where("balance>?", 0).Desc("balance").Limit(25).Find(&userList)
 	if err != nil {
 		objLog.Errorln("find rich rank error:", err)
 		return nil

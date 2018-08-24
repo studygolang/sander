@@ -6,10 +6,10 @@
 
 package logic
 
-import (	
+import (
 	"net/url"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -23,7 +23,7 @@ var DefaultRule = RuleLogic{}
 func (RuleLogic) FindBy(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.CrawlRule, int) {
 	objLog := GetLogger(ctx)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
 		session.And(k+"=?", v)
@@ -52,7 +52,7 @@ func (RuleLogic) FindById(ctx context.Context, id string) *model.CrawlRule {
 	objLog := GetLogger(ctx)
 
 	rule := &model.CrawlRule{}
-	_, err := MasterDB.Id(id).Get(rule)
+	_, err := db.MasterDB.Id(id).Get(rule)
 	if err != nil {
 		objLog.Errorln("find rule error:", err)
 		return nil
@@ -79,9 +79,9 @@ func (RuleLogic) Save(ctx context.Context, form url.Values, opUser string) (errM
 	rule.OpUser = opUser
 
 	if rule.Id != 0 {
-		_, err = MasterDB.Id(rule.Id).Update(rule)
+		_, err = db.MasterDB.Id(rule.Id).Update(rule)
 	} else {
-		_, err = MasterDB.Insert(rule)
+		_, err = db.MasterDB.Insert(rule)
 	}
 
 	if err != nil {
@@ -94,6 +94,6 @@ func (RuleLogic) Save(ctx context.Context, form url.Values, opUser string) (errM
 }
 
 func (RuleLogic) Delete(ctx context.Context, id string) error {
-	_, err := MasterDB.Id(id).Delete(new(model.CrawlRule))
+	_, err := db.MasterDB.Id(id).Delete(new(model.CrawlRule))
 	return err
 }

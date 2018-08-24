@@ -9,7 +9,7 @@ package middleware
 import (
 	"net/http"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/util"
 
 	"github.com/labstack/echo"
@@ -28,17 +28,17 @@ func HTTPError() echo.MiddlewareFunc {
 							if util.IsAjax(ctx) {
 								return ctx.String(http.StatusOK, `{"ok":0,"error":"接口不存在"}`)
 							}
-							return Render(ctx, "404.html", nil)
+							return xhttp.Render(ctx, "404.html", nil)
 						case http.StatusForbidden:
 							if util.IsAjax(ctx) {
 								return ctx.String(http.StatusOK, `{"ok":0,"error":"没有权限访问"}`)
 							}
-							return Render(ctx, "403.html", map[string]interface{}{"msg": he.Message})
+							return xhttp.Render(ctx, "403.html", map[string]interface{}{"msg": he.Message})
 						case http.StatusInternalServerError:
 							if util.IsAjax(ctx) {
 								return ctx.String(http.StatusOK, `{"ok":0,"error":"接口服务器错误"}`)
 							}
-							return Render(ctx, "500.html", nil)
+							return xhttp.Render(ctx, "500.html", nil)
 						}
 					}
 				}

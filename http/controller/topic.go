@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -50,9 +50,9 @@ func (self TopicController) RegisterRoute(g *echo.Group) {
 func (self TopicController) TopicList(ctx echo.Context) error {
 	tab := ctx.QueryParam("tab")
 	if tab == "" {
-		tab = GetFromCookie(ctx, "TOPIC_TAB")
+		tab = xhttp.GetFromCookie(ctx, "TOPIC_TAB")
 	} else {
-		SetCookie(ctx, "TOPIC_TAB", tab)
+		xhttp.SetCookie(ctx, "TOPIC_TAB", tab)
 	}
 
 	if tab != "" && tab != "all" {
@@ -161,7 +161,7 @@ func (TopicController) Detail(ctx echo.Context) error {
 		data["likeflag"] = logic.DefaultLike.HadLike(ctx, me.Uid, tid, model.TypeTopic)
 		data["hadcollect"] = logic.DefaultFavorite.HadFavorite(ctx, me.Uid, tid, model.TypeTopic)
 
-		logic.Views.Incr(Request(ctx), model.TypeTopic, tid, me.Uid)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeTopic, tid, me.Uid)
 
 		if me.Uid != topic["uid"].(int) {
 			go logic.DefaultViewRecord.Record(tid, model.TypeTopic, me.Uid)
@@ -172,7 +172,7 @@ func (TopicController) Detail(ctx echo.Context) error {
 			data["view_source"] = logic.DefaultViewSource.FindOne(ctx, tid, model.TypeTopic)
 		}
 	} else {
-		logic.Views.Incr(Request(ctx), model.TypeTopic, tid)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeTopic, tid)
 	}
 
 	data["appends"] = logic.DefaultTopic.FindAppend(ctx, tid)

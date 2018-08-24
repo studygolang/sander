@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/logic"
 	"sander/model"
 
@@ -28,7 +28,7 @@ func (self FeedController) RegisterRoute(g *echo.Group) {
 }
 
 func (self FeedController) Atom(ctx echo.Context) error {
-	return Render(ctx, "atom.html", map[string]interface{}{})
+	return xhttp.Render(ctx, "atom.html", map[string]interface{}{})
 }
 
 func (self FeedController) List(ctx echo.Context) error {

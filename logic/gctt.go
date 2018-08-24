@@ -10,7 +10,7 @@ import (
 	"context"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 )
 
@@ -22,7 +22,7 @@ func (self GCTTLogic) FindTranslator(ctx context.Context, me *model.Me) *model.G
 	objLog := GetLogger(ctx)
 
 	gcttUser := &model.GCTTUser{}
-	_, err := MasterDB.Where("uid=?", me.Uid).Get(gcttUser)
+	_, err := db.MasterDB.Where("uid=?", me.Uid).Get(gcttUser)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindTranslator error:", err)
 		return nil
@@ -35,7 +35,7 @@ func (self GCTTLogic) FindOne(ctx context.Context, username string) *model.GCTTU
 	objLog := GetLogger(ctx)
 
 	gcttUser := &model.GCTTUser{}
-	_, err := MasterDB.Where("username=?", username).Get(gcttUser)
+	_, err := db.MasterDB.Where("username=?", username).Get(gcttUser)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindOne error:", err)
 		return nil
@@ -51,7 +51,7 @@ func (self GCTTLogic) BindUser(ctx context.Context, gcttUser *model.GCTTUser, ui
 
 	if gcttUser.Id > 0 {
 		gcttUser.Uid = uid
-		_, err = MasterDB.Id(gcttUser.Id).Update(gcttUser)
+		_, err = db.MasterDB.Id(gcttUser.Id).Update(gcttUser)
 	} else {
 		gcttUser = &model.GCTTUser{
 			Username: githubUser.Username,
@@ -59,7 +59,7 @@ func (self GCTTLogic) BindUser(ctx context.Context, gcttUser *model.GCTTUser, ui
 			Uid:      uid,
 			JoinedAt: time.Now().Unix(),
 		}
-		_, err = MasterDB.Insert(gcttUser)
+		_, err = db.MasterDB.Insert(gcttUser)
 	}
 
 	if err != nil {
@@ -73,7 +73,7 @@ func (self GCTTLogic) FindCoreUsers(ctx context.Context) []*model.GCTTUser {
 	objLog := GetLogger(ctx)
 
 	gcttUsers := make([]*model.GCTTUser, 0)
-	err := MasterDB.Where("role!=?", model.GCTTRoleTranslator).OrderBy("role ASC").Find(&gcttUsers)
+	err := db.MasterDB.Where("role!=?", model.GCTTRoleTranslator).OrderBy("role ASC").Find(&gcttUsers)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindUsers error:", err)
 	}
@@ -85,7 +85,7 @@ func (self GCTTLogic) FindUsers(ctx context.Context) []*model.GCTTUser {
 	objLog := GetLogger(ctx)
 
 	gcttUsers := make([]*model.GCTTUser, 0)
-	err := MasterDB.Where("num>0").OrderBy("num DESC,words DESC").Find(&gcttUsers)
+	err := db.MasterDB.Where("num>0").OrderBy("num DESC,words DESC").Find(&gcttUsers)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindUsers error:", err)
 	}
@@ -98,7 +98,7 @@ func (self GCTTLogic) FindUnTranslateIssues(ctx context.Context, limit int) []*m
 
 	gcttIssues := make([]*model.GCTTIssue, 0)
 
-	err := MasterDB.Where("state=?", model.IssueOpened).
+	err := db.MasterDB.Where("state=?", model.IssueOpened).
 		Limit(limit).OrderBy("id DESC").Find(&gcttIssues)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindUnTranslateIssues error:", err)
@@ -112,7 +112,7 @@ func (self GCTTLogic) FindIssues(ctx context.Context, paginator *Paginator, quer
 
 	gcttIssues := make([]*model.GCTTIssue, 0)
 
-	session := MasterDB.Limit(paginator.PerPage(), paginator.Offset())
+	session := db.MasterDB.Limit(paginator.PerPage(), paginator.Offset())
 	if args[0] == model.LabelClaimed {
 		session.OrderBy("translating_at DESC")
 	} else {
@@ -138,9 +138,9 @@ func (self GCTTLogic) IssueCount(ctx context.Context, querystring string, args .
 		err   error
 	)
 	if querystring == "" {
-		total, err = MasterDB.Count(new(model.GCTTIssue))
+		total, err = db.MasterDB.Count(new(model.GCTTIssue))
 	} else {
-		total, err = MasterDB.Where(querystring, args...).Count(new(model.GCTTIssue))
+		total, err = db.MasterDB.Where(querystring, args...).Count(new(model.GCTTIssue))
 	}
 
 	if err != nil {
@@ -154,7 +154,7 @@ func (self GCTTLogic) FindNewestGit(ctx context.Context) []*model.GCTTGit {
 	objLog := GetLogger(ctx)
 
 	gcttGits := make([]*model.GCTTGit, 0)
-	err := MasterDB.Where("translated_at!=0").OrderBy("translated_at DESC").
+	err := db.MasterDB.Where("translated_at!=0").OrderBy("translated_at DESC").
 		Limit(10).Find(&gcttGits)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindNewestGit error:", err)
@@ -167,7 +167,7 @@ func (self GCTTLogic) FindTimeLines(ctx context.Context) []*model.GCTTTimeLine {
 	objLog := GetLogger(ctx)
 
 	gcttTimeLines := make([]*model.GCTTTimeLine, 0)
-	err := MasterDB.Find(&gcttTimeLines)
+	err := db.MasterDB.Find(&gcttTimeLines)
 	if err != nil {
 		objLog.Errorln("GCTTLogic FindTimeLines error:", err)
 	}

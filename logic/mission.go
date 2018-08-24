@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/go-xorm/xorm"
@@ -69,7 +69,7 @@ func (self MissionLogic) RedeemLoginAward(ctx context.Context, me *model.Me) err
 		return errors.New("服务内部错误")
 	}
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -137,7 +137,7 @@ func (MissionLogic) FindLoginMission(ctx context.Context, me *model.Me) *model.U
 	objLog := GetLogger(ctx)
 
 	userLoginMission := &model.UserLoginMission{}
-	_, err := MasterDB.Where("uid=?", me.Uid).Get(userLoginMission)
+	_, err := db.MasterDB.Where("uid=?", me.Uid).Get(userLoginMission)
 	if err != nil {
 		objLog.Errorln("MissionLogic FindLoginMission error:", err)
 		return nil
@@ -151,7 +151,7 @@ func (MissionLogic) Complete(ctx context.Context, me *model.Me, id string) error
 	objLog := GetLogger(ctx)
 
 	mission := &model.Mission{}
-	_, err := MasterDB.Id(id).Get(mission)
+	_, err := db.MasterDB.Id(id).Get(mission)
 	if err != nil {
 		objLog.Errorln("MissionLogic FindLoginMission error:", err)
 		return err
@@ -184,7 +184,7 @@ func (MissionLogic) Complete(ctx context.Context, me *model.Me, id string) error
 
 func (MissionLogic) findMission(ctx context.Context, typ int) *model.Mission {
 	mission := &model.Mission{}
-	MasterDB.Where("type=?", typ).Get(mission)
+	db.MasterDB.Where("type=?", typ).Get(mission)
 	return mission
 }
 

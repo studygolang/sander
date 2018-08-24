@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/logger"
@@ -30,7 +30,7 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 	book := &model.Book{}
 
 	if isModify {
-		_, err = MasterDB.Id(id).Get(book)
+		_, err = db.MasterDB.Id(id).Get(book)
 		if err != nil {
 			objLog.Errorln("Publish Book find error:", err)
 			return
@@ -59,9 +59,9 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 
 	var affected int64
 	if !isModify {
-		affected, err = MasterDB.Insert(book)
+		affected, err = db.MasterDB.Insert(book)
 	} else {
-		affected, err = MasterDB.Update(book)
+		affected, err = db.MasterDB.Update(book)
 	}
 
 	if err != nil {
@@ -86,7 +86,7 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 func (GoBookLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.Book {
 	objLog := GetLogger(ctx)
 
-	dbSession := MasterDB.OrderBy("id DESC")
+	dbSession := db.MasterDB.OrderBy("id DESC")
 
 	if len(lastIds) > 0 && lastIds[0] > 0 {
 		dbSession.And("id<?", lastIds[0])
@@ -107,7 +107,7 @@ func (GoBookLogic) FindAll(ctx context.Context, paginator *Paginator, orderBy st
 	objLog := GetLogger(ctx)
 
 	bookList := make([]*model.Book, 0)
-	err := MasterDB.OrderBy(orderBy).Limit(paginator.PerPage(), paginator.Offset()).Find(&bookList)
+	err := db.MasterDB.OrderBy(orderBy).Limit(paginator.PerPage(), paginator.Offset()).Find(&bookList)
 	if err != nil {
 		objLog.Errorln("GoBookLogic FindAll error:", err)
 		return nil
@@ -123,7 +123,7 @@ func (GoBookLogic) Count(ctx context.Context) int64 {
 		total int64
 		err   error
 	)
-	total, err = MasterDB.Count(new(model.Book))
+	total, err = db.MasterDB.Count(new(model.Book))
 
 	if err != nil {
 		objLog.Errorln("GoBookLogic Count error:", err)
@@ -138,7 +138,7 @@ func (GoBookLogic) FindByIds(ids []int) []*model.Book {
 		return nil
 	}
 	books := make([]*model.Book, 0)
-	err := MasterDB.In("id", ids).Find(&books)
+	err := db.MasterDB.In("id", ids).Find(&books)
 	if err != nil {
 		logger.Errorln("GoBookLogic FindByIds error:", err)
 		return nil
@@ -153,7 +153,7 @@ func (GoBookLogic) findByIds(ids []int) map[int]*model.Book {
 	}
 
 	books := make(map[int]*model.Book)
-	err := MasterDB.In("id", ids).Find(&books)
+	err := db.MasterDB.In("id", ids).Find(&books)
 	if err != nil {
 		logger.Errorln("GoBookLogic findByIds error:", err)
 		return nil
@@ -164,7 +164,7 @@ func (GoBookLogic) findByIds(ids []int) map[int]*model.Book {
 // FindById 获取一本图书信息
 func (GoBookLogic) FindById(ctx context.Context, id interface{}) (*model.Book, error) {
 	book := &model.Book{}
-	_, err := MasterDB.Id(id).Get(book)
+	_, err := db.MasterDB.Id(id).Get(book)
 	if err != nil {
 		logger.Errorln("book logic FindById Error:", err)
 	}
@@ -174,7 +174,7 @@ func (GoBookLogic) FindById(ctx context.Context, id interface{}) (*model.Book, e
 
 // Total 图书总数
 func (GoBookLogic) Total() int64 {
-	total, err := MasterDB.Count(new(model.Book))
+	total, err := db.MasterDB.Count(new(model.Book))
 	if err != nil {
 		logger.Errorln("GoBookLogic Total error:", err)
 	}
@@ -188,7 +188,7 @@ type BookComment struct{}
 // cid：评论id；objid：被评论对象id；uid：评论者；cmttime：评论时间
 func (self BookComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
 	// 更新评论数（TODO：暂时每次都更新表）
-	_, err := MasterDB.Table(new(model.Book)).Id(objid).Incr("cmtnum", 1).Update(map[string]interface{}{
+	_, err := db.MasterDB.Table(new(model.Book)).Id(objid).Incr("cmtnum", 1).Update(map[string]interface{}{
 		"lastreplyuid":  uid,
 		"lastreplytime": cmttime,
 	})
@@ -227,7 +227,7 @@ type BookLike struct{}
 // objid：被喜欢对象id；num: 喜欢数(负数表示取消喜欢)
 func (self BookLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
-	_, err := MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.Book))
+	_, err := db.MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.Book))
 	if err != nil {
 		logger.Errorln("更新图书喜欢数失败：", err)
 	}

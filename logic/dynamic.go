@@ -7,11 +7,11 @@
 package logic
 
 import (
+	"sander/db"
 	"sander/model"
-	. "sander/db"
 
-	"golang.org/x/net/context"
 	"github.com/polaris1119/logger"
+	"golang.org/x/net/context"
 )
 
 type DynamicLogic struct{}
@@ -21,7 +21,7 @@ var DefaultDynamic = DynamicLogic{}
 // FindBy 获取动态列表（分页）
 func (DynamicLogic) FindBy(ctx context.Context, lastId int, limit int) []*model.Dynamic {
 	dynamicList := make([]*model.Dynamic, 0)
-	err := MasterDB.Where("id>?", lastId).OrderBy("seq DESC").Limit(limit).Find(&dynamicList)
+	err := db.MasterDB.Where("id>?", lastId).OrderBy("seq DESC").Limit(limit).Find(&dynamicList)
 	if err != nil {
 		logger.Errorln("DynamicLogic FindBy Error:", err)
 	}

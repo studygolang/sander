@@ -1,0 +1,20 @@
+version: '3'
+services:
+  redis:
+    image: "redis:latest"
+
+  mariadb:
+    image: "mariadb:latest"
+    ports:
+     - "127.0.0.1:3306:3306"
+    privileged: true
+    volumes:
+      - /data/mysql/data:/var/lib/mysql
+
+  main:
+    build: .
+    depends_on:
+      - redis 
+      - mariadb
+    ports:
+     - "127.0.0.1:8088:8088"

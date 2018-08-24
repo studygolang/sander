@@ -10,7 +10,7 @@ import (
 	"html/template"
 	"net/http"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -127,7 +127,7 @@ func (ProjectController) Detail(ctx echo.Context) error {
 		data["likeflag"] = logic.DefaultLike.HadLike(ctx, me.Uid, project.Id, model.TypeProject)
 		data["hadcollect"] = logic.DefaultFavorite.HadFavorite(ctx, me.Uid, project.Id, model.TypeProject)
 
-		logic.Views.Incr(Request(ctx), model.TypeProject, project.Id, me.Uid)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeProject, project.Id, me.Uid)
 
 		if me.Uid != project.User.Uid {
 			go logic.DefaultViewRecord.Record(project.Id, model.TypeProject, me.Uid)
@@ -138,7 +138,7 @@ func (ProjectController) Detail(ctx echo.Context) error {
 			data["view_source"] = logic.DefaultViewSource.FindOne(ctx, project.Id, model.TypeProject)
 		}
 	} else {
-		logic.Views.Incr(Request(ctx), model.TypeProject, project.Id)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeProject, project.Id)
 	}
 
 	// 为了阅读数即时看到

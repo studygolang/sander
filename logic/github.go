@@ -16,7 +16,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
@@ -87,7 +87,7 @@ func (self GithubLogic) IssueEvent(ctx context.Context, body []byte) error {
 		err = self.insertIssue(id, title, label)
 	} else if action == "labeled" || action == "unlabeled" {
 		gcttIssue := &model.GCTTIssue{}
-		MasterDB.Id(id).Get(gcttIssue)
+		db.MasterDB.Id(id).Get(gcttIssue)
 		if gcttIssue.Id == 0 {
 			self.insertIssue(id, title, label)
 		} else {
@@ -97,14 +97,14 @@ func (self GithubLogic) IssueEvent(ctx context.Context, body []byte) error {
 			}
 
 			gcttIssue.Label = label
-			_, err = MasterDB.Id(id).Cols("translator", "translating_at", "label").Update(gcttIssue)
+			_, err = db.MasterDB.Id(id).Cols("translator", "translating_at", "label").Update(gcttIssue)
 		}
 	} else if action == "closed" {
 		closedAt := result.Get("issue.closed_at").Time().Unix()
-		_, err = MasterDB.Table(new(model.GCTTIssue)).Id(id).
+		_, err = db.MasterDB.Table(new(model.GCTTIssue)).Id(id).
 			Update(map[string]interface{}{"state": model.IssueClosed, "translated_at": closedAt})
 	} else if action == "reopened" {
-		_, err = MasterDB.Table(new(model.GCTTIssue)).Id(id).
+		_, err = db.MasterDB.Table(new(model.GCTTIssue)).Id(id).
 			Update(map[string]interface{}{"state": model.IssueOpened, "translated_at": 0})
 	}
 
@@ -137,7 +137,7 @@ func (self GithubLogic) IssueCommentEvent(ctx context.Context, body []byte) erro
 				Translator:    result.Get("comment.user.login").String(),
 				TranslatingAt: result.Get("comment.created_at").Time().Unix(),
 			}
-			_, err = MasterDB.Id(id).Update(gcttIssue)
+			_, err = db.MasterDB.Id(id).Update(gcttIssue)
 		}
 	}
 
@@ -254,7 +254,7 @@ func (self GithubLogic) syncIssues(repo string, page int, directions ...string) 
 
 		gcttIssue := &model.GCTTIssue{}
 
-		_, err := MasterDB.Id(id).Get(gcttIssue)
+		_, err := db.MasterDB.Id(id).Get(gcttIssue)
 		if err != nil {
 			outErr = err
 			return true
@@ -289,10 +289,10 @@ func (self GithubLogic) syncIssues(repo string, page int, directions ...string) 
 		}
 
 		if gcttIssue.Id > 0 {
-			_, outErr = MasterDB.Id(id).Update(gcttIssue)
+			_, outErr = db.MasterDB.Id(id).Update(gcttIssue)
 		} else {
 			gcttIssue.Id = int(id)
-			_, outErr = MasterDB.Insert(gcttIssue)
+			_, outErr = db.MasterDB.Insert(gcttIssue)
 		}
 
 		return true
@@ -465,7 +465,7 @@ func (self GithubLogic) translating(filesResult gjson.Result, _prInfo *prInfo) e
 func (self GithubLogic) issueTranslated(_prInfo *prInfo, title string) error {
 	md5 := goutils.Md5(title)
 	gcttGit := &model.GCTTGit{}
-	_, err := MasterDB.Where("md5=?", md5).Get(gcttGit)
+	_, err := db.MasterDB.Where("md5=?", md5).Get(gcttGit)
 	if err != nil {
 		logger.Errorln("GithubLogic insertOrUpdateGCCT get error:", err)
 		return err
@@ -477,7 +477,7 @@ func (self GithubLogic) issueTranslated(_prInfo *prInfo, title string) error {
 
 	gcttUser := DefaultGCTT.FindOne(nil, _prInfo.username)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -498,7 +498,7 @@ func (self GithubLogic) issueTranslated(_prInfo *prInfo, title string) error {
 	gcttGit.Md5 = md5
 	gcttGit.PR = _prInfo.number
 	gcttGit.TranslatedAt = _prInfo.prTime.Unix()
-	_, err = MasterDB.Insert(gcttGit)
+	_, err = db.MasterDB.Insert(gcttGit)
 	if err != nil {
 		session.Rollback()
 		logger.Errorln("GithubLogic issueTranslated insert error:", err)
@@ -607,7 +607,7 @@ func (self GithubLogic) translateSilmu(filesResult gjson.Result, _prInfo *prInfo
 func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslated bool) error {
 	md5 := goutils.Md5(title)
 	gcttGit := &model.GCTTGit{}
-	_, err := MasterDB.Where("md5=?", md5).Get(gcttGit)
+	_, err := db.MasterDB.Where("md5=?", md5).Get(gcttGit)
 	if err != nil {
 		logger.Errorln("GithubLogic insertOrUpdateGCCT get error:", err)
 		return err
@@ -620,7 +620,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 
 	gcttUser := DefaultGCTT.FindOne(nil, _prInfo.username)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -641,7 +641,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 		if gcttGit.TranslatedAt == 0 && isTranslated {
 			gcttGit.TranslatedAt = _prInfo.prTime.Unix()
 			gcttGit.PR = _prInfo.number
-			_, err = MasterDB.Id(gcttGit.Id).Update(gcttGit)
+			_, err = db.MasterDB.Id(gcttGit.Id).Update(gcttGit)
 			if err != nil {
 				session.Rollback()
 				logger.Errorln("GithubLogic insertOrUpdateGCCT update error:", err)
@@ -658,7 +658,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 	gcttGit.Title = title
 	gcttGit.Md5 = md5
 	gcttGit.TranslatingAt = _prInfo.prTime.Unix()
-	_, err = MasterDB.Insert(gcttGit)
+	_, err = db.MasterDB.Insert(gcttGit)
 	if err != nil {
 		session.Rollback()
 		logger.Errorln("GithubLogic insertOrUpdateGCCTGit insert error:", err)
@@ -671,7 +671,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 
 func (GithubLogic) statUserTime() {
 	gcttUsers := make([]*model.GCTTUser, 0)
-	err := MasterDB.Find(&gcttUsers)
+	err := db.MasterDB.Find(&gcttUsers)
 	if err != nil {
 		logger.Errorln("GithubLogic statUserTime find error:", err)
 		return
@@ -679,7 +679,7 @@ func (GithubLogic) statUserTime() {
 
 	for _, gcttUser := range gcttUsers {
 		gcttGits := make([]*model.GCTTGit, 0)
-		err = MasterDB.Where("username=? AND pr!=0", gcttUser.Username).OrderBy("id ASC").Find(&gcttGits)
+		err = db.MasterDB.Where("username=? AND pr!=0", gcttUser.Username).OrderBy("id ASC").Find(&gcttGits)
 		if err != nil {
 			logger.Errorln("GithubLogic find gctt git error:", err)
 			continue
@@ -703,7 +703,7 @@ func (GithubLogic) statUserTime() {
 
 			words += gcttGit.Words
 
-			MasterDB.Id(gcttGit.Id).Update(gcttGit)
+			db.MasterDB.Id(gcttGit.Id).Update(gcttGit)
 		}
 
 		// 查询是否绑定了本站账号
@@ -716,7 +716,7 @@ func (GithubLogic) statUserTime() {
 		}
 		gcttUser.LastAt = lastAt
 		gcttUser.Uid = uid
-		_, err = MasterDB.Id(gcttUser.Id).Update(gcttUser)
+		_, err = db.MasterDB.Id(gcttUser.Id).Update(gcttUser)
 		if err != nil {
 			logger.Errorln("GithubLogic update gctt user error:", err)
 		}
@@ -729,13 +729,13 @@ func (self GithubLogic) insertIssue(id int64, title, label string) error {
 		Title: title,
 		Label: label,
 	}
-	_, err := MasterDB.Insert(gcttIssue)
+	_, err := db.MasterDB.Insert(gcttIssue)
 	return err
 }
 
 func (self GithubLogic) findUserEmail(githubUser string) string {
 	bindUser := &model.BindUser{}
-	MasterDB.Where("username=? AND `type`=?", githubUser, model.BindTypeGithub).Get(bindUser)
+	db.MasterDB.Where("username=? AND `type`=?", githubUser, model.BindTypeGithub).Get(bindUser)
 	if !strings.HasSuffix(bindUser.Email, "@github.com") {
 		return bindUser.Email
 	}
@@ -748,7 +748,7 @@ func (self GithubLogic) findUserEmail(githubUser string) string {
 	}
 
 	gcttIssue := &model.GCTTIssue{}
-	MasterDB.Where("translator=? AND email!=''", githubUser).Get(gcttIssue)
+	db.MasterDB.Where("translator=? AND email!=''", githubUser).Get(gcttIssue)
 	return gcttIssue.Email
 }
 

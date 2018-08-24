@@ -10,7 +10,7 @@ import (
 	"html/template"
 	"net/http"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -93,7 +93,7 @@ func (BookController) Detail(ctx echo.Context) error {
 		data["likeflag"] = logic.DefaultLike.HadLike(ctx, me.Uid, book.Id, model.TypeBook)
 		data["hadcollect"] = logic.DefaultFavorite.HadFavorite(ctx, me.Uid, book.Id, model.TypeBook)
 
-		logic.Views.Incr(Request(ctx), model.TypeBook, book.Id, me.Uid)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeBook, book.Id, me.Uid)
 
 		if me.Uid != book.Uid {
 			go logic.DefaultViewRecord.Record(book.Id, model.TypeBook, me.Uid)
@@ -104,7 +104,7 @@ func (BookController) Detail(ctx echo.Context) error {
 			data["view_source"] = logic.DefaultViewSource.FindOne(ctx, book.Id, model.TypeBook)
 		}
 	} else {
-		logic.Views.Incr(Request(ctx), model.TypeBook, book.Id)
+		logic.Views.Incr(xhttp.Request(ctx), model.TypeBook, book.Id)
 	}
 
 	// 为了阅读数即时看到

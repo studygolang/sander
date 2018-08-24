@@ -9,7 +9,7 @@ package controller
 import (
 	"net/http"
 
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/logic"
 	"sander/model"
 
@@ -58,7 +58,7 @@ func (OAuthController) GithubCallback(ctx echo.Context) error {
 	}
 
 	// 登录成功，种cookie
-	SetLoginCookie(ctx, user.Username)
+	xhttp.SetLoginCookie(ctx, user.Username)
 
 	if user.Balance == 0 {
 		return ctx.Redirect(http.StatusSeeOther, "/balance")

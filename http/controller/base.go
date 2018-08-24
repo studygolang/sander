@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"sander/db/nosql"
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/logic"
 
 	"github.com/labstack/echo"
@@ -26,7 +26,7 @@ func getLogger(ctx echo.Context) *logger.Logger {
 
 // render html 输出
 func render(ctx echo.Context, contentTpl string, data map[string]interface{}) error {
-	return Render(ctx, contentTpl, data)
+	return xhttp.Render(ctx, contentTpl, data)
 }
 
 func success(ctx echo.Context, data interface{}) error {

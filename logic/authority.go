@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strconv"
 
-	. "sander/db"
+	"sander/db"
 	"sander/global"
 	"sander/model"
 
@@ -126,7 +126,7 @@ func (self AuthorityLogic) HasAuthority(user *model.Me, route string) bool {
 func (AuthorityLogic) FindAuthoritiesByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.Authority, int) {
 	objLog := GetLogger(ctx)
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
 		session.And(k+"=?", v)
@@ -159,7 +159,7 @@ func (AuthorityLogic) FindById(ctx context.Context, aid int) *model.Authority {
 	}
 
 	authority := &model.Authority{}
-	_, err := MasterDB.Id(aid).Get(authority)
+	_, err := db.MasterDB.Id(aid).Get(authority)
 	if err != nil {
 		objLog.Errorln("authority FindById error:", err)
 		return nil
@@ -182,9 +182,9 @@ func (AuthorityLogic) Save(ctx context.Context, form url.Values, opUser string) 
 	authority.OpUser = opUser
 
 	if authority.Aid != 0 {
-		_, err = MasterDB.Id(authority.Aid).Update(authority)
+		_, err = db.MasterDB.Id(authority.Aid).Update(authority)
 	} else {
-		_, err = MasterDB.Insert(authority)
+		_, err = db.MasterDB.Insert(authority)
 	}
 
 	if err != nil {
@@ -199,7 +199,7 @@ func (AuthorityLogic) Save(ctx context.Context, form url.Values, opUser string) 
 }
 
 func (AuthorityLogic) Del(aid int) error {
-	_, err := MasterDB.Id(aid).Delete(new(model.Authority))
+	_, err := db.MasterDB.Id(aid).Delete(new(model.Authority))
 
 	global.AuthorityChan <- struct{}{}
 
@@ -208,7 +208,7 @@ func (AuthorityLogic) Del(aid int) error {
 
 func (AuthorityLogic) userAuthority(user *model.Me) (map[int]bool, error) {
 	userRoles := make([]*model.UserRole, 0)
-	err := MasterDB.Where("uid=?", user.Uid).Find(&userRoles)
+	err := db.MasterDB.Where("uid=?", user.Uid).Find(&userRoles)
 	if err != nil {
 		logger.Errorln("userAuthority userole read fail:", err)
 		return nil, err

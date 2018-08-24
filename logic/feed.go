@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	"sander/util"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
+	"sander/util"
 
 	"github.com/go-xorm/xorm"
 	"github.com/polaris1119/set"
@@ -25,7 +25,7 @@ var DefaultFeed = FeedLogic{}
 
 func (self FeedLogic) GetTotalCount(ctx context.Context) int64 {
 	objLog := GetLogger(ctx)
-	count, err := MasterDB.Where("state=0").Count(new(model.Feed))
+	count, err := db.MasterDB.Where("state=0").Count(new(model.Feed))
 	if err != nil {
 		objLog.Errorln("FeedLogic Count error:", err)
 		return 0
@@ -37,7 +37,7 @@ func (self FeedLogic) FindRecentWithPaginator(ctx context.Context, paginator *Pa
 	objLog := GetLogger(ctx)
 
 	feeds := make([]*model.Feed, 0)
-	err := MasterDB.Desc("updated_at").Limit(paginator.PerPage(), paginator.Offset()).Find(&feeds)
+	err := db.MasterDB.Desc("updated_at").Limit(paginator.PerPage(), paginator.Offset()).Find(&feeds)
 	if err != nil {
 		objLog.Errorln("FeedLogic FindRecent error:", err)
 		return nil
@@ -50,7 +50,7 @@ func (self FeedLogic) FindRecent(ctx context.Context, num int) []*model.Feed {
 	objLog := GetLogger(ctx)
 
 	feeds := make([]*model.Feed, 0)
-	err := MasterDB.Desc("updated_at").Limit(num).Find(&feeds)
+	err := db.MasterDB.Desc("updated_at").Limit(num).Find(&feeds)
 	if err != nil {
 		objLog.Errorln("FeedLogic FindRecent error:", err)
 		return nil
@@ -63,7 +63,7 @@ func (self FeedLogic) FindTop(ctx context.Context) []*model.Feed {
 	objLog := GetLogger(ctx)
 
 	feeds := make([]*model.Feed, 0)
-	err := MasterDB.Where("top=1").Desc("updated_at").Find(&feeds)
+	err := db.MasterDB.Where("top=1").Desc("updated_at").Find(&feeds)
 	if err != nil {
 		objLog.Errorln("FeedLogic FindRecent error:", err)
 		return nil
@@ -144,7 +144,7 @@ func (FeedLogic) setTop(session *xorm.Session, objid, objtype int, top int) erro
 // updateComment 更新动态评论数据
 func (FeedLogic) updateComment(objid, objtype, uid int, cmttime time.Time) {
 	go func() {
-		MasterDB.Table(new(model.Feed)).Where("objid=? AND objtype=?", objid, objtype).
+		db.MasterDB.Table(new(model.Feed)).Where("objid=? AND objtype=?", objid, objtype).
 			Incr("cmtnum", 1).Update(map[string]interface{}{
 			"lastreplyuid":  uid,
 			"lastreplytime": cmttime,
@@ -159,11 +159,11 @@ func (self FeedLogic) modifyTopicNode(tid, nid int) {
 		}
 
 		node := &model.TopicNode{}
-		_, err := MasterDB.Id(nid).Get(node)
+		_, err := db.MasterDB.Id(nid).Get(node)
 		if err == nil && !node.ShowIndex {
 			change["state"] = model.FeedOffline
 		}
-		MasterDB.Table(new(model.Feed)).Where("objid=? AND objtype=?", tid, model.TypeTopic).
+		db.MasterDB.Table(new(model.Feed)).Where("objid=? AND objtype=?", tid, model.TypeTopic).
 			Update(change)
 	}()
 }

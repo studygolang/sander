@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/logger"
@@ -29,7 +29,7 @@ func (ViewSourceLogic) Record(req *http.Request, objtype, objid int) {
 	}
 
 	viewSource := &model.ViewSource{}
-	_, err := MasterDB.Where("objid=? AND objtype=?", objid, objtype).Get(viewSource)
+	_, err := db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).Get(viewSource)
 	if err != nil {
 		logger.Errorln("ViewSourceLogic Record find error:", err)
 		return
@@ -38,7 +38,7 @@ func (ViewSourceLogic) Record(req *http.Request, objtype, objid int) {
 	if viewSource.Id == 0 {
 		viewSource.Objid = objid
 		viewSource.Objtype = objtype
-		_, err = MasterDB.Insert(viewSource)
+		_, err = db.MasterDB.Insert(viewSource)
 		if err != nil {
 			logger.Errorln("ViewSourceLogic Record insert error:", err)
 			return
@@ -55,7 +55,7 @@ func (ViewSourceLogic) Record(req *http.Request, objtype, objid int) {
 		}
 	}
 
-	_, err = MasterDB.Id(viewSource.Id).Incr(field, 1).Update(new(model.ViewSource))
+	_, err = db.MasterDB.Id(viewSource.Id).Incr(field, 1).Update(new(model.ViewSource))
 	if err != nil {
 		logger.Errorln("ViewSourceLogic Record update error:", err)
 		return
@@ -67,7 +67,7 @@ func (ViewSourceLogic) FindOne(ctx context.Context, objid, objtype int) *model.V
 	objLog := GetLogger(ctx)
 
 	viewSource := &model.ViewSource{}
-	_, err := MasterDB.Where("objid=? AND objtype=?", objid, objtype).Get(viewSource)
+	_, err := db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).Get(viewSource)
 	if err != nil {
 		objLog.Errorln("ViewSourceLogic FindOne error:", err)
 	}

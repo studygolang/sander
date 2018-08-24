@@ -16,7 +16,7 @@ import (
 	"strconv"
 
 	"sander/config"
-	. "sander/http"
+	xhttp "sander/http"
 	"sander/http/middleware"
 	"sander/logic"
 	"sander/model"
@@ -46,7 +46,7 @@ func (self GCTTController) Index(ctx echo.Context) error {
 	gcttUsers := logic.DefaultGCTT.FindCoreUsers(ctx)
 	gcttIssues := logic.DefaultGCTT.FindUnTranslateIssues(ctx, 10)
 
-	return Render(ctx, "gctt/index.html", map[string]interface{}{
+	return xhttp.Render(ctx, "gctt/index.html", map[string]interface{}{
 		"time_lines": gcttTimeLines,
 		"users":      gcttUsers,
 		"issues":     gcttIssues,
@@ -196,7 +196,7 @@ func (GCTTController) IssueList(ctx echo.Context) error {
 }
 
 func (GCTTController) Webhook(ctx echo.Context) error {
-	body, err := ioutil.ReadAll(Request(ctx).Body)
+	body, err := ioutil.ReadAll(xhttp.Request(ctx).Body)
 	if err != nil {
 		logger.Errorln("GCTTController Webhook error:", err)
 		return err

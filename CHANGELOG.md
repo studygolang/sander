@@ -3,6 +3,9 @@
 
 
 ##### Version 0.0.0
+> 1.Dockerfile docker-compose    
+
+##### Version 0.0.0
 > 1.迁移config,nosql,middleware    
 
 ##### Version 0.0.0

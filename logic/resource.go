@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/fatih/structs"
@@ -33,7 +33,7 @@ func (ResourceLogic) Publish(ctx context.Context, me *model.Me, form url.Values)
 
 	if form.Get("id") != "" {
 		id := form.Get("id")
-		_, err = MasterDB.Id(id).Get(resource)
+		_, err = db.MasterDB.Id(id).Get(resource)
 		if err != nil {
 			logger.Errorln("ResourceLogic Publish find error:", err)
 			return
@@ -60,7 +60,7 @@ func (ResourceLogic) Publish(ctx context.Context, me *model.Me, form url.Values)
 			objLog.Errorln("ResourceLogic Publish decode error:", err)
 			return
 		}
-		_, err = MasterDB.Id(id).Update(resource)
+		_, err = db.MasterDB.Id(id).Update(resource)
 		if err != nil {
 			objLog.Errorf("更新资源 【%s】 信息失败：%s\n", id, err)
 			return
@@ -78,7 +78,7 @@ func (ResourceLogic) Publish(ctx context.Context, me *model.Me, form url.Values)
 
 		resource.Uid = uid
 
-		session := MasterDB.NewSession()
+		session := db.MasterDB.NewSession()
 		defer session.Close()
 
 		err = session.Begin()
@@ -131,7 +131,7 @@ func (ResourceLogic) Publish(ctx context.Context, me *model.Me, form url.Values)
 
 // Total 资源总数
 func (ResourceLogic) Total() int64 {
-	total, err := MasterDB.Count(new(model.Resource))
+	total, err := db.MasterDB.Count(new(model.Resource))
 	if err != nil {
 		logger.Errorln("CommentLogic Total error:", err)
 	}
@@ -142,7 +142,7 @@ func (ResourceLogic) Total() int64 {
 func (ResourceLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.Resource {
 	objLog := GetLogger(ctx)
 
-	dbSession := MasterDB.OrderBy("id DESC").Limit(limit)
+	dbSession := db.MasterDB.OrderBy("id DESC").Limit(limit)
 	if len(lastIds) > 0 && lastIds[0] > 0 {
 		dbSession.Where("id<?", lastIds[0])
 	}
@@ -166,7 +166,7 @@ func (self ResourceLogic) FindAll(ctx context.Context, paginator *Paginator, ord
 		resourceInfos = make([]*model.ResourceInfo, 0)
 	)
 
-	session := MasterDB.Join("INNER", "resource_ex", "resource.id=resource_ex.id")
+	session := db.MasterDB.Join("INNER", "resource_ex", "resource.id=resource_ex.id")
 	if querystring != "" {
 		session.Where(querystring, args...)
 	}
@@ -219,9 +219,9 @@ func (ResourceLogic) Count(ctx context.Context, querystring string, args ...inte
 		err   error
 	)
 	if querystring == "" {
-		total, err = MasterDB.Count(new(model.Resource))
+		total, err = db.MasterDB.Count(new(model.Resource))
 	} else {
-		total, err = MasterDB.Where(querystring, args...).Count(new(model.Resource))
+		total, err = db.MasterDB.Where(querystring, args...).Count(new(model.Resource))
 	}
 
 	if err != nil {
@@ -240,14 +240,14 @@ func (ResourceLogic) FindByCatid(ctx context.Context, paginator *Paginator, cati
 		resourceInfos = make([]*model.ResourceInfo, 0)
 	)
 
-	err := MasterDB.Join("INNER", "resource_ex", "resource.id=resource_ex.id").Where("catid=?", catid).
+	err := db.MasterDB.Join("INNER", "resource_ex", "resource.id=resource_ex.id").Where("catid=?", catid).
 		Desc("resource.mtime").Limit(count, paginator.Offset()).Find(&resourceInfos)
 	if err != nil {
 		objLog.Errorln("ResourceLogic FindByCatid error:", err)
 		return
 	}
 
-	total, err = MasterDB.Where("catid=?", catid).Count(new(model.Resource))
+	total, err = db.MasterDB.Where("catid=?", catid).Count(new(model.Resource))
 	if err != nil {
 		objLog.Errorln("ResourceLogic FindByCatid count error:", err)
 		return
@@ -292,7 +292,7 @@ func (ResourceLogic) FindByIds(ids []int) []*model.Resource {
 		return nil
 	}
 	resources := make([]*model.Resource, 0)
-	err := MasterDB.In("id", ids).Find(&resources)
+	err := db.MasterDB.In("id", ids).Find(&resources)
 	if err != nil {
 		logger.Errorln("ResourceLogic FindByIds error:", err)
 		return nil
@@ -302,7 +302,7 @@ func (ResourceLogic) FindByIds(ids []int) []*model.Resource {
 
 func (ResourceLogic) findById(id int) *model.Resource {
 	resource := &model.Resource{}
-	_, err := MasterDB.Id(id).Get(resource)
+	_, err := db.MasterDB.Id(id).Get(resource)
 	if err != nil {
 		logger.Errorln("ResourceLogic findById error:", err)
 	}
@@ -315,7 +315,7 @@ func (ResourceLogic) findByIds(ids []int) map[int]*model.Resource {
 		return nil
 	}
 	resources := make(map[int]*model.Resource)
-	err := MasterDB.In("id", ids).Find(&resources)
+	err := db.MasterDB.In("id", ids).Find(&resources)
 	if err != nil {
 		logger.Errorln("ResourceLogic FindByIds error:", err)
 		return nil
@@ -328,7 +328,7 @@ func (ResourceLogic) FindById(ctx context.Context, id int) (resourceMap map[stri
 	objLog := GetLogger(ctx)
 
 	resourceInfo := &model.ResourceInfo{}
-	_, err := MasterDB.Join("INNER", "resource_ex", "resource.id=resource_ex.id").Where("resource.id=?", id).Get(resourceInfo)
+	_, err := db.MasterDB.Join("INNER", "resource_ex", "resource.id=resource_ex.id").Where("resource.id=?", id).Get(resourceInfo)
 	if err != nil {
 		objLog.Errorln("ResourceLogic FindById error:", err)
 		return
@@ -366,7 +366,7 @@ func (ResourceLogic) FindResource(ctx context.Context, id int) *model.Resource {
 	objLog := GetLogger(ctx)
 
 	resource := &model.Resource{}
-	_, err := MasterDB.Id(id).Get(resource)
+	_, err := db.MasterDB.Id(id).Get(resource)
 	if err != nil {
 		objLog.Errorf("ResourceLogic FindResource [%d] error：%s\n", id, err)
 	}
@@ -377,7 +377,7 @@ func (ResourceLogic) FindResource(ctx context.Context, id int) *model.Resource {
 // 获得某个用户最近的资源
 func (ResourceLogic) FindRecent(ctx context.Context, uid int) []*model.Resource {
 	resourceList := make([]*model.Resource, 0)
-	err := MasterDB.Where("uid=?", uid).Limit(5).OrderBy("id DESC").Find(&resourceList)
+	err := db.MasterDB.Where("uid=?", uid).Limit(5).OrderBy("id DESC").Find(&resourceList)
 	if err != nil {
 		logger.Errorln("resource logic FindRecent error:", err)
 		return nil
@@ -389,7 +389,7 @@ func (ResourceLogic) FindRecent(ctx context.Context, uid int) []*model.Resource 
 // getOwner 通过id获得资源的所有者
 func (ResourceLogic) getOwner(id int) int {
 	resource := &model.Resource{}
-	_, err := MasterDB.Id(id).Get(resource)
+	_, err := db.MasterDB.Id(id).Get(resource)
 	if err != nil {
 		logger.Errorln("resource logic getOwner Error:", err)
 		return 0
@@ -403,7 +403,7 @@ type ResourceComment struct{}
 // 更新该资源的评论信息
 // cid：评论id；objid：被评论对象id；uid：评论者；cmttime：评论时间
 func (self ResourceComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 
 	session.Begin()
@@ -460,7 +460,7 @@ type ResourceLike struct{}
 // objid：被喜欢对象id；num: 喜欢数(负数表示取消喜欢)
 func (self ResourceLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
-	_, err := MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.ResourceEx))
+	_, err := db.MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.ResourceEx))
 	if err != nil {
 		logger.Errorln("更新资源喜欢数失败：", err)
 	}

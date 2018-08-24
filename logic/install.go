@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -27,7 +27,7 @@ func (InstallLogic) CreateTable(ctx context.Context) error {
 	}
 
 	sqlSlice := bytes.Split(buf, []byte("CREATE TABLE"))
-	MasterDB.Exec("SET SQL_MODE='ALLOW_INVALID_DATES';")
+	db.MasterDB.Exec("SET SQL_MODE='ALLOW_INVALID_DATES';")
 	for _, oneSql := range sqlSlice {
 		strSql := string(bytes.TrimSpace(oneSql))
 		if strSql == "" {
@@ -35,7 +35,7 @@ func (InstallLogic) CreateTable(ctx context.Context) error {
 		}
 
 		strSql = "CREATE TABLE " + strSql
-		_, err1 := MasterDB.Exec(strSql)
+		_, err1 := db.MasterDB.Exec(strSql)
 		if err1 != nil {
 			objLog.Errorln("create table error:", err1)
 			err = err1
@@ -49,7 +49,7 @@ func (InstallLogic) CreateTable(ctx context.Context) error {
 func (InstallLogic) InitTable(ctx context.Context) error {
 	objLog := GetLogger(ctx)
 
-	total, err := MasterDB.Count(new(model.Role))
+	total, err := db.MasterDB.Count(new(model.Role))
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (InstallLogic) InitTable(ctx context.Context) error {
 		}
 
 		strSql = "INSERT INTO " + strSql
-		_, err1 := MasterDB.Exec(strSql)
+		_, err1 := db.MasterDB.Exec(strSql)
 		if err1 != nil {
 			objLog.Errorln("create table error:", err1)
 			err = err1
@@ -84,7 +84,7 @@ func (InstallLogic) InitTable(ctx context.Context) error {
 }
 
 func (InstallLogic) IsTableExist(ctx context.Context) bool {
-	exists, err := MasterDB.IsTableExist(new(model.User))
+	exists, err := db.MasterDB.IsTableExist(new(model.User))
 	if err != nil || !exists {
 		return false
 	}
@@ -95,7 +95,7 @@ func (InstallLogic) IsTableExist(ctx context.Context) bool {
 // HadRootUser 是否已经创建了超级用户
 func (InstallLogic) HadRootUser(ctx context.Context) bool {
 	user := &model.User{}
-	_, err := MasterDB.Where("is_root=?", 1).Get(user)
+	_, err := db.MasterDB.Where("is_root=?", 1).Get(user)
 	if err != nil {
 		// 发生错误，认为已经创建了
 		return true

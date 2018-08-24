@@ -12,7 +12,7 @@ import (
 	"io/ioutil"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
 	"sander/model"
 
 	"github.com/polaris1119/logger"
@@ -58,7 +58,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 
 	bindUser := &model.BindUser{}
 	// 是否已经授权过了
-	_, err = MasterDB.Where("username=? AND type=?", githubUser.Login, model.BindTypeGithub).Get(bindUser)
+	_, err = db.MasterDB.Where("username=? AND type=?", githubUser.Login, model.BindTypeGithub).Get(bindUser)
 	if err != nil {
 		objLog.Errorln("LoginFromGithub Get BindUser error:", err)
 		return nil, err
@@ -71,7 +71,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 		if !token.Expiry.IsZero() {
 			bindUser.Expire = int(token.Expiry.Unix())
 		}
-		_, err = MasterDB.Where("uid=?", bindUser.Uid).Update(bindUser)
+		_, err = db.MasterDB.Where("uid=?", bindUser.Uid).Update(bindUser)
 		if err != nil {
 			objLog.Errorln("LoginFromGithub update token error:", err)
 			return nil, err
@@ -88,7 +88,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 		return nil, errors.New("Github 对应的用户信息被占用，可能你注册过本站，用户名密码登录试试！")
 	}
 
-	session := MasterDB.NewSession()
+	session := db.MasterDB.NewSession()
 	defer session.Close()
 	session.Begin()
 
@@ -153,7 +153,7 @@ func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *mode
 
 	bindUser := &model.BindUser{}
 	// 是否已经授权过了
-	_, err = MasterDB.Where("username=? AND type=?", githubUser.Login, model.BindTypeGithub).Get(bindUser)
+	_, err = db.MasterDB.Where("username=? AND type=?", githubUser.Login, model.BindTypeGithub).Get(bindUser)
 	if err != nil {
 		objLog.Errorln("LoginFromGithub Get BindUser error:", err)
 		return err
@@ -166,7 +166,7 @@ func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *mode
 		if !token.Expiry.IsZero() {
 			bindUser.Expire = int(token.Expiry.Unix())
 		}
-		_, err = MasterDB.Where("uid=?", bindUser.Uid).Update(bindUser)
+		_, err = db.MasterDB.Where("uid=?", bindUser.Uid).Update(bindUser)
 		if err != nil {
 			objLog.Errorln("LoginFromGithub update token error:", err)
 			return err
@@ -189,7 +189,7 @@ func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *mode
 	if !token.Expiry.IsZero() {
 		bindUser.Expire = int(token.Expiry.Unix())
 	}
-	_, err = MasterDB.Insert(bindUser)
+	_, err = db.MasterDB.Insert(bindUser)
 	if err != nil {
 		objLog.Errorln("LoginFromGithub insert bindUser error:", err)
 		return err
@@ -202,13 +202,13 @@ func (ThirdUserLogic) UnBindUser(ctx context.Context, bindId interface{}, me *mo
 	if !DefaultUser.HasPasswd(ctx, me.Uid) {
 		return errors.New("请先设置密码！")
 	}
-	_, err := MasterDB.Where("id=? AND uid=?", bindId, me.Uid).Delete(new(model.BindUser))
+	_, err := db.MasterDB.Where("id=? AND uid=?", bindId, me.Uid).Delete(new(model.BindUser))
 	return err
 }
 
 func (ThirdUserLogic) findUid(thirdUsername string, typ int) int {
 	bindUser := &model.BindUser{}
-	_, err := MasterDB.Where("username=? AND `type`=?", thirdUsername, typ).Get(bindUser)
+	_, err := db.MasterDB.Where("username=? AND `type`=?", thirdUsername, typ).Get(bindUser)
 	if err != nil {
 		logger.Errorln("ThirdUserLogic findUid error:", err)
 	}
