@@ -14,11 +14,11 @@ import (
 	"strconv"
 	"strings"
 
+	"sander/logger"
 	"sander/model"
 
 	"github.com/go-xorm/xorm"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 	"golang.org/x/net/context"
 )
@@ -29,7 +29,6 @@ var DefaultMessage = MessageLogic{}
 
 // SendMessageTo from给to发短信息
 func (MessageLogic) SendMessageTo(ctx context.Context, from, to int, content string) bool {
-	objLog := GetLogger(ctx)
 
 	message := &model.Message{
 		From:    from,
@@ -40,7 +39,7 @@ func (MessageLogic) SendMessageTo(ctx context.Context, from, to int, content str
 		Hasread: model.NotRead,
 	}
 	if _, err := db.MasterDB.Insert(message); err != nil {
-		objLog.Errorln("message logic SendMessageTo Error:", err)
+		logger.Error("message logic SendMessageTo Error:", err)
 		return false
 	}
 
@@ -70,7 +69,7 @@ func (MessageLogic) SendSystemMsgTo(ctx context.Context, to, msgtype int, ext ma
 	}
 	message.SetExt(ext)
 	if _, err := db.MasterDB.Insert(message); err != nil {
-		logger.Errorln("message logic SendSystemMsgTo Error:", err)
+		logger.Error("message logic SendSystemMsgTo Error:%+v", err)
 		return false
 	}
 	// 通过 WebSocket 通知对方
@@ -111,7 +110,7 @@ func (MessageLogic) SendSysMsgAtUids(ctx context.Context, uids string, ext map[s
 		}
 		message.To = uid
 		if _, err := db.MasterDB.Insert(message); err != nil {
-			logger.Errorln("message logic SendSysMsgAtUids Error:", err)
+			logger.Error("message logic SendSysMsgAtUids Error:%+v", err)
 			continue
 		}
 		// 通过 WebSocket 通知对方
@@ -162,7 +161,7 @@ func (MessageLogic) SendSysMsgAtUsernames(ctx context.Context, usernames string,
 		}
 		message.To = uid
 		if _, err := db.MasterDB.Insert(message); err != nil {
-			logger.Errorln("message logic SendSysMsgAtUsernames Error:", err)
+			logger.Error("message logic SendSysMsgAtUsernames Error:%+v", err)
 			continue
 		}
 		// 通过 WebSocket 通知对方
@@ -178,13 +177,12 @@ func (MessageLogic) SendSysMsgAtUsernames(ctx context.Context, usernames string,
 //   model.MsgtypeAtMe 为：{"uid":xxx,"cid":xxx,"objid":xxx,"objtype":xxx}
 //   model.MsgtypePulishAtMe 为：{"uid":xxx,"objid":xxx,"objtype":xxx}
 func (self MessageLogic) FindSysMsgsByUid(ctx context.Context, uid int, paginator *Paginator) []map[string]interface{} {
-	objLog := GetLogger(ctx)
 
 	messages := make([]*model.SystemMessage, 0)
 	err := db.MasterDB.Where("`to`=?", uid).OrderBy("id DESC").
 		Limit(paginator.PerPage(), paginator.Offset()).Find(&messages)
 	if err != nil {
-		objLog.Errorln("message logic FindSysMsgsByUid Error:", err)
+		logger.Error("message logic FindSysMsgsByUid Error:", err)
 		return nil
 	}
 
@@ -418,12 +416,10 @@ func (MessageLogic) FindMsgById(ctx context.Context, id string) *model.Message {
 	if id == "" {
 		return nil
 	}
-
-	objLog := GetLogger(ctx)
 	message := &model.Message{}
 	_, err := db.MasterDB.Id(id).Get(message)
 	if err != nil {
-		objLog.Errorln("message logic FindMsgById Error:", err)
+		logger.Error("message logic FindMsgById Error:", err)
 		return nil
 	}
 
@@ -432,13 +428,12 @@ func (MessageLogic) FindMsgById(ctx context.Context, id string) *model.Message {
 
 // 获得发给某人的短消息（收件箱）
 func (self MessageLogic) FindToMsgsByUid(ctx context.Context, uid int, paginator *Paginator) []map[string]interface{} {
-	objLog := GetLogger(ctx)
 
 	messages := make([]*model.Message, 0)
 	err := db.MasterDB.Where("`to`=? AND tdel=?", uid, model.TdelNotDel).
 		Limit(paginator.PerPage(), paginator.Offset()).OrderBy("id DESC").Find(&messages)
 	if err != nil {
-		objLog.Errorln("message logic FindToMsgsByUid Error:", err)
+		logger.Error("message logic FindToMsgsByUid Error:", err)
 		return nil
 	}
 
@@ -474,13 +469,12 @@ func (MessageLogic) ToMsgCount(ctx context.Context, uid int) int64 {
 
 // 获取某人发送的消息
 func (MessageLogic) FindFromMsgsByUid(ctx context.Context, uid int, paginator *Paginator) []map[string]interface{} {
-	objLog := GetLogger(ctx)
 
 	messages := make([]*model.Message, 0)
 	err := db.MasterDB.Where("`from`=? AND fdel=?", uid, model.FdelNotDel).
 		OrderBy("id DESC").Limit(paginator.PerPage(), paginator.Offset()).Find(&messages)
 	if err != nil {
-		objLog.Errorln("message logic FindFromMsgsByUid Error:", err)
+		logger.Error("message logic FindFromMsgsByUid Error:", err)
 		return nil
 	}
 
@@ -522,7 +516,7 @@ func (MessageLogic) MarkHasRead(ctx context.Context, ids []int, isSysMsg bool, u
 
 	_, err := session.Update(map[string]interface{}{"hasread": model.HasRead})
 	if err != nil {
-		logger.Errorln("message logic MarkHasRead Error:", err)
+		logger.Error("message logic MarkHasRead Error:%+v", err)
 		return false
 	}
 	// 将显示的消息数减少
@@ -544,7 +538,7 @@ func (MessageLogic) DeleteMessage(ctx context.Context, id, msgtype string) bool 
 		_, err = db.MasterDB.Table(new(model.Message)).Id(id).Update(map[string]interface{}{"fdel": model.FdelHasDel})
 	}
 	if err != nil {
-		logger.Errorln("message logic DeleteMessage Error:", err)
+		logger.Error("message logic DeleteMessage Error:%+v", err)
 		return false
 	}
 	return true
@@ -554,12 +548,12 @@ func (MessageLogic) DeleteMessage(ctx context.Context, id, msgtype string) bool 
 func (MessageLogic) FindNotReadMsgNum(ctx context.Context, uid int) int {
 	sysMsgNum, err := db.MasterDB.Where("`to`=? AND hasread=?", uid, model.NotRead).Count(new(model.SystemMessage))
 	if err != nil {
-		logger.Errorln("SystemMessage logic FindNotReadMsgNum Error:", err)
+		logger.Error("SystemMessage logic FindNotReadMsgNum Error:%+v", err)
 	}
 
 	msgNum, err := db.MasterDB.Where("`to`=? AND hasread=?", uid, model.NotRead).Count(new(model.Message))
 	if err != nil {
-		logger.Errorln("Message logic FindNotReadMsgNum Error:", err)
+		logger.Error("Message logic FindNotReadMsgNum Error:%+v", err)
 	}
 	return int(sysMsgNum + msgNum)
 }

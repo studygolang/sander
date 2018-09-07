@@ -12,22 +12,22 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"github.com/sundy-li/html2article"
 )
 
 func (self ArticleLogic) ParseArticleByAccuracy(articleUrl string) (*model.Article, error) {
 	htmlArticle, err := html2article.FromUrl(articleUrl)
 	if err != nil {
-		logger.Errorln("html2article from url:", articleUrl, "error:", err)
+		logger.Error("html2article from url:%+v,error:%+v", articleUrl, err)
 		return nil, err
 	}
 
 	urlTyp, err := url.Parse(articleUrl)
 	if err != nil {
-		logger.Errorln("html2article parse url:", articleUrl, "error:", err)
+		logger.Error("html2article parse url:%+v,error:%+v", articleUrl, err)
 		return nil, err
 	}
 
@@ -63,7 +63,7 @@ func (self ArticleLogic) ParseArticleByAccuracy(articleUrl string) (*model.Artic
 
 	_, err = db.MasterDB.Insert(article)
 	if err != nil {
-		logger.Errorln("insert article error:", err)
+		logger.Error("insert article error:%+v", err)
 		return nil, err
 	}
 

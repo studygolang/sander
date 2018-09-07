@@ -260,6 +260,12 @@
 			"revisionTime": "2018-04-08T05:53:51Z"
 		},
 		{
+			"checksumSHA1": "CaHXPCh0HcBZv+c7i+LNalAjoHw=",
+			"path": "github.com/meission/log4go",
+			"revision": "3baf5e0c10dc65d43f55ea8ea20e12f7a15d5c32",
+			"revisionTime": "2017-06-27T15:31:52Z"
+		},
+		{
 			"checksumSHA1": "sZPoLYTMt3Bz8HNvSeA5TRSx3M8=",
 			"path": "github.com/olekukonko/tablewriter",
 			"revision": "d4647c9c7a84d847478d890b816b7d8b62b0b279",
@@ -282,12 +288,6 @@
 			"path": "github.com/polaris1119/keyword",
 			"revision": "96ae6735f2f2ab2a3859ef65eb22ed53da502cd5",
 			"revisionTime": "2017-06-08T07:59:27Z"
-		},
-		{
-			"checksumSHA1": "i/QTEdbY5JM9CK0S5wAj6fZ2Zis=",
-			"path": "github.com/polaris1119/logger",
-			"revision": "0233d014769ef3cb57a033df69c0be9a314b1f44",
-			"revisionTime": "2017-04-22T06:11:49Z"
 		},
 		{
 			"checksumSHA1": "3OzHX+Ylvz5jvXMwi7uiGa0zv3M=",

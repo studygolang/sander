@@ -17,11 +17,11 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 )
 
@@ -61,7 +61,7 @@ func (self SearcherLogic) IndexingArticle(isAll bool) {
 			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&articleList)
 		}
 		if err != nil {
-			logger.Errorln("IndexingArticle error:", err)
+			logger.Error("IndexingArticle error:%+v", err)
 			break
 		}
 
@@ -70,7 +70,7 @@ func (self SearcherLogic) IndexingArticle(isAll bool) {
 		}
 
 		for _, article := range articleList {
-			logger.Infoln("deal article_id:", article.Id)
+			logger.Info("deal article_id:", article.Id)
 
 			if id < article.Id {
 				id = article.Id
@@ -123,7 +123,7 @@ func (self SearcherLogic) IndexingTopic(isAll bool) {
 			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&topicList)
 		}
 		if err != nil {
-			logger.Errorln("IndexingTopic error:", err)
+			logger.Error("IndexingTopic error:%+v", err)
 			break
 		}
 
@@ -135,12 +135,12 @@ func (self SearcherLogic) IndexingTopic(isAll bool) {
 
 		err = db.MasterDB.In("tid", tids).Find(&topicExList)
 		if err != nil {
-			logger.Errorln("IndexingTopic error:", err)
+			logger.Error("IndexingTopic error:%+v", err)
 			break
 		}
 
 		for _, topic := range topicList {
-			logger.Infoln("deal topic_id:", topic.Tid)
+			logger.Info("deal topic_id:%+v", topic.Tid)
 
 			if id < topic.Tid {
 				id = topic.Tid
@@ -192,7 +192,7 @@ func (self SearcherLogic) IndexingResource(isAll bool) {
 			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&resourceList)
 		}
 		if err != nil {
-			logger.Errorln("IndexingResource error:", err)
+			logger.Error("IndexingResource error:%+v", err)
 			break
 		}
 
@@ -204,12 +204,12 @@ func (self SearcherLogic) IndexingResource(isAll bool) {
 
 		err = db.MasterDB.In("id", ids).Find(&resourceExList)
 		if err != nil {
-			logger.Errorln("IndexingResource error:", err)
+			logger.Error("IndexingResource error:%+v", err)
 			break
 		}
 
 		for _, resource := range resourceList {
-			logger.Infoln("deal resource_id:", resource.Id)
+			logger.Info("deal resource_id:%+v", resource.Id)
 
 			if id < resource.Id {
 				id = resource.Id
@@ -259,7 +259,7 @@ func (self SearcherLogic) IndexingOpenProject(isAll bool) {
 			err = db.MasterDB.Where("mtime>?", timeAgo).Find(&projectList)
 		}
 		if err != nil {
-			logger.Errorln("IndexingArticle error:", err)
+			logger.Error("IndexingArticle error:%+v", err)
 			break
 		}
 
@@ -268,7 +268,7 @@ func (self SearcherLogic) IndexingOpenProject(isAll bool) {
 		}
 
 		for _, project := range projectList {
-			logger.Infoln("deal project_id:", project.Id)
+			logger.Info("deal project_id:%+v", project.Id)
 
 			if id < project.Id {
 				id = project.Id
@@ -350,10 +350,10 @@ func (this *SearcherLogic) DoSearch(q, field string, start, rows int) (*model.Re
 			values.Add("q", "title:"+q+"^2"+" OR content:"+q+"^0.2")
 		}
 	}
-	logger.Infoln(selectUrl + values.Encode())
+	logger.Info("url:%+v", selectUrl+values.Encode())
 	resp, err := http.Get(selectUrl + values.Encode())
 	if err != nil {
-		logger.Errorln("search error:", err)
+		logger.Error("search error:%+v", err)
 		return &model.ResponseBody{}, err
 	}
 
@@ -362,7 +362,7 @@ func (this *SearcherLogic) DoSearch(q, field string, start, rows int) (*model.Re
 	var searchResponse model.SearchResponse
 	err = json.NewDecoder(resp.Body).Decode(&searchResponse)
 	if err != nil {
-		logger.Errorln("parse response error:", err)
+		logger.Error("parse response error:%+v", err)
 		return &model.ResponseBody{}, err
 	}
 
@@ -423,11 +423,11 @@ func (this *SearcherLogic) SearchByField(field, value string, start, rows int, s
 	values.Add("q", value)
 	values.Add("df", field)
 
-	logger.Infoln(selectUrl + values.Encode())
+	logger.Info("select url:%+v", selectUrl+values.Encode())
 
 	resp, err := http.Get(selectUrl + values.Encode())
 	if err != nil {
-		logger.Errorln("search error:", err)
+		logger.Error("search error:%+v", err)
 		return &model.ResponseBody{}, err
 	}
 
@@ -436,7 +436,7 @@ func (this *SearcherLogic) SearchByField(field, value string, start, rows int, s
 	var searchResponse model.SearchResponse
 	err = json.NewDecoder(resp.Body).Decode(&searchResponse)
 	if err != nil {
-		logger.Errorln("parse response error:", err)
+		logger.Error("parse response error:%+v", err)
 		return &model.ResponseBody{}, err
 	}
 
@@ -460,7 +460,7 @@ func (this *SearcherLogic) FindAtomFeeds(rows int) (*model.ResponseBody, error) 
 
 	resp, err := http.Get(selectUrl + values.Encode())
 	if err != nil {
-		logger.Errorln("search error:", err)
+		logger.Error("search error:%+v", err)
 		return &model.ResponseBody{}, err
 	}
 
@@ -469,7 +469,7 @@ func (this *SearcherLogic) FindAtomFeeds(rows int) (*model.ResponseBody, error) 
 	var searchResponse model.SearchResponse
 	err = json.NewDecoder(resp.Body).Decode(&searchResponse)
 	if err != nil {
-		logger.Errorln("parse response error:", err)
+		logger.Error("parse response error:%+v", err)
 		return &model.ResponseBody{}, err
 	}
 
@@ -570,17 +570,17 @@ func (this *SolrClient) Post() error {
 	}
 
 	if stringBuilder.Len() == 1 {
-		logger.Errorln("post docs:no right addcommand")
+		logger.Error("post docs:no right addcommand")
 		return errors.New("no right addcommand")
 	}
 
 	stringBuilder.Append("}")
 
-	logger.Infoln("start post data to solr...")
+	logger.Info("start post data to solr...")
 
 	resp, err := http.Post(config.ConfigFile.MustValue("search", "engine_url")+"/update?wt=json&commit=true", "application/json", stringBuilder)
 	if err != nil {
-		logger.Errorln("post error:", err)
+		logger.Error("post error:%+v", err)
 		return err
 	}
 
@@ -589,11 +589,11 @@ func (this *SolrClient) Post() error {
 	var result map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		logger.Errorln("parse response error:", err)
+		logger.Error("parse response error:%+v", err)
 		return err
 	}
 
-	logger.Infoln("post data result:", result)
+	logger.Info("post data result:%+v", result)
 
 	return nil
 }

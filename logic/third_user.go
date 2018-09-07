@@ -13,9 +13,9 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
@@ -48,11 +48,10 @@ func (ThirdUserLogic) GithubAuthCodeUrl(ctx context.Context, redirectURL string)
 }
 
 func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*model.User, error) {
-	objLog := GetLogger(ctx)
 
 	githubUser, token, err := self.githubTokenAndUser(ctx, code)
 	if err != nil {
-		objLog.Errorln("LoginFromGithub githubTokenAndUser error:", err)
+		logger.Error("LoginFromGithub githubTokenAndUser error:", err)
 		return nil, err
 	}
 
@@ -60,7 +59,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 	// 是否已经授权过了
 	_, err = db.MasterDB.Where("username=? AND type=?", githubUser.Login, model.BindTypeGithub).Get(bindUser)
 	if err != nil {
-		objLog.Errorln("LoginFromGithub Get BindUser error:", err)
+		logger.Error("LoginFromGithub Get BindUser error:", err)
 		return nil, err
 	}
 
@@ -73,7 +72,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 		}
 		_, err = db.MasterDB.Where("uid=?", bindUser.Uid).Update(bindUser)
 		if err != nil {
-			objLog.Errorln("LoginFromGithub update token error:", err)
+			logger.Error("LoginFromGithub update token error:", err)
 			return nil, err
 		}
 
@@ -84,7 +83,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 	exists := DefaultUser.EmailOrUsernameExists(ctx, githubUser.Email, githubUser.Login)
 	if exists {
 		// TODO: 考虑改进？
-		objLog.Errorln("LoginFromGithub Github 对应的用户信息被占用")
+		logger.Error("LoginFromGithub Github 对应的用户信息被占用")
 		return nil, errors.New("Github 对应的用户信息被占用，可能你注册过本站，用户名密码登录试试！")
 	}
 
@@ -112,7 +111,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 	err = DefaultUser.doCreateUser(ctx, session, user)
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("LoginFromGithub doCreateUser error:", err)
+		logger.Error("LoginFromGithub doCreateUser error:", err)
 		return nil, err
 	}
 
@@ -133,7 +132,7 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 	_, err = session.Insert(bindUser)
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("LoginFromGithub bindUser error:", err)
+		logger.Error("LoginFromGithub bindUser error:", err)
 		return nil, err
 	}
 
@@ -143,11 +142,10 @@ func (self ThirdUserLogic) LoginFromGithub(ctx context.Context, code string) (*m
 }
 
 func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *model.Me) error {
-	objLog := GetLogger(ctx)
 
 	githubUser, token, err := self.githubTokenAndUser(ctx, code)
 	if err != nil {
-		objLog.Errorln("LoginFromGithub githubTokenAndUser error:", err)
+		logger.Error("LoginFromGithub githubTokenAndUser error:", err)
 		return err
 	}
 
@@ -155,7 +153,7 @@ func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *mode
 	// 是否已经授权过了
 	_, err = db.MasterDB.Where("username=? AND type=?", githubUser.Login, model.BindTypeGithub).Get(bindUser)
 	if err != nil {
-		objLog.Errorln("LoginFromGithub Get BindUser error:", err)
+		logger.Error("LoginFromGithub Get BindUser error:", err)
 		return err
 	}
 
@@ -168,7 +166,7 @@ func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *mode
 		}
 		_, err = db.MasterDB.Where("uid=?", bindUser.Uid).Update(bindUser)
 		if err != nil {
-			objLog.Errorln("LoginFromGithub update token error:", err)
+			logger.Error("LoginFromGithub update token error:", err)
 			return err
 		}
 
@@ -191,7 +189,7 @@ func (self ThirdUserLogic) BindGithub(ctx context.Context, code string, me *mode
 	}
 	_, err = db.MasterDB.Insert(bindUser)
 	if err != nil {
-		objLog.Errorln("LoginFromGithub insert bindUser error:", err)
+		logger.Error("LoginFromGithub insert bindUser error:", err)
 		return err
 	}
 
@@ -210,7 +208,7 @@ func (ThirdUserLogic) findUid(thirdUsername string, typ int) int {
 	bindUser := &model.BindUser{}
 	_, err := db.MasterDB.Where("username=? AND `type`=?", thirdUsername, typ).Get(bindUser)
 	if err != nil {
-		logger.Errorln("ThirdUserLogic findUid error:", err)
+		logger.Error("ThirdUserLogic findUid error:%+v", err)
 	}
 
 	return bindUser.Uid

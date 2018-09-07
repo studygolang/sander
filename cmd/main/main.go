@@ -20,6 +20,7 @@ import (
 	"sander/http/controller/admin"
 	"sander/http/controller/app"
 	pwm "sander/http/middleware"
+	"sander/logger"
 	"sander/logic"
 	thirdmw "sander/middleware"
 
@@ -28,7 +29,6 @@ import (
 	"github.com/labstack/echo/engine/standard"
 	mw "github.com/labstack/echo/middleware"
 	"github.com/polaris1119/keyword"
-	"github.com/polaris1119/logger"
 )
 
 func init() {
@@ -46,7 +46,7 @@ func main() {
 
 	global.App.Init(logic.WebsiteSetting.Domain)
 
-	logger.Init(config.ROOT+"/log", config.ConfigFile.MustValue("global", "log_level", "DEBUG"))
+	logger.Init(config.ROOT + "/log/main")
 
 	go keyword.Extractor.Init(keyword.DefaultProps, true, config.ROOT+"/data/programming.txt,"+config.ROOT+"/data/dictionary.txt")
 

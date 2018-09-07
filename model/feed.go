@@ -8,8 +8,7 @@ package model
 
 import (
 	"sander/db"
-
-	"github.com/polaris1119/logger"
+	"sander/logger"
 )
 
 const FeedOffline = 1
@@ -142,6 +141,6 @@ func PublishFeed(object interface{}, objectExt interface{}) {
 
 	_, err := db.MasterDB.Insert(feed)
 	if err != nil {
-		logger.Errorln("publish feed:", object, " error:", err)
+		logger.Error("publish feed:%+v,error:%+v", object, err)
 	}
 }

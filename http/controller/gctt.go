@@ -18,13 +18,13 @@ import (
 	"sander/config"
 	xhttp "sander/http"
 	"sander/http/middleware"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 	"sander/util/echoutils"
 
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 type GCTTController struct{}
@@ -198,7 +198,7 @@ func (GCTTController) IssueList(ctx echo.Context) error {
 func (GCTTController) Webhook(ctx echo.Context) error {
 	body, err := ioutil.ReadAll(xhttp.Request(ctx).Body)
 	if err != nil {
-		logger.Errorln("GCTTController Webhook error:", err)
+		logger.Error("GCTTController Webhook error:%+v", err)
 		return err
 	}
 
@@ -207,12 +207,12 @@ func (GCTTController) Webhook(ctx echo.Context) error {
 	tokenSecret := config.ConfigFile.MustValue("gctt", "token_secret")
 	ok := checkMAC(body, header.Get("X-Hub-Signature"), []byte(tokenSecret))
 	if !ok {
-		logger.Errorln("GCTTController Webhook checkMAC error", string(body))
+		logger.Error("GCTTController Webhook checkMAC error", string(body))
 		return nil
 	}
 
 	event := header.Get("X-GitHub-Event")
-	logger.Infoln("GCTTController Webhook event:", event)
+	logger.Info("GCTTController Webhook event:%+v", event)
 	switch event {
 	case "pull_request":
 		return logic.DefaultGithub.PullRequestEvent(ctx, body)

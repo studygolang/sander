@@ -13,9 +13,9 @@ import (
 	"strings"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 )
 
@@ -32,7 +32,6 @@ func (ReadingLogic) FindLastList(beginTime string) ([]*model.MorningReading, err
 
 // 获取晨读列表（分页）
 func (ReadingLogic) FindBy(ctx context.Context, limit, rtype int, lastIds ...int) []*model.MorningReading {
-	objLog := GetLogger(ctx)
 
 	dbSession := db.MasterDB.Where("rtype=?", rtype)
 	if len(lastIds) > 0 && lastIds[0] > 0 {
@@ -42,7 +41,7 @@ func (ReadingLogic) FindBy(ctx context.Context, limit, rtype int, lastIds ...int
 	readingList := make([]*model.MorningReading, 0)
 	err := dbSession.OrderBy("id DESC").Limit(limit).Find(&readingList)
 	if err != nil {
-		objLog.Errorln("ResourceLogic FindReadings Error:", err)
+		logger.Error("ResourceLogic FindReadings Error:", err)
 		return nil
 	}
 
@@ -51,12 +50,11 @@ func (ReadingLogic) FindBy(ctx context.Context, limit, rtype int, lastIds ...int
 
 // 【我要晨读】
 func (ReadingLogic) IReading(ctx context.Context, id int) string {
-	objLog := GetLogger(ctx)
 
 	reading := &model.MorningReading{}
 	_, err := db.MasterDB.Id(id).Get(reading)
 	if err != nil {
-		objLog.Errorln("reading logic IReading error:", err)
+		logger.Error("reading logic IReading error:", err)
 		return "/readings"
 	}
 
@@ -75,8 +73,6 @@ func (ReadingLogic) IReading(ctx context.Context, id int) string {
 
 // FindReadingByPage 获取晨读列表（分页）
 func (ReadingLogic) FindReadingByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.MorningReading, int) {
-	objLog := GetLogger(ctx)
-
 	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
@@ -89,13 +85,13 @@ func (ReadingLogic) FindReadingByPage(ctx context.Context, conds map[string]stri
 	readingList := make([]*model.MorningReading, 0)
 	err := session.OrderBy("id DESC").Limit(limit, offset).Find(&readingList)
 	if err != nil {
-		objLog.Errorln("reading find error:", err)
+		logger.Error("reading find error:", err)
 		return nil, 0
 	}
 
 	total, err := totalSession.Count(new(model.MorningReading))
 	if err != nil {
-		objLog.Errorln("reading find count error:", err)
+		logger.Error("reading find count error:", err)
 		return nil, 0
 	}
 
@@ -107,7 +103,7 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 	reading := &model.MorningReading{}
 	err = schemaDecoder.Decode(reading, form)
 	if err != nil {
-		logger.Errorln("reading SaveReading error", err)
+		logger.Error("reading SaveReading error:%+v", err)
 		errMsg = err.Error()
 		return
 	}
@@ -120,7 +116,7 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 		err = db.MasterDB.Where("url=?", reading.Url).OrderBy("id DESC").Find(&readings)
 	}
 	if err != nil {
-		logger.Errorln("reading SaveReading MasterDB.Where() error", err)
+		logger.Error("reading SaveReading MasterDB.Where() error:%+v", err)
 		errMsg = err.Error()
 		return
 	}
@@ -132,12 +128,12 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 
 	reading.Username = username
 
-	logger.Debugln(reading.Rtype, "id=", reading.Id)
+	logger.Debug("typ:%+v,id:%+v", reading.Rtype, reading.Id)
 	if reading.Id != 0 {
 		_, err = db.MasterDB.Id(reading.Id).Update(reading)
 	} else {
 		if len(readings) > 0 {
-			logger.Errorln("reading report:", reading)
+			logger.Error("reading report:%+v", reading)
 			errMsg, err = "已经存在了!!", errors.New("已经存在了!!")
 			return
 		}
@@ -146,7 +142,7 @@ func (ReadingLogic) SaveReading(ctx context.Context, form url.Values, username s
 
 	if err != nil {
 		errMsg = "内部服务器错误"
-		logger.Errorln("reading save:", errMsg, ":", err)
+		logger.Error("reading save:", errMsg, ":%+v", err)
 		return
 	}
 
@@ -158,7 +154,7 @@ func (ReadingLogic) FindById(ctx context.Context, id int) *model.MorningReading 
 	reading := &model.MorningReading{}
 	_, err := db.MasterDB.Id(id).Get(reading)
 	if err != nil {
-		logger.Errorln("reading logic FindReadingById Error:", err)
+		logger.Error("reading logic FindReadingById Error:%+v", err)
 		return nil
 	}
 

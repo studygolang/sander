@@ -8,8 +8,7 @@ package model
 
 import (
 	"encoding/json"
-
-	"github.com/polaris1119/logger"
+	"sander/logger"
 )
 
 const (
@@ -64,7 +63,7 @@ type SystemMessage struct {
 func (this *SystemMessage) GetExt() map[string]interface{} {
 	result := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(this.Ext), &result); err != nil {
-		logger.Errorln("SystemMessage Ext JsonUnmarshal Error:", err)
+		logger.Error("SystemMessage Ext JsonUnmarshal Error:%+v", err)
 		return nil
 	}
 	return result
@@ -72,7 +71,7 @@ func (this *SystemMessage) GetExt() map[string]interface{} {
 
 func (this *SystemMessage) SetExt(ext map[string]interface{}) {
 	if extBytes, err := json.Marshal(ext); err != nil {
-		logger.Errorln("SystemMessage SetExt JsonMarshal Error:", err)
+		logger.Error("SystemMessage SetExt JsonMarshal Error:%+v", err)
 	} else {
 		this.Ext = string(extBytes)
 	}

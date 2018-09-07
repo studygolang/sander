@@ -16,12 +16,12 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/lunny/html2md"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 	"golang.org/x/net/context"
 )
@@ -31,7 +31,6 @@ type ProjectLogic struct{}
 var DefaultProject = ProjectLogic{}
 
 func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.Values) (err error) {
-	objLog := GetLogger(ctx)
 
 	id := form.Get("id")
 	isModify := id != ""
@@ -41,7 +40,7 @@ func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.V
 	if isModify {
 		_, err = db.MasterDB.Id(id).Get(project)
 		if err != nil {
-			objLog.Errorln("Publish Project find error:", err)
+			logger.Error("Publish Project find error:", err)
 			return
 		}
 
@@ -52,13 +51,13 @@ func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.V
 
 		err = schemaDecoder.Decode(project, form)
 		if err != nil {
-			objLog.Errorln("Publish Project schema decode error:", err)
+			logger.Error("Publish Project schema decode error:", err)
 			return
 		}
 	} else {
 		err = schemaDecoder.Decode(project, form)
 		if err != nil {
-			objLog.Errorln("Publish Project schema decode error:", err)
+			logger.Error("Publish Project schema decode error:", err)
 			return
 		}
 
@@ -88,7 +87,7 @@ func (self ProjectLogic) Publish(ctx context.Context, user *model.Me, form url.V
 	}
 
 	if err != nil {
-		objLog.Errorln("Publish Project error:", err)
+		logger.Error("Publish Project error:", err)
 		return
 	}
 
@@ -119,14 +118,13 @@ func (ProjectLogic) UriExists(ctx context.Context, uri string) bool {
 func (ProjectLogic) Total() int64 {
 	total, err := db.MasterDB.Count(new(model.OpenProject))
 	if err != nil {
-		logger.Errorln("ProjectLogic Total error:", err)
+		logger.Error("ProjectLogic Total error:%+v", err)
 	}
 	return total
 }
 
 // FindBy 获取开源项目列表（分页）
 func (ProjectLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.OpenProject {
-	objLog := GetLogger(ctx)
 
 	dbSession := db.MasterDB.Where("status IN(?,?)", model.ProjectStatusNew, model.ProjectStatusOnline)
 	if len(lastIds) > 0 && lastIds[0] > 0 {
@@ -136,7 +134,7 @@ func (ProjectLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*mo
 	projectList := make([]*model.OpenProject, 0)
 	err := dbSession.OrderBy("id DESC").Limit(limit).Find(&projectList)
 	if err != nil {
-		objLog.Errorln("ProjectLogic FindBy Error:", err)
+		logger.Error("ProjectLogic FindBy Error:", err)
 		return nil
 	}
 
@@ -152,7 +150,7 @@ func (ProjectLogic) FindByIds(ids []int) []*model.OpenProject {
 	projects := make([]*model.OpenProject, 0)
 	err := db.MasterDB.In("id", ids).Find(&projects)
 	if err != nil {
-		logger.Errorln("ProjectLogic FindByIds error:", err)
+		logger.Error("ProjectLogic FindByIds error:%+v", err)
 		return nil
 	}
 	return projects
@@ -167,7 +165,7 @@ func (ProjectLogic) findByIds(ids []int) map[int]*model.OpenProject {
 	projects := make(map[int]*model.OpenProject)
 	err := db.MasterDB.In("id", ids).Find(&projects)
 	if err != nil {
-		logger.Errorln("ProjectLogic FindByIds error:", err)
+		logger.Error("ProjectLogic FindByIds error:%+v", err)
 		return nil
 	}
 	return projects
@@ -175,7 +173,6 @@ func (ProjectLogic) findByIds(ids []int) map[int]*model.OpenProject {
 
 // FindOne 获取单个项目
 func (ProjectLogic) FindOne(ctx context.Context, val interface{}) *model.OpenProject {
-	objLog := GetLogger(ctx)
 
 	field := "id"
 	_, ok := val.(int)
@@ -189,7 +186,7 @@ func (ProjectLogic) FindOne(ctx context.Context, val interface{}) *model.OpenPro
 	project := &model.OpenProject{}
 	_, err := db.MasterDB.Where(field+"=? AND status IN(?,?)", val, model.ProjectStatusNew, model.ProjectStatusOnline).Get(project)
 	if err != nil {
-		objLog.Errorln("project service FindProject error:", err)
+		logger.Error("project service FindProject error:", err)
 		return nil
 	}
 
@@ -203,7 +200,7 @@ func (ProjectLogic) FindRecent(ctx context.Context, username string) []*model.Op
 	projectList := make([]*model.OpenProject, 0)
 	err := db.MasterDB.Where("username=?", username).Limit(5).OrderBy("id DESC").Find(&projectList)
 	if err != nil {
-		logger.Errorln("project logic FindRecent error:", err)
+		logger.Error("project logic FindRecent error:%+v", err)
 		return nil
 	}
 	return projectList
@@ -211,7 +208,6 @@ func (ProjectLogic) FindRecent(ctx context.Context, username string) []*model.Op
 
 // FindAll 支持多页翻看
 func (self ProjectLogic) FindAll(ctx context.Context, paginator *Paginator, orderBy string, querystring string, args ...interface{}) []*model.OpenProject {
-	objLog := GetLogger(ctx)
 
 	projects := make([]*model.OpenProject, 0)
 	session := db.MasterDB.OrderBy(orderBy)
@@ -220,7 +216,7 @@ func (self ProjectLogic) FindAll(ctx context.Context, paginator *Paginator, orde
 	}
 	err := session.Limit(paginator.PerPage(), paginator.Offset()).Find(&projects)
 	if err != nil {
-		objLog.Errorln("ProjectLogic FindAll error:", err)
+		logger.Error("ProjectLogic FindAll error:", err)
 		return nil
 	}
 
@@ -230,7 +226,6 @@ func (self ProjectLogic) FindAll(ctx context.Context, paginator *Paginator, orde
 }
 
 func (ProjectLogic) Count(ctx context.Context, querystring string, args ...interface{}) int64 {
-	objLog := GetLogger(ctx)
 
 	var (
 		total int64
@@ -243,7 +238,7 @@ func (ProjectLogic) Count(ctx context.Context, querystring string, args ...inter
 	}
 
 	if err != nil {
-		objLog.Errorln("ProjectLogic Count error:", err)
+		logger.Error("ProjectLogic Count error:", err)
 	}
 
 	return total
@@ -288,7 +283,7 @@ func (ProjectLogic) getOwner(ctx context.Context, id int) int {
 	project := &model.OpenProject{}
 	_, err := db.MasterDB.Id(id).Get(project)
 	if err != nil {
-		logger.Errorln("project logic getOwner Error:", err)
+		logger.Error("project logic getOwner Error:%+v", err)
 		return 0
 	}
 
@@ -309,7 +304,7 @@ func (self ProjectLogic) ParseProjectList(pUrl string) error {
 	)
 
 	if doc, err = goquery.NewDocument(pUrl); err != nil {
-		logger.Errorln("goquery opensource project newdocument error:", err)
+		logger.Error("goquery opensource project newdocument error:%+v", err)
 		return err
 	}
 
@@ -322,14 +317,14 @@ func (self ProjectLogic) ParseProjectList(pUrl string) error {
 		projectUrl, ok := contentSelection.Find(".box-aw a").First().Attr("href")
 
 		if !ok || projectUrl == "" {
-			logger.Errorln("project url is empty")
+			logger.Error("project url is empty")
 			continue
 		}
 		go func(projectUrl string) {
 			err := self.ParseOneProject(projectUrl)
 
 			if err != nil {
-				logger.Errorln(err)
+				logger.Error("error:%+v", err)
 			}
 		}(projectUrl)
 	}
@@ -380,7 +375,7 @@ func (ProjectLogic) ParseOneProject(projectUrl string) error {
 	_, err = db.MasterDB.Where("uri=?", uri).Get(project)
 	// 已经存在
 	if project.Id != 0 {
-		logger.Infoln("url", projectUrl, "has exists!")
+		logger.Info("url:%+v has exists!", projectUrl)
 		return nil
 	}
 
@@ -395,7 +390,7 @@ func (ProjectLogic) ParseOneProject(projectUrl string) error {
 		} else {
 			project.Logo, err = DefaultUploader.TransferUrl(nil, project.Logo, ProjectLogoPrefix)
 			if err != nil {
-				logger.Errorln("project logo upload error:", err)
+				logger.Error("project logo upload error:%+v", err)
 			}
 		}
 	}
@@ -483,7 +478,7 @@ func (self ProjectComment) UpdateComment(cid, objid, uid int, cmttime time.Time)
 		"lastreplytime": cmttime,
 	})
 	if err != nil {
-		logger.Errorln("更新项目评论数失败：", err)
+		logger.Error("更新项目评论数失败：%+v", err)
 		return
 	}
 }
@@ -520,7 +515,7 @@ func (self ProjectLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
 	_, err := db.MasterDB.Id(objid).Incr("likenum", num).Update(new(model.OpenProject))
 	if err != nil {
-		logger.Errorln("更新项目喜欢数失败：", err)
+		logger.Error("更新项目喜欢数失败：%+v", err)
 	}
 }
 

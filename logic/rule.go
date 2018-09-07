@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -21,7 +22,6 @@ var DefaultRule = RuleLogic{}
 
 // 获取抓取规则列表（分页）
 func (RuleLogic) FindBy(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.CrawlRule, int) {
-	objLog := GetLogger(ctx)
 
 	session := db.MasterDB.NewSession()
 
@@ -35,13 +35,13 @@ func (RuleLogic) FindBy(ctx context.Context, conds map[string]string, curPage, l
 	ruleList := make([]*model.CrawlRule, 0)
 	err := session.OrderBy("id DESC").Limit(limit, offset).Find(&ruleList)
 	if err != nil {
-		objLog.Errorln("rule find error:", err)
+		logger.Error("rule find error:", err)
 		return nil, 0
 	}
 
 	total, err := totalSession.Count(new(model.CrawlRule))
 	if err != nil {
-		objLog.Errorln("rule find count error:", err)
+		logger.Error("rule find count error:", err)
 		return nil, 0
 	}
 
@@ -49,12 +49,11 @@ func (RuleLogic) FindBy(ctx context.Context, conds map[string]string, curPage, l
 }
 
 func (RuleLogic) FindById(ctx context.Context, id string) *model.CrawlRule {
-	objLog := GetLogger(ctx)
 
 	rule := &model.CrawlRule{}
 	_, err := db.MasterDB.Id(id).Get(rule)
 	if err != nil {
-		objLog.Errorln("find rule error:", err)
+		logger.Error("find rule error:", err)
 		return nil
 	}
 
@@ -66,12 +65,11 @@ func (RuleLogic) FindById(ctx context.Context, id string) *model.CrawlRule {
 }
 
 func (RuleLogic) Save(ctx context.Context, form url.Values, opUser string) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
 
 	rule := &model.CrawlRule{}
 	err = schemaDecoder.Decode(rule, form)
 	if err != nil {
-		objLog.Errorln("rule Decode error", err)
+		logger.Error("rule Decode error", err)
 		errMsg = err.Error()
 		return
 	}
@@ -86,7 +84,7 @@ func (RuleLogic) Save(ctx context.Context, form url.Values, opUser string) (errM
 
 	if err != nil {
 		errMsg = "内部服务器错误"
-		objLog.Errorln("rule save:", errMsg, ":", err)
+		logger.Error("rule save:", errMsg, ":", err)
 		return
 	}
 

@@ -12,17 +12,12 @@ import (
 
 	"sander/db/nosql"
 	xhttp "sander/http"
-	"sander/logic"
+	"sander/logger"
 
 	"github.com/labstack/echo"
-	"github.com/polaris1119/logger"
 )
 
 const perPage = 12
-
-func getLogger(ctx echo.Context) *logger.Logger {
-	return logic.GetLogger(ctx)
-}
 
 func success(ctx echo.Context, data interface{}) error {
 	result := map[string]interface{}{
@@ -45,7 +40,6 @@ func success(ctx echo.Context, data interface{}) error {
 	xhttp.AccessControl(ctx)
 
 	if ctx.Response().Committed() {
-		getLogger(ctx).Flush()
 		return nil
 	}
 
@@ -56,7 +50,6 @@ func fail(ctx echo.Context, msg string, codes ...int) error {
 	xhttp.AccessControl(ctx)
 
 	if ctx.Response().Committed() {
-		getLogger(ctx).Flush()
 		return nil
 	}
 
@@ -69,7 +62,7 @@ func fail(ctx echo.Context, msg string, codes ...int) error {
 		"msg":  msg,
 	}
 
-	getLogger(ctx).Errorln("operate fail:", result)
+	logger.Error("operate fail:%+v", result)
 
 	return ctx.JSON(http.StatusOK, result)
 }

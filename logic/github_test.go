@@ -11,8 +11,7 @@ import (
 	"testing"
 
 	"sander/config"
-
-	"github.com/polaris1119/logger"
+	"sander/logger"
 )
 
 func TestPullPR(t *testing.T) {

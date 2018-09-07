@@ -12,9 +12,9 @@ import (
 
 	"sander/db"
 	"sander/global"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 )
 
@@ -105,7 +105,7 @@ func (self AuthorityLogic) HasAuthority(user *model.Me, route string) bool {
 
 	aidMap, err := self.userAuthority(user)
 	if err != nil {
-		logger.Errorln("HasAuthority:Read user authority error:", err)
+		logger.Error("HasAuthority:Read user authority error:%+v", err)
 		return false
 	}
 
@@ -124,8 +124,6 @@ func (self AuthorityLogic) HasAuthority(user *model.Me, route string) bool {
 }
 
 func (AuthorityLogic) FindAuthoritiesByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.Authority, int) {
-	objLog := GetLogger(ctx)
-
 	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
@@ -138,13 +136,13 @@ func (AuthorityLogic) FindAuthoritiesByPage(ctx context.Context, conds map[strin
 	auhtorities := make([]*model.Authority, 0)
 	err := session.Limit(limit, offset).Find(&auhtorities)
 	if err != nil {
-		objLog.Errorln("find error:", err)
+		logger.Error("find error:", err)
 		return nil, 0
 	}
 
 	total, err := totalSession.Count(new(model.Authority))
 	if err != nil {
-		objLog.Errorln("find count error:", err)
+		logger.Error("find count error:", err)
 		return nil, 0
 	}
 
@@ -152,8 +150,6 @@ func (AuthorityLogic) FindAuthoritiesByPage(ctx context.Context, conds map[strin
 }
 
 func (AuthorityLogic) FindById(ctx context.Context, aid int) *model.Authority {
-	objLog := GetLogger(ctx)
-
 	if aid == 0 {
 		return nil
 	}
@@ -161,7 +157,7 @@ func (AuthorityLogic) FindById(ctx context.Context, aid int) *model.Authority {
 	authority := &model.Authority{}
 	_, err := db.MasterDB.Id(aid).Get(authority)
 	if err != nil {
-		objLog.Errorln("authority FindById error:", err)
+		logger.Error("authority FindById error:", err)
 		return nil
 	}
 
@@ -169,12 +165,10 @@ func (AuthorityLogic) FindById(ctx context.Context, aid int) *model.Authority {
 }
 
 func (AuthorityLogic) Save(ctx context.Context, form url.Values, opUser string) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
-
 	authority := &model.Authority{}
 	err = schemaDecoder.Decode(authority, form)
 	if err != nil {
-		objLog.Errorln("authority schema Decoder error", err)
+		logger.Error("authority schema Decoder error", err)
 		errMsg = err.Error()
 		return
 	}
@@ -189,7 +183,7 @@ func (AuthorityLogic) Save(ctx context.Context, form url.Values, opUser string) 
 
 	if err != nil {
 		errMsg = "内部服务器错误"
-		objLog.Errorln(errMsg, ":", err)
+		logger.Error(errMsg, ":", err)
 		return
 	}
 
@@ -210,7 +204,7 @@ func (AuthorityLogic) userAuthority(user *model.Me) (map[int]bool, error) {
 	userRoles := make([]*model.UserRole, 0)
 	err := db.MasterDB.Where("uid=?", user.Uid).Find(&userRoles)
 	if err != nil {
-		logger.Errorln("userAuthority userole read fail:", err)
+		logger.Error("userAuthority userole read fail:%+v", err)
 		return nil, err
 	}
 

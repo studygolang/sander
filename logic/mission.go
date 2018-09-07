@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/go-xorm/xorm"
@@ -55,17 +56,16 @@ func (self MissionLogic) HasLoginMission(ctx context.Context, me *model.Me) bool
 
 // RedeemLoginAward 领取登录奖励
 func (self MissionLogic) RedeemLoginAward(ctx context.Context, me *model.Me) error {
-	objLog := GetLogger(ctx)
 
 	mission := self.findMission(ctx, model.MissionTypeLogin)
 	if mission.Id == 0 {
-		objLog.Errorln("每日登录任务不存在")
+		logger.Error("每日登录任务不存在")
 		return errors.New("任务不存在")
 	}
 
 	userLoginMission := self.FindLoginMission(ctx, me)
 	if userLoginMission == nil {
-		objLog.Errorln("查询数据库失败")
+		logger.Error("查询数据库失败")
 		return errors.New("服务内部错误")
 	}
 
@@ -83,7 +83,7 @@ func (self MissionLogic) RedeemLoginAward(ctx context.Context, me *model.Me) err
 		_, err := session.Insert(userLoginMission)
 		if err != nil {
 			session.Rollback()
-			objLog.Errorln("insert user_login_mission error:", err)
+			logger.Error("insert user_login_mission error:", err)
 			return errors.New("服务内部错误")
 		}
 
@@ -115,7 +115,7 @@ func (self MissionLogic) RedeemLoginAward(ctx context.Context, me *model.Me) err
 		_, err := session.Where("uid=?", userLoginMission.Uid).Update(userLoginMission)
 		if err != nil {
 			session.Rollback()
-			objLog.Errorln("update user_login_mission error:", err)
+			logger.Error("update user_login_mission error:", err)
 			return errors.New("服务内部错误")
 		}
 	}
@@ -124,7 +124,7 @@ func (self MissionLogic) RedeemLoginAward(ctx context.Context, me *model.Me) err
 	err := self.changeUserBalance(session, me, model.MissionTypeLogin, userLoginMission.Award, desc)
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("changeUserBalance error:", err)
+		logger.Error("changeUserBalance error:", err)
 		return errors.New("服务内部错误")
 	}
 
@@ -134,12 +134,11 @@ func (self MissionLogic) RedeemLoginAward(ctx context.Context, me *model.Me) err
 }
 
 func (MissionLogic) FindLoginMission(ctx context.Context, me *model.Me) *model.UserLoginMission {
-	objLog := GetLogger(ctx)
 
 	userLoginMission := &model.UserLoginMission{}
 	_, err := db.MasterDB.Where("uid=?", me.Uid).Get(userLoginMission)
 	if err != nil {
-		objLog.Errorln("MissionLogic FindLoginMission error:", err)
+		logger.Error("MissionLogic FindLoginMission error:", err)
 		return nil
 	}
 
@@ -148,12 +147,11 @@ func (MissionLogic) FindLoginMission(ctx context.Context, me *model.Me) *model.U
 
 // Complete 完成任务（非每日任务）
 func (MissionLogic) Complete(ctx context.Context, me *model.Me, id string) error {
-	objLog := GetLogger(ctx)
 
 	mission := &model.Mission{}
 	_, err := db.MasterDB.Id(id).Get(mission)
 	if err != nil {
-		objLog.Errorln("MissionLogic FindLoginMission error:", err)
+		logger.Error("MissionLogic FindLoginMission error:", err)
 		return err
 	}
 
@@ -166,7 +164,7 @@ func (MissionLogic) Complete(ctx context.Context, me *model.Me, id string) error
 	// 初始任务，不允许重复提交
 	if id == strconv.Itoa(model.InitialMissionId) {
 		if user.Balance > 0 {
-			objLog.Errorln("repeat claim init award", user.Username)
+			logger.Error("repeat claim init award", user.Username)
 			return nil
 		}
 

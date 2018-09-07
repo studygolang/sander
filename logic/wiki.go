@@ -13,10 +13,10 @@ import (
 	"strings"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 	"golang.org/x/net/context"
 )
@@ -27,18 +27,17 @@ var DefaultWiki = WikiLogic{}
 
 // Create 创建一个wiki页面
 func (WikiLogic) Create(ctx context.Context, me *model.Me, form url.Values) error {
-	objLog := GetLogger(ctx)
 
 	wiki := &model.Wiki{}
 	err := schemaDecoder.Decode(wiki, form)
 	if err != nil {
-		objLog.Errorln("Create Wiki schema decode error:", err)
+		logger.Error("Create Wiki schema decode error:", err)
 		return err
 	}
 
 	wiki.Uid = me.Uid
 	if _, err = db.MasterDB.Insert(wiki); err != nil {
-		objLog.Errorln("Create Wiki error:", err)
+		logger.Error("Create Wiki error:", err)
 		return err
 	}
 
@@ -48,7 +47,6 @@ func (WikiLogic) Create(ctx context.Context, me *model.Me, form url.Values) erro
 }
 
 func (self WikiLogic) Modify(ctx context.Context, me *model.Me, form url.Values) error {
-	objLog := GetLogger(ctx)
 
 	id := goutils.MustInt(form.Get("id"))
 	wiki := self.FindById(ctx, id)
@@ -77,7 +75,7 @@ func (self WikiLogic) Modify(ctx context.Context, me *model.Me, form url.Values)
 
 	_, err := db.MasterDB.Id(id).Update(wiki)
 	if err != nil {
-		objLog.Errorf("更新wiki 【%d】 信息失败：%s\n", id, err)
+		logger.Error("更新wiki 【%d】 信息失败：%s\n", id, err)
 		return err
 	}
 
@@ -88,7 +86,6 @@ func (self WikiLogic) Modify(ctx context.Context, me *model.Me, form url.Values)
 
 // FindBy 获取 wiki 列表（分页）
 func (WikiLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.Wiki {
-	objLog := GetLogger(ctx)
 
 	dbSession := db.MasterDB.OrderBy("id DESC")
 
@@ -99,7 +96,7 @@ func (WikiLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model
 	wikis := make([]*model.Wiki, 0)
 	err := dbSession.Limit(limit).Find(&wikis)
 	if err != nil {
-		objLog.Errorln("WikiLogic FindBy Error:", err)
+		logger.Error("WikiLogic FindBy Error:", err)
 		return nil
 	}
 
@@ -117,11 +114,10 @@ func (WikiLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model
 
 // FindById 通过ID获取Wiki
 func (WikiLogic) FindById(ctx context.Context, id int) *model.Wiki {
-	objLog := GetLogger(ctx)
 
 	wiki := &model.Wiki{}
 	if _, err := db.MasterDB.Where("id=?", id).Get(wiki); err != nil {
-		objLog.Errorln("wiki logic FindById error:", err)
+		logger.Error("wiki logic FindById error:", err)
 		return nil
 	}
 	return wiki
@@ -129,11 +125,10 @@ func (WikiLogic) FindById(ctx context.Context, id int) *model.Wiki {
 
 // FindOne 某个wiki页面详细信息
 func (WikiLogic) FindOne(ctx context.Context, uri string) *model.Wiki {
-	objLog := GetLogger(ctx)
 
 	wiki := &model.Wiki{}
 	if _, err := db.MasterDB.Where("uri=?", uri).Get(wiki); err != nil {
-		objLog.Errorln("wiki logic FindOne error:", err)
+		logger.Error("wiki logic FindOne error:", err)
 		return nil
 	}
 
@@ -159,7 +154,7 @@ func (WikiLogic) getOwner(id int) int {
 	wiki := &model.Wiki{}
 	_, err := db.MasterDB.Id(id).Get(wiki)
 	if err != nil {
-		logger.Errorln("wiki logic getOwner Error:", err)
+		logger.Error("wiki logic getOwner Error:%+v", err)
 		return 0
 	}
 	return wiki.Uid
@@ -173,7 +168,7 @@ func (WikiLogic) FindByIds(ids []int) []*model.Wiki {
 	wikis := make([]*model.Wiki, 0)
 	err := db.MasterDB.In("id", ids).Find(&wikis)
 	if err != nil {
-		logger.Errorln("wiki logic FindByIds error:", err)
+		logger.Error("wiki logic FindByIds error:%+v", err)
 		return nil
 	}
 	return wikis
@@ -187,7 +182,7 @@ func (WikiLogic) findByIds(ids []int) map[int]*model.Wiki {
 	wikis := make(map[int]*model.Wiki)
 	err := db.MasterDB.In("id", ids).Find(&wikis)
 	if err != nil {
-		logger.Errorln("wiki logic FindByIds error:", err)
+		logger.Error("wiki logic FindByIds error:%+v", err)
 		return nil
 	}
 	return wikis

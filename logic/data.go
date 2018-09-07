@@ -11,9 +11,8 @@ import (
 	"sync"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
-
-	"github.com/polaris1119/logger"
 )
 
 // 常驻内存数据（多实例部署时，数据同步会有问题）
@@ -51,7 +50,7 @@ func LoadAuthorities() error {
 	authorities := make([]*model.Authority, 0)
 	err := db.MasterDB.Find(&authorities)
 	if err != nil {
-		logger.Errorln("LoadAuthorities authority read fail:", err)
+		logger.Error("LoadAuthorities authority read fail:%+v", err)
 		return err
 	}
 
@@ -60,7 +59,7 @@ func LoadAuthorities() error {
 
 	Authorities = authorities
 
-	logger.Infoln("LoadAuthorities successfully!")
+	logger.Info("LoadAuthorities successfully!")
 
 	return nil
 }
@@ -70,7 +69,7 @@ func LoadRoleAuthorities() error {
 	roleAuthorities := make([]*model.RoleAuthority, 0)
 	err := db.MasterDB.Find(&roleAuthorities)
 	if err != nil {
-		logger.Errorln("LoadRoleAuthorities role_authority read fail:", err)
+		logger.Error("LoadRoleAuthorities role_authority read fail:%+v", err)
 		return err
 	}
 
@@ -89,7 +88,7 @@ func LoadRoleAuthorities() error {
 		}
 	}
 
-	logger.Infoln("LoadRoleAuthorities successfully!")
+	logger.Info("LoadRoleAuthorities successfully!")
 
 	return nil
 }
@@ -99,12 +98,12 @@ func LoadRoles() error {
 	roles := make([]*model.Role, 0)
 	err := db.MasterDB.Find(&roles)
 	if err != nil {
-		logger.Errorln("LoadRoles role read fail:", err)
+		logger.Error("LoadRoles role read fail:%+v", err)
 		return err
 	}
 
 	if len(roles) == 0 {
-		logger.Errorln("LoadRoles role read fail: num is 0")
+		logger.Error("LoadRoles role read fail: num is 0")
 		return errors.New("no role")
 	}
 
@@ -119,7 +118,7 @@ func LoadRoles() error {
 		Roles[role.Roleid-1] = role
 	}
 
-	logger.Infoln("LoadRoles successfully!")
+	logger.Info("LoadRoles successfully!")
 
 	return nil
 }
@@ -135,7 +134,7 @@ func LoadNodes() error {
 	nodeList := make([]*model.TopicNode, 0)
 	err := db.MasterDB.Asc("seq").Find(&nodeList)
 	if err != nil {
-		logger.Errorln("LoadNodes node read fail:", err)
+		logger.Error("LoadNodes node read fail:%+v", err)
 		return err
 	}
 	nodeNum := len(nodeList)
@@ -166,7 +165,7 @@ func LoadNodes() error {
 		AllNode[i] = nodeMap
 	}
 
-	logger.Infoln("LoadNodes successfully!")
+	logger.Info("LoadNodes successfully!")
 
 	return nil
 }
@@ -174,11 +173,11 @@ func LoadNodes() error {
 func LoadWebsiteSetting() error {
 	_, err := db.MasterDB.Get(WebsiteSetting)
 	if err != nil {
-		logger.Errorln("LoadWebsiteSetting read fail:", err)
+		logger.Error("LoadWebsiteSetting read fail:%+v", err)
 		return err
 	}
 
-	logger.Infoln("LoadWebsiteSetting successfully!")
+	logger.Info("LoadWebsiteSetting successfully!")
 
 	return nil
 }
@@ -187,7 +186,7 @@ func LoadUserSetting() error {
 	userSettings := make([]*model.UserSetting, 0)
 	err := db.MasterDB.Find(&userSettings)
 	if err != nil {
-		logger.Errorln("LoadUserSetting Find fail:", err)
+		logger.Error("LoadUserSetting Find fail:%+v", err)
 		return err
 	}
 
@@ -199,7 +198,7 @@ func LoadUserSetting() error {
 		UserSetting[userSetting.Key] = userSetting.Value
 	}
 
-	logger.Infoln("LoadUserSetting successfully!")
+	logger.Info("LoadUserSetting successfully!")
 
 	return nil
 }
@@ -208,7 +207,7 @@ func LoadDefaultAvatar() error {
 	defaultAvatars := make([]*model.DefaultAvatar, 0)
 	err := db.MasterDB.Find(&defaultAvatars)
 	if err != nil {
-		logger.Errorln("LoadDefaultAvatar Find fail:", err)
+		logger.Error("LoadDefaultAvatar Find fail:%+v", err)
 		return err
 	}
 
@@ -217,7 +216,7 @@ func LoadDefaultAvatar() error {
 		DefaultAvatars[i] = defaultAvatar.Filename
 	}
 
-	logger.Infoln("LoadDefaultAvatar successfully!")
+	logger.Info("LoadDefaultAvatar successfully!")
 
 	return nil
 }
@@ -379,7 +378,7 @@ func GenNodes() []map[string][]map[string]interface{} {
 		tmpMap[parent] = sameParent[parent]
 		nodes = append(nodes, tmpMap)
 	}
-	logger.Debugf("%v\n", nodes)
+	logger.Debug("%v\n", nodes)
 	return nodes
 }
 
@@ -388,7 +387,7 @@ func LoadCategories() (err error) {
 	categories := make([]*model.ResourceCat, 0)
 	err = db.MasterDB.Find(&categories)
 	if err != nil {
-		logger.Errorln("LoadCategories category read fail:", err)
+		logger.Error("LoadCategories category read fail:%+v", err)
 		return
 	}
 
@@ -397,7 +396,7 @@ func LoadCategories() (err error) {
 
 	AllCategory = categories
 
-	logger.Infoln("LoadCategories successfully!")
+	logger.Info("LoadCategories successfully!")
 
 	return
 }
@@ -428,7 +427,7 @@ func loadRecommendNodes() bool {
 	err := db.MasterDB.Join("LEFT OUTER", "topics_node", "topics_node.nid=recommend_node.nid").
 		Asc("recommend_node.seq").Find(&nodeList)
 	if err != nil {
-		logger.Errorln("loadRecommendNodes node read fail:", err)
+		logger.Error("loadRecommendNodes node read fail:%+v", err)
 		return false
 	}
 
@@ -463,7 +462,7 @@ func loadRecommendNodes() bool {
 		}
 	}
 
-	logger.Infoln("loadRecommendNodes successfully!")
+	logger.Info("loadRecommendNodes successfully!")
 
 	return true
 }

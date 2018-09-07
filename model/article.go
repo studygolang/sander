@@ -12,8 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"sander/logger"
+
 	"github.com/go-xorm/xorm"
-	"github.com/polaris1119/logger"
 )
 
 const (
@@ -138,7 +139,7 @@ func (this *CrawlRule) ParseExt() map[string]string {
 	extMap := make(map[string]string)
 	err := json.Unmarshal([]byte(this.Ext), &extMap)
 	if err != nil {
-		logger.Errorln("parse crawl rule ext error:", err)
+		logger.Error("parse crawl rule ext error:%+v", err)
 		return nil
 	}
 
@@ -177,7 +178,7 @@ func (this *AutoCrawlRule) AfterSet(name string, cell xorm.Cell) {
 		this.ExtMap = make(map[string]string)
 		err := json.Unmarshal([]byte(this.Ext), &this.ExtMap)
 		if err != nil {
-			logger.Errorln("parse auto crawl rule ext error:", err)
+			logger.Error("parse auto crawl rule ext error:%+v", err)
 			return
 		}
 	}

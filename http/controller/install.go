@@ -17,6 +17,7 @@ import (
 	"sander/config"
 	"sander/db"
 	"sander/global"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 
@@ -270,7 +271,6 @@ func (InstallController) genConfig(ctx echo.Context) error {
 }
 
 func renderInstall(ctx echo.Context, filename string, data map[string]interface{}) error {
-	objLog := getLogger(ctx)
 
 	if data == nil {
 		data = make(map[string]interface{})
@@ -281,14 +281,14 @@ func renderInstall(ctx echo.Context, filename string, data map[string]interface{
 	requestURI := ctx.Request().URI()
 	tpl, err := template.ParseFiles(filename)
 	if err != nil {
-		objLog.Errorf("解析模板出错（ParseFiles）：[%q] %s\n", requestURI, err)
+		logger.Error("解析模板出错（ParseFiles）：[%q] %s\n", requestURI, err)
 		return err
 	}
 
 	buf := new(bytes.Buffer)
 	err = tpl.Execute(buf, data)
 	if err != nil {
-		objLog.Errorf("执行模板出错（Execute）：[%q] %s\n", requestURI, err)
+		logger.Error("执行模板出错（Execute）：[%q] %s\n", requestURI, err)
 		return err
 	}
 

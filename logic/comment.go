@@ -16,11 +16,11 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/fatih/structs"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 	"github.com/polaris1119/slices"
 	"golang.org/x/net/context"
@@ -34,12 +34,11 @@ var DefaultComment = CommentLogic{}
 // owner: 被评论对象属主
 // TODO:分页暂不做
 func (self CommentLogic) FindObjComments(ctx context.Context, objid, objtype int, owner, lastCommentUid int /*, page, pageNum int*/) (comments []map[string]interface{}, ownerUser, lastReplyUser *model.User) {
-	objLog := GetLogger(ctx)
 
 	commentList := make([]*model.Comment, 0)
 	err := db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).Find(&commentList)
 	if err != nil {
-		objLog.Errorln("CommentLogic FindObjComments Error:", err)
+		logger.Error("CommentLogic FindObjComments Error:", err)
 		return
 	}
 
@@ -67,12 +66,11 @@ func (self CommentLogic) FindObjComments(ctx context.Context, objid, objtype int
 // FindObjectComments 获得某个对象的所有评论（新版）
 // TODO:分页暂不做
 func (self CommentLogic) FindObjectComments(ctx context.Context, objid, objtype int) (commentList []*model.Comment, err error) {
-	objLog := GetLogger(ctx)
 
 	commentList = make([]*model.Comment, 0)
 	err = db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).Asc("cid").Find(&commentList)
 	if err != nil {
-		objLog.Errorln("comment logic FindObjectComments Error:", err)
+		logger.Error("comment logic FindObjectComments Error:", err)
 	}
 
 	for _, comment := range commentList {
@@ -84,12 +82,11 @@ func (self CommentLogic) FindObjectComments(ctx context.Context, objid, objtype 
 
 // FindComment 获得评论和额外两个评论
 func (self CommentLogic) FindComment(ctx context.Context, cid, objid, objtype int) (*model.Comment, []*model.Comment) {
-	objLog := GetLogger(ctx)
 
 	comment := &model.Comment{}
 	_, err := db.MasterDB.Where("cid=?", cid).Get(comment)
 	if err != nil {
-		objLog.Errorln("CommentLogic FindComment error:", err)
+		logger.Error("CommentLogic FindComment error:", err)
 		return comment, nil
 	}
 	self.decodeCmtContentForShow(ctx, comment, false)
@@ -98,7 +95,7 @@ func (self CommentLogic) FindComment(ctx context.Context, cid, objid, objtype in
 	err = db.MasterDB.Where("objid=? AND objtype=? AND cid!=?", objid, objtype, cid).
 		Limit(2).Find(&comments)
 	if err != nil {
-		objLog.Errorln("CommentLogic FindComment Find more error:", err)
+		logger.Error("CommentLogic FindComment Find more error:", err)
 		return comment, nil
 	}
 	for _, cmt := range comments {
@@ -120,7 +117,7 @@ func (CommentLogic) Total(objtypes ...int) int64 {
 		total, err = db.MasterDB.Count(new(model.Comment))
 	}
 	if err != nil {
-		logger.Errorln("CommentLogic Total error:", err)
+		logger.Error("CommentLogic Total error:%+v", err)
 	}
 	return total
 }
@@ -141,7 +138,7 @@ func (self CommentLogic) FindRecent(ctx context.Context, uid, objtype, limit int
 	comments := make([]*model.Comment, 0)
 	err := dbSession.Find(&comments)
 	if err != nil {
-		logger.Errorln("CommentLogic FindRecent error:", err)
+		logger.Error("CommentLogic FindRecent error:%+v", err)
 		return nil
 	}
 
@@ -175,7 +172,6 @@ func (self CommentLogic) FindRecent(ctx context.Context, uid, objtype, limit int
 // objid 注册的评论对象
 // uid 评论人
 func (self CommentLogic) Publish(ctx context.Context, uid, objid int, form url.Values) (*model.Comment, error) {
-	objLog := GetLogger(ctx)
 
 	objtype := goutils.MustInt(form.Get("objtype"))
 	comment := &model.Comment{
@@ -191,21 +187,21 @@ func (self CommentLogic) Publish(ctx context.Context, uid, objid int, form url.V
 	tmpCmt := &model.Comment{}
 	_, err := db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).OrderBy("floor DESC").Get(tmpCmt)
 	if err != nil {
-		objLog.Errorln("post comment find last floor error:", err)
+		logger.Error("post comment find last floor error:", err)
 		return nil, err
 	}
 
 	comment.Floor = tmpCmt.Floor + 1
 
 	if tmpCmt.Uid == comment.Uid && tmpCmt.Content == comment.Content {
-		objLog.Infof("had post comment: %+v", *comment)
+		logger.Info("had post comment: %+v", *comment)
 		return tmpCmt, nil
 	}
 
 	// 入评论库
 	_, err = db.MasterDB.Insert(comment)
 	if err != nil {
-		objLog.Errorln("post comment service error:", err)
+		logger.Error("post comment service error:", err)
 		return nil, err
 	}
 	self.decodeCmtContentForShow(ctx, comment, true)
@@ -214,7 +210,7 @@ func (self CommentLogic) Publish(ctx context.Context, uid, objid int, form url.V
 	if commenter, ok := commenters[objtype]; ok {
 		now := time.Now()
 
-		objLog.Debugf("评论[objid:%d] [objtype:%d] [uid:%d] 成功，通知被评论者更新", objid, objtype, uid)
+		logger.Debug("评论[objid:%d] [objtype:%d] [uid:%d] 成功，通知被评论者更新", objid, objtype, uid)
 		go commenter.UpdateComment(comment.Cid, objid, uid, now)
 
 		DefaultFeed.updateComment(objid, objtype, uid, now)
@@ -259,11 +255,10 @@ func (CommentLogic) sendSystemMsg(ctx context.Context, uid, objid, objtype, cid 
 
 // Modify 修改评论信息
 func (CommentLogic) Modify(ctx context.Context, cid int, content string) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
 
 	_, err = db.MasterDB.Table(new(model.Comment)).Id(cid).Update(map[string]interface{}{"content": content})
 	if err != nil {
-		objLog.Errorf("更新评论内容 【%d】 失败：%s", cid, err)
+		logger.Error("更新评论内容 【%d】 失败：%s", cid, err)
 		errMsg = "对不起，服务器内部错误，请稍后再试！"
 		return
 	}
@@ -308,7 +303,7 @@ func (CommentLogic) FindById(cid int) (*model.Comment, error) {
 	comment := &model.Comment{}
 	_, err := db.MasterDB.Where("cid=?", cid).Get(comment)
 	if err != nil {
-		logger.Errorln("CommentLogic findById error:", err)
+		logger.Error("CommentLogic findById error:%+v", err)
 	}
 
 	return comment, err
@@ -359,7 +354,6 @@ type CommentObjecter interface {
 
 // FindAll 支持多页翻看
 func (self CommentLogic) FindAll(ctx context.Context, paginator *Paginator, orderBy string, querystring string, args ...interface{}) []*model.Comment {
-	objLog := GetLogger(ctx)
 
 	comments := make([]*model.Comment, 0)
 	session := db.MasterDB.OrderBy(orderBy)
@@ -368,7 +362,7 @@ func (self CommentLogic) FindAll(ctx context.Context, paginator *Paginator, orde
 	}
 	err := session.Limit(paginator.PerPage(), paginator.Offset()).Find(&comments)
 	if err != nil {
-		objLog.Errorln("CommentLogical FindAll error:", err)
+		logger.Error("CommentLogical FindAll error:", err)
 		return nil
 	}
 
@@ -398,7 +392,6 @@ func (self CommentLogic) FindAll(ctx context.Context, paginator *Paginator, orde
 
 // Count 获取用户全部评论数
 func (CommentLogic) Count(ctx context.Context, querystring string, args ...interface{}) int64 {
-	objLog := GetLogger(ctx)
 
 	var (
 		total int64
@@ -411,7 +404,7 @@ func (CommentLogic) Count(ctx context.Context, querystring string, args ...inter
 	}
 
 	if err != nil {
-		objLog.Errorln("CommentLogic Count error:", err)
+		logger.Error("CommentLogic Count error:", err)
 	}
 
 	return total

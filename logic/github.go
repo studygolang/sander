@@ -17,10 +17,10 @@ import (
 	"unicode/utf8"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/tidwall/gjson"
 	"golang.org/x/net/context"
 )
@@ -41,12 +41,10 @@ type prInfo struct {
 var noMoreDataErr = errors.New("pull request: no more data")
 
 func (self GithubLogic) PullRequestEvent(ctx context.Context, body []byte) error {
-	objLog := GetLogger(ctx)
-
 	result := gjson.ParseBytes(body)
 
 	thePRURL := result.Get("pull_request.url").String()
-	objLog.Infoln("GithubLogic PullRequestEvent, url:", thePRURL)
+	logger.Info("GithubLogic PullRequestEvent, url:", thePRURL)
 
 	_prInfo := &prInfo{
 		prURL:    thePRURL,
@@ -58,7 +56,7 @@ func (self GithubLogic) PullRequestEvent(ctx context.Context, body []byte) error
 
 	err := self.dealFiles(_prInfo)
 
-	objLog.Infoln("pull request deal successfully!")
+	logger.Info("pull request deal successfully!")
 
 	go self.statUserTime()
 
@@ -67,8 +65,6 @@ func (self GithubLogic) PullRequestEvent(ctx context.Context, body []byte) error
 
 // IssueEvent 处理 issue 的 GitHub 事件
 func (self GithubLogic) IssueEvent(ctx context.Context, body []byte) error {
-	objLog := GetLogger(ctx)
-
 	var err error
 
 	result := gjson.ParseBytes(body)
@@ -109,7 +105,7 @@ func (self GithubLogic) IssueEvent(ctx context.Context, body []byte) error {
 	}
 
 	if err != nil {
-		objLog.Errorln("GithubLogic IssueEvent error:", err)
+		logger.Error("GithubLogic IssueEvent error:", err)
 	}
 
 	return nil
@@ -117,7 +113,6 @@ func (self GithubLogic) IssueEvent(ctx context.Context, body []byte) error {
 
 // IssueCommentEvent 处理 issue Comment 的 GitHub 事件
 func (self GithubLogic) IssueCommentEvent(ctx context.Context, body []byte) error {
-	objLog := GetLogger(ctx)
 	var err error
 
 	result := gjson.ParseBytes(body)
@@ -142,7 +137,7 @@ func (self GithubLogic) IssueCommentEvent(ctx context.Context, body []byte) erro
 	}
 
 	if err != nil {
-		objLog.Errorln("GithubLogic IssueCommentEvent error:", err)
+		logger.Error("GithubLogic IssueCommentEvent error:", err)
 	}
 
 	return nil
@@ -216,13 +211,13 @@ func (self GithubLogic) syncIssues(repo string, page int, directions ...string) 
 
 	resp, err := http.Get(issueListURL)
 	if err != nil {
-		logger.Errorln("GithubLogic syncIssues http get error:", err)
+		logger.Error("GithubLogic syncIssues http get error:%+v", err)
 		return err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		logger.Errorln("GithubLogic syncIssues read all error:", err)
+		logger.Error("GithubLogic syncIssues read all error:%+v", err)
 		return err
 	}
 
@@ -305,13 +300,13 @@ func (self GithubLogic) findTranslatorComment(commentsURL string) (string, int64
 	commentsURL = self.addBasicAuth(commentsURL)
 	resp, err := http.Get(commentsURL)
 	if err != nil {
-		logger.Errorln("github fetch comments error:", err, "url:", commentsURL)
+		logger.Error("github fetch comments url:%+v, error:", commentsURL, err)
 		return "", 0
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		logger.Errorln("github read comments resp error:", err)
+		logger.Error("github read comments resp error:%+v", err)
 		return "", 0
 	}
 	commentsResult := gjson.ParseBytes(body)
@@ -338,13 +333,13 @@ func (self GithubLogic) pullPR(repo string, page int, directions ...string) erro
 
 	resp, err := http.Get(prListURL)
 	if err != nil {
-		logger.Errorln("GithubLogic PullPR get error:", err)
+		logger.Error("GithubLogic PullPR get error:%+v", err)
 		return err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		logger.Errorln("GithubLogic PullPR read all error:", err)
+		logger.Error("GithubLogic PullPR read all error:%+v", err)
 		return err
 	}
 
@@ -385,13 +380,13 @@ func (self GithubLogic) dealFiles(_prInfo *prInfo) error {
 	filesURL := self.addBasicAuth(_prInfo.prURL + "/files")
 	resp, err := http.Get(filesURL)
 	if err != nil {
-		logger.Errorln("github fetch files error:", err, "url:", filesURL)
+		logger.Error("github fetch files url:%+v error:%+v", filesURL, err)
 		return err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		logger.Errorln("github read files resp error:", err)
+		logger.Error("github read files resp error:%+v", err)
 		return err
 	}
 	filesResult := gjson.ParseBytes(body)
@@ -467,7 +462,7 @@ func (self GithubLogic) issueTranslated(_prInfo *prInfo, title string) error {
 	gcttGit := &model.GCTTGit{}
 	_, err := db.MasterDB.Where("md5=?", md5).Get(gcttGit)
 	if err != nil {
-		logger.Errorln("GithubLogic insertOrUpdateGCCT get error:", err)
+		logger.Error("GithubLogic insertOrUpdateGCCT get error:%+v", err)
 		return err
 	}
 
@@ -488,7 +483,7 @@ func (self GithubLogic) issueTranslated(_prInfo *prInfo, title string) error {
 		_, err = session.Insert(gcttUser)
 		if err != nil {
 			session.Rollback()
-			logger.Errorln("GithubLogic issueTranslated insert gctt_user error:", err)
+			logger.Error("GithubLogic issueTranslated insert gctt_user error:%+v", err)
 			return err
 		}
 	}
@@ -501,7 +496,7 @@ func (self GithubLogic) issueTranslated(_prInfo *prInfo, title string) error {
 	_, err = db.MasterDB.Insert(gcttGit)
 	if err != nil {
 		session.Rollback()
-		logger.Errorln("GithubLogic issueTranslated insert error:", err)
+		logger.Error("GithubLogic issueTranslated insert error:%+v", err)
 		return err
 	}
 
@@ -609,7 +604,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 	gcttGit := &model.GCTTGit{}
 	_, err := db.MasterDB.Where("md5=?", md5).Get(gcttGit)
 	if err != nil {
-		logger.Errorln("GithubLogic insertOrUpdateGCCT get error:", err)
+		logger.Error("GithubLogic insertOrUpdateGCCT get error:%+v", err)
 		return err
 	}
 	if gcttGit.Id > 0 {
@@ -631,7 +626,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 		_, err = session.Insert(gcttUser)
 		if err != nil {
 			session.Rollback()
-			logger.Errorln("GithubLogic insertOrUpdateGCCT insert gctt_user error:", err)
+			logger.Error("GithubLogic insertOrUpdateGCCT insert gctt_user error:%+v", err)
 			return err
 		}
 	}
@@ -644,7 +639,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 			_, err = db.MasterDB.Id(gcttGit.Id).Update(gcttGit)
 			if err != nil {
 				session.Rollback()
-				logger.Errorln("GithubLogic insertOrUpdateGCCT update error:", err)
+				logger.Error("GithubLogic insertOrUpdateGCCT update error:%+v", err)
 				return err
 			}
 		}
@@ -661,7 +656,7 @@ func (GithubLogic) insertOrUpdateGCCT(_prInfo *prInfo, title string, isTranslate
 	_, err = db.MasterDB.Insert(gcttGit)
 	if err != nil {
 		session.Rollback()
-		logger.Errorln("GithubLogic insertOrUpdateGCCTGit insert error:", err)
+		logger.Error("GithubLogic insertOrUpdateGCCTGit insert error:%+v", err)
 		return err
 	}
 
@@ -673,7 +668,7 @@ func (GithubLogic) statUserTime() {
 	gcttUsers := make([]*model.GCTTUser, 0)
 	err := db.MasterDB.Find(&gcttUsers)
 	if err != nil {
-		logger.Errorln("GithubLogic statUserTime find error:", err)
+		logger.Error("GithubLogic statUserTime find error:%+v", err)
 		return
 	}
 
@@ -681,7 +676,7 @@ func (GithubLogic) statUserTime() {
 		gcttGits := make([]*model.GCTTGit, 0)
 		err = db.MasterDB.Where("username=? AND pr!=0", gcttUser.Username).OrderBy("id ASC").Find(&gcttGits)
 		if err != nil {
-			logger.Errorln("GithubLogic find gctt git error:", err)
+			logger.Error("GithubLogic find gctt git error:%+v", err)
 			continue
 		}
 
@@ -718,7 +713,7 @@ func (GithubLogic) statUserTime() {
 		gcttUser.Uid = uid
 		_, err = db.MasterDB.Id(gcttUser.Id).Update(gcttUser)
 		if err != nil {
-			logger.Errorln("GithubLogic update gctt user error:", err)
+			logger.Error("GithubLogic update gctt user error:%+v", err)
 		}
 	}
 }

@@ -16,6 +16,7 @@ import (
 
 	"sander/global"
 	xhttp "sander/http"
+	"sander/logger"
 	"sander/logic"
 
 	"github.com/labstack/echo"
@@ -36,18 +37,17 @@ func (self ImageController) RegisterRoute(g *echo.Group) {
 
 // PasteUpload jquery 粘贴上传图片
 func (self ImageController) PasteUpload(ctx echo.Context) error {
-	objLogger := getLogger(ctx)
 
 	file, fileHeader, err := xhttp.Request(ctx).FormFile("imageFile")
 	if err != nil {
-		objLogger.Errorln("upload error:", err)
+		logger.Error("upload error:%+v", err)
 		return self.pasteUploadFail(ctx, err.Error())
 	}
 	defer file.Close()
 
 	// 如果是临时文件，存在硬盘中，则是 *os.File（大于32M），直接报错
 	if _, ok := file.(*os.File); ok {
-		objLogger.Errorln("upload error:file too large!")
+		logger.Error("upload error:file too large!")
 		return self.pasteUploadFail(ctx, "文件太大！")
 	}
 
@@ -81,18 +81,17 @@ func (self ImageController) PasteUpload(ctx echo.Context) error {
 
 // QuickUpload CKEditor 编辑器，上传图片，支持粘贴方式上传
 func (self ImageController) QuickUpload(ctx echo.Context) error {
-	objLogger := getLogger(ctx)
 
 	file, fileHeader, err := xhttp.Request(ctx).FormFile("upload")
 	if err != nil {
-		objLogger.Errorln("upload error:", err)
+		logger.Error("upload error:%+v", err)
 		return self.quickUploadFail(ctx, err.Error())
 	}
 	defer file.Close()
 
 	// 如果是临时文件，存在硬盘中，则是 *os.File（大于32M），直接报错
 	if _, ok := file.(*os.File); ok {
-		objLogger.Errorln("upload error:file too large!")
+		logger.Error("upload error:file too large!")
 		return self.quickUploadFail(ctx, "文件太大！")
 	}
 
@@ -128,18 +127,17 @@ func (self ImageController) QuickUpload(ctx echo.Context) error {
 
 // Upload 上传图片
 func (ImageController) Upload(ctx echo.Context) error {
-	objLogger := getLogger(ctx)
 
 	file, fileHeader, err := xhttp.Request(ctx).FormFile("img")
 	if err != nil {
-		objLogger.Errorln("upload error:", err)
+		logger.Error("upload error:%+v", err)
 		return fail(ctx, 1, "非法文件上传！")
 	}
 	defer file.Close()
 
 	// 如果是临时文件，存在硬盘中，则是 *os.File（大于32M），直接报错
 	if _, ok := file.(*os.File); ok {
-		objLogger.Errorln("upload error:file too large!")
+		logger.Error("upload error:file too large!")
 		return fail(ctx, 2, "文件太大！")
 	}
 

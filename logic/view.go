@@ -15,10 +15,10 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 // 话题/文章/资源/图书等的浏览数
@@ -125,7 +125,7 @@ func (this *views) Incr(req *http.Request, objtype, objid int, uids ...int) {
 }
 
 func (this *views) Flush() {
-	logger.Debugln("start views flush")
+	logger.Debug("start views flush")
 	this.locker.Lock()
 	defer this.locker.Unlock()
 
@@ -137,7 +137,7 @@ func (this *views) Flush() {
 	this.data = make(map[string]*view)
 	this.users = make(map[string]bool)
 
-	logger.Debugln("end views flush")
+	logger.Debug("end views flush")
 }
 
 var Views = newViews()

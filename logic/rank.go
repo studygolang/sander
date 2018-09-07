@@ -13,10 +13,10 @@ import (
 
 	"sander/db"
 	"sander/db/nosql"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"
 )
 
@@ -30,7 +30,7 @@ func (self RankLogic) GenDayRank(objtype, objid, num int) {
 	key := self.getDayRankKey(objtype, times.Format("ymd"))
 	err := redisClient.ZINCRBY(key, num, objid)
 	if err != nil {
-		logger.Errorln("view redis ZINCRBY error:", err)
+		logger.Error("view redis ZINCRBY error:%+v", err)
 	}
 	redisClient.EXPIRE(key, 2*30*86400)
 }
@@ -45,7 +45,7 @@ func (self RankLogic) GenWeekRank(objtype int) {
 
 	err := redisClient.ZUNIONSTORE(dest, 7, keys, nil)
 	if err != nil {
-		logger.Errorln("GenWeekRank ZUNIONSTORE error:", err)
+		logger.Error("GenWeekRank ZUNIONSTORE error:%+v", err)
 	}
 }
 
@@ -59,7 +59,7 @@ func (self RankLogic) GenMonthRank(objtype int) {
 
 	err := redisClient.ZUNIONSTORE(dest, 30, keys, nil)
 	if err != nil {
-		logger.Errorln("GenMonthRank ZUNIONSTORE error:", err)
+		logger.Error("GenMonthRank ZUNIONSTORE error:%+v", err)
 	}
 }
 
@@ -70,21 +70,20 @@ func (self RankLogic) GenDAURank(uid, weight int) {
 	key := self.getDAURankKey(times.Format("ymd"))
 	err := redisClient.ZINCRBY(key, weight, uid)
 	if err != nil {
-		logger.Errorln("dau redis ZINCRBY error:", err)
+		logger.Error("dau redis ZINCRBY error:%+v", err)
 	}
 	redisClient.EXPIRE(key, 2*30*86400)
 }
 
 // FindDayRank needExt 是否需要扩展数据
 func (self RankLogic) FindDayRank(ctx context.Context, objtype int, ymd string, num int, needExt ...bool) (result interface{}) {
-	objLog := GetLogger(ctx)
 
 	redisClient := nosql.NewRedisClient()
 	key := self.getDayRankKey(objtype, ymd)
 	resultSlice, err := redisClient.ZREVRANGE(key, 0, num-1, true)
 	redisClient.Close()
 	if err != nil {
-		objLog.Errorln("FindDayRank ZREVRANGE error:", err)
+		logger.Error("FindDayRank ZREVRANGE error:", err)
 		return nil
 	}
 
@@ -92,14 +91,13 @@ func (self RankLogic) FindDayRank(ctx context.Context, objtype int, ymd string, 
 }
 
 func (self RankLogic) FindWeekRank(ctx context.Context, objtype, num int, needExt ...bool) (result interface{}) {
-	objLog := GetLogger(ctx)
 
 	redisClient := nosql.NewRedisClient()
 	key := self.getWeekRankKey(objtype)
 	resultSlice, err := redisClient.ZREVRANGE(key, 0, num-1, true)
 	redisClient.Close()
 	if err != nil {
-		objLog.Errorln("FindWeekRank ZREVRANGE error:", err)
+		logger.Error("FindWeekRank ZREVRANGE error:", err)
 		return nil
 	}
 
@@ -107,14 +105,12 @@ func (self RankLogic) FindWeekRank(ctx context.Context, objtype, num int, needEx
 }
 
 func (self RankLogic) FindMonthRank(ctx context.Context, objtype, num int, needExt ...bool) (result interface{}) {
-	objLog := GetLogger(ctx)
-
 	redisClient := nosql.NewRedisClient()
 	key := self.getMonthRankKey(objtype)
 	resultSlice, err := redisClient.ZREVRANGE(key, 0, num-1, true)
 	redisClient.Close()
 	if err != nil {
-		objLog.Errorln("FindMonthRank ZREVRANGE error:", err)
+		logger.Error("FindMonthRank ZREVRANGE error:", err)
 		return nil
 	}
 
@@ -123,7 +119,6 @@ func (self RankLogic) FindMonthRank(ctx context.Context, objtype, num int, needE
 
 // FindDAURank DAU 排名，默认获取当天的
 func (self RankLogic) FindDAURank(ctx context.Context, num int, ymds ...string) []*model.User {
-	objLog := GetLogger(ctx)
 
 	ymd := times.Format("ymd")
 	if len(ymds) > 0 {
@@ -135,7 +130,7 @@ func (self RankLogic) FindDAURank(ctx context.Context, num int, ymds ...string) 
 	resultSlice, err := redisClient.ZREVRANGE(key, 0, num-1, true)
 	redisClient.Close()
 	if err != nil {
-		objLog.Errorln("FindDAURank ZREVRANGE error:", err)
+		logger.Error("FindDAURank ZREVRANGE error:", err)
 		return nil
 	}
 
@@ -149,7 +144,7 @@ func (self RankLogic) FindDAURank(ctx context.Context, num int, ymds ...string) 
 		)
 		resultSlice, err = redis.Scan(resultSlice, &uid, &weight)
 		if err != nil {
-			logger.Errorln("FindDAURank redis Scan error:", err)
+			logger.Error("FindDAURank redis Scan error:%+v", err)
 			return nil
 		}
 
@@ -191,12 +186,10 @@ func (self RankLogic) UserDAURank(ctx context.Context, uid int) int {
 
 // FindRichRank 社区财富排行榜
 func (self RankLogic) FindRichRank(ctx context.Context) []*model.User {
-	objLog := GetLogger(ctx)
-
 	userList := make([]*model.User, 0)
 	err := db.MasterDB.Where("balance>?", 0).Desc("balance").Limit(25).Find(&userList)
 	if err != nil {
-		objLog.Errorln("find rich rank error:", err)
+		logger.Error("find rich rank error:", err)
 		return nil
 	}
 
@@ -214,7 +207,7 @@ func (RankLogic) findModelsByRank(resultSlice []interface{}, objtype, num int, n
 		)
 		resultSlice, err = redis.Scan(resultSlice, &objid, &viewNum)
 		if err != nil {
-			logger.Errorln("findModelsByRank redis Scan error:", err)
+			logger.Error("findModelsByRank redis Scan error:%+v", err)
 			return nil
 		}
 

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"sander/config"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 
@@ -111,7 +112,7 @@ func (self DownloadController) FetchGoInstallPackage(ctx echo.Context) error {
 		}
 	}
 
-	getLogger(ctx).Infoln("download:", filename, "from the site static directory")
+	logger.Info("download:", filename, "from the site static directory")
 
 	return ctx.Redirect(http.StatusSeeOther, "/static/"+filePath)
 }

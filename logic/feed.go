@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
@@ -24,22 +25,20 @@ type FeedLogic struct{}
 var DefaultFeed = FeedLogic{}
 
 func (self FeedLogic) GetTotalCount(ctx context.Context) int64 {
-	objLog := GetLogger(ctx)
+
 	count, err := db.MasterDB.Where("state=0").Count(new(model.Feed))
 	if err != nil {
-		objLog.Errorln("FeedLogic Count error:", err)
+		logger.Error("FeedLogic Count error:", err)
 		return 0
 	}
 	return count
 }
 
 func (self FeedLogic) FindRecentWithPaginator(ctx context.Context, paginator *Paginator) []*model.Feed {
-	objLog := GetLogger(ctx)
-
 	feeds := make([]*model.Feed, 0)
 	err := db.MasterDB.Desc("updated_at").Limit(paginator.PerPage(), paginator.Offset()).Find(&feeds)
 	if err != nil {
-		objLog.Errorln("FeedLogic FindRecent error:", err)
+		logger.Error("FeedLogic FindRecent error:", err)
 		return nil
 	}
 
@@ -47,12 +46,10 @@ func (self FeedLogic) FindRecentWithPaginator(ctx context.Context, paginator *Pa
 }
 
 func (self FeedLogic) FindRecent(ctx context.Context, num int) []*model.Feed {
-	objLog := GetLogger(ctx)
-
 	feeds := make([]*model.Feed, 0)
 	err := db.MasterDB.Desc("updated_at").Limit(num).Find(&feeds)
 	if err != nil {
-		objLog.Errorln("FeedLogic FindRecent error:", err)
+		logger.Error("FeedLogic FindRecent error:", err)
 		return nil
 	}
 
@@ -60,12 +57,10 @@ func (self FeedLogic) FindRecent(ctx context.Context, num int) []*model.Feed {
 }
 
 func (self FeedLogic) FindTop(ctx context.Context) []*model.Feed {
-	objLog := GetLogger(ctx)
-
 	feeds := make([]*model.Feed, 0)
 	err := db.MasterDB.Where("top=1").Desc("updated_at").Find(&feeds)
 	if err != nil {
-		objLog.Errorln("FeedLogic FindRecent error:", err)
+		logger.Error("FeedLogic FindRecent error:", err)
 		return nil
 	}
 

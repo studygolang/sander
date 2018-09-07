@@ -11,10 +11,10 @@ import (
 	"net/url"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 type TopicNodeLogic struct{}
@@ -25,7 +25,7 @@ func (self TopicNodeLogic) FindOne(nid int) *model.TopicNode {
 	topicNode := &model.TopicNode{}
 	_, err := db.MasterDB.Id(nid).Get(topicNode)
 	if err != nil {
-		logger.Errorln("TopicNodeLogic FindOne error:", err, "nid:", nid)
+		logger.Error("TopicNodeLogic FindOne,nid:%+v,error:%+v", nid, err)
 	}
 
 	return topicNode
@@ -35,7 +35,7 @@ func (self TopicNodeLogic) FindByEname(ename string) *model.TopicNode {
 	topicNode := &model.TopicNode{}
 	_, err := db.MasterDB.Where("ename=?", ename).Get(topicNode)
 	if err != nil {
-		logger.Errorln("TopicNodeLogic FindByEname error:", err, "ename:", ename)
+		logger.Error("TopicNodeLogic FindByEname ename:%+v, error:", ename, err)
 	}
 
 	return topicNode
@@ -45,7 +45,7 @@ func (self TopicNodeLogic) FindByNids(nids []int) map[int]*model.TopicNode {
 	nodeList := make(map[int]*model.TopicNode, 0)
 	err := db.MasterDB.In("nid", nids).Find(&nodeList)
 	if err != nil {
-		logger.Errorln("TopicNodeLogic FindByNids error:", err, "nids:", nids)
+		logger.Error("TopicNodeLogic FindByNids nids:%+v, error:", nids, err)
 	}
 
 	return nodeList
@@ -55,7 +55,7 @@ func (self TopicNodeLogic) FindByParent(pid, num int) []*model.TopicNode {
 	nodeList := make([]*model.TopicNode, 0)
 	err := db.MasterDB.Where("parent=?", pid).Limit(num).Find(&nodeList)
 	if err != nil {
-		logger.Errorln("TopicNodeLogic FindByParent error:", err, "parent:", pid)
+		logger.Error("TopicNodeLogic FindByParent parent:%+v, error:", pid, err)
 	}
 
 	return nodeList
@@ -65,19 +65,18 @@ func (self TopicNodeLogic) FindAll(ctx context.Context) []*model.TopicNode {
 	nodeList := make([]*model.TopicNode, 0)
 	err := db.MasterDB.Asc("seq").Find(&nodeList)
 	if err != nil {
-		logger.Errorln("TopicNodeLogic FindAll error:", err)
+		logger.Error("TopicNodeLogic FindAll error:%+v", err)
 	}
 
 	return nodeList
 }
 
 func (self TopicNodeLogic) Modify(ctx context.Context, form url.Values) error {
-	objLog := GetLogger(ctx)
 
 	node := &model.TopicNode{}
 	err := schemaDecoder.Decode(node, form)
 	if err != nil {
-		objLog.Errorln("TopicNodeLogic Modify decode error:", err)
+		logger.Error("TopicNodeLogic Modify decode error:", err)
 		return err
 	}
 
@@ -86,7 +85,7 @@ func (self TopicNodeLogic) Modify(ctx context.Context, form url.Values) error {
 		// 新增
 		_, err = db.MasterDB.Insert(node)
 		if err != nil {
-			objLog.Errorln("TopicNodeLogic Modify insert error:", err)
+			logger.Error("TopicNodeLogic Modify insert error:", err)
 		}
 		return err
 	}
@@ -100,7 +99,7 @@ func (self TopicNodeLogic) Modify(ctx context.Context, form url.Values) error {
 
 	_, err = db.MasterDB.Table(new(model.TopicNode)).Id(nid).Update(change)
 	if err != nil {
-		objLog.Errorln("TopicNodeLogic Modify update error:", err)
+		logger.Error("TopicNodeLogic Modify update error:", err)
 	}
 	return err
 }
@@ -114,7 +113,7 @@ func (self TopicNodeLogic) FindParallelTree(ctx context.Context) []*model.TopicN
 	nodeList := make([]*model.TopicNode, 0)
 	err := db.MasterDB.Asc("parent").Asc("seq").Find(&nodeList)
 	if err != nil {
-		logger.Errorln("TopicNodeLogic FindTreeList error:", err)
+		logger.Error("TopicNodeLogic FindTreeList error:%+v", err)
 
 		return nil
 	}

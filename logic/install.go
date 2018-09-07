@@ -6,6 +6,7 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -16,13 +17,12 @@ type InstallLogic struct{}
 var DefaultInstall = InstallLogic{}
 
 func (InstallLogic) CreateTable(ctx context.Context) error {
-	objLog := GetLogger(ctx)
 
 	dbFile := config.ROOT + "/config/db.sql"
 	buf, err := ioutil.ReadFile(dbFile)
 
 	if err != nil {
-		objLog.Errorln("create table, read db file error:", err)
+		logger.Error("create table, read db file error:", err)
 		return err
 	}
 
@@ -37,7 +37,7 @@ func (InstallLogic) CreateTable(ctx context.Context) error {
 		strSql = "CREATE TABLE " + strSql
 		_, err1 := db.MasterDB.Exec(strSql)
 		if err1 != nil {
-			objLog.Errorln("create table error:", err1)
+			logger.Error("create table error:", err1)
 			err = err1
 		}
 	}
@@ -47,7 +47,6 @@ func (InstallLogic) CreateTable(ctx context.Context) error {
 
 // InitTable 初始化数据表
 func (InstallLogic) InitTable(ctx context.Context) error {
-	objLog := GetLogger(ctx)
 
 	total, err := db.MasterDB.Count(new(model.Role))
 	if err != nil {
@@ -61,7 +60,7 @@ func (InstallLogic) InitTable(ctx context.Context) error {
 	dbFile := config.ROOT + "/config/init.sql"
 	buf, err := ioutil.ReadFile(dbFile)
 	if err != nil {
-		objLog.Errorln("init table, read init file error:", err)
+		logger.Error("init table, read init file error:", err)
 		return err
 	}
 
@@ -75,7 +74,7 @@ func (InstallLogic) InitTable(ctx context.Context) error {
 		strSql = "INSERT INTO " + strSql
 		_, err1 := db.MasterDB.Exec(strSql)
 		if err1 != nil {
-			objLog.Errorln("create table error:", err1)
+			logger.Error("create table error:", err1)
 			err = err1
 		}
 	}

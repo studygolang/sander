@@ -14,10 +14,10 @@ import (
 	"sander/config"
 	"sander/db"
 	"sander/global"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"github.com/robfig/cron"
 )
 
@@ -106,16 +106,16 @@ func loadData() {
 }
 
 func decrUserActiveWeight() {
-	logger.Debugln("start decr user active weight...")
+	logger.Debug("start decr user active weight...")
 
 	loginTime := time.Now().Add(-72 * time.Hour)
 	userList, err := logic.DefaultUser.FindNotLoginUsers(loginTime)
 	if err != nil {
-		logger.Errorln("获取最近未登录用户失败：", err)
+		logger.Error("获取最近未登录用户失败：%+v", err)
 		return
 	}
 
-	logger.Debugln("need dealing users:", len(userList))
+	logger.Debug("need dealing users:", len(userList))
 
 	for _, user := range userList {
 		divide := 5
@@ -131,11 +131,11 @@ func decrUserActiveWeight() {
 			}
 		}
 
-		logger.Debugln("decr user weight, username:", user.Username, "divide:", divide)
+		logger.Debug("decr user weight, username:%+v,divide:%+v", user.Username, divide)
 		logic.DefaultUser.DecrUserWeight("username", user.Username, divide)
 	}
 
-	logger.Debugln("end decr user active weight...")
+	logger.Debug("end decr user active weight...")
 }
 
 func genViewRank() {

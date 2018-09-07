@@ -16,13 +16,13 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
 	"github.com/go-validator/validator"
 	"github.com/go-xorm/xorm"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/slices"
 	"golang.org/x/net/context"
 )
@@ -33,7 +33,6 @@ var DefaultUser = UserLogic{}
 
 // CreateUser 创建用户
 func (self UserLogic) CreateUser(ctx context.Context, form url.Values) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
 
 	if self.UserExists(ctx, "email", form.Get("email")) {
 		errMsg = "该邮箱已注册过"
@@ -49,13 +48,13 @@ func (self UserLogic) CreateUser(ctx context.Context, form url.Values) (errMsg s
 	user := &model.User{}
 	err = schemaDecoder.Decode(user, form)
 	if err != nil {
-		objLog.Errorln("user schema Decode error:", err)
+		logger.Error("user schema Decode error:", err)
 		errMsg = err.Error()
 		return
 	}
 
 	if err = validator.Validate(user); err != nil {
-		objLog.Errorf("validate user error:%#v", err)
+		logger.Error("validate user error:%+v", err)
 
 		// TODO: 暂时简单处理
 		if errMap, ok := err.(validator.ErrorMap); ok {
@@ -85,7 +84,7 @@ func (self UserLogic) CreateUser(ctx context.Context, form url.Values) (errMsg s
 	if err != nil {
 		errMsg = "内部服务错误！"
 		session.Rollback()
-		objLog.Errorln("create user error:", err)
+		logger.Error("create user error:", err)
 		return
 	}
 
@@ -94,7 +93,7 @@ func (self UserLogic) CreateUser(ctx context.Context, form url.Values) (errMsg s
 		_, err = DefaultWechat.Bind(ctx, id, user.Uid, form.Get("userInfo"))
 		if err != nil {
 			session.Rollback()
-			objLog.Errorln("bind wechat user error:", err)
+			logger.Error("bind wechat user error:", err)
 			errMsg = err.Error()
 			return
 		}
@@ -107,7 +106,6 @@ func (self UserLogic) CreateUser(ctx context.Context, form url.Values) (errMsg s
 
 // Update 更新用户信息
 func (self UserLogic) Update(ctx context.Context, me *model.Me, form url.Values) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
 
 	if form.Get("open") != "1" {
 		form.Set("open", "0")
@@ -116,7 +114,7 @@ func (self UserLogic) Update(ctx context.Context, me *model.Me, form url.Values)
 	user := &model.User{}
 	err = schemaDecoder.Decode(user, form)
 	if err != nil {
-		objLog.Errorln("userlogic update, schema decode error:", err)
+		logger.Error("userlogic update, schema decode error:", err)
 		errMsg = "服务内部错误"
 		return
 	}
@@ -136,7 +134,7 @@ func (self UserLogic) Update(ctx context.Context, me *model.Me, form url.Values)
 	if err != nil {
 		session.Rollback()
 
-		objLog.Errorf("更新用户 【%d】 信息失败：%s", me.Uid, err)
+		logger.Error("更新用户 【%d】 信息失败：%s", me.Uid, err)
 		if strings.Contains(err.Error(), "Error 1062: Duplicate entry") {
 			// TODO：被恶意注册？
 			errMsg = "该邮箱地址被其他账号注册了"
@@ -150,7 +148,7 @@ func (self UserLogic) Update(ctx context.Context, me *model.Me, form url.Values)
 		Where("uid=?", me.Uid).Update(map[string]interface{}{"email": me.Email})
 	if err != nil {
 		session.Rollback()
-		objLog.Errorf("更新用户 【%d】 信息失败：%s", me.Uid, err)
+		logger.Error("更新用户 【%d】 信息失败：%s", me.Uid, err)
 		errMsg = "对不起，服务器内部错误，请稍后再试！"
 		return
 	}
@@ -165,11 +163,10 @@ func (self UserLogic) Update(ctx context.Context, me *model.Me, form url.Values)
 
 // UpdateUserStatus 更新用户状态
 func (UserLogic) UpdateUserStatus(ctx context.Context, uid, status int) {
-	objLog := GetLogger(ctx)
 
 	_, err := db.MasterDB.Table(new(model.User)).Id(uid).Update(map[string]interface{}{"status": status})
 	if err != nil {
-		objLog.Errorf("更新用户 【%d】 状态失败：%s", uid, err)
+		logger.Error("更新用户 【%d】 状态失败：%s", uid, err)
 	}
 }
 
@@ -186,13 +183,11 @@ func (UserLogic) ChangeAvatar(ctx context.Context, uid int, avatar string) (err 
 
 // UserExists 判断用户是否存在
 func (UserLogic) UserExists(ctx context.Context, field, val string) bool {
-	objLog := GetLogger(ctx)
-
 	userLogin := &model.UserLogin{}
 	_, err := db.MasterDB.Where(field+"=?", val).Get(userLogin)
 	if err != nil || userLogin.Uid == 0 {
 		if err != nil {
-			objLog.Errorln("user logic UserExists error:", err)
+			logger.Error("user logic UserExists error:", err)
 		}
 		return false
 	}
@@ -201,13 +196,12 @@ func (UserLogic) UserExists(ctx context.Context, field, val string) bool {
 
 // EmailOrUsernameExists 判断指定的邮箱（email）或用户名是否存在
 func (UserLogic) EmailOrUsernameExists(ctx context.Context, email, username string) bool {
-	objLog := GetLogger(ctx)
 
 	userLogin := &model.UserLogin{}
 	_, err := db.MasterDB.Where("email=?", email).Or("username=?", username).Get(userLogin)
 	if err != nil || userLogin.Uid == 0 {
 		if err != nil {
-			objLog.Errorln("user logic EmailOrUsernameExists error:", err)
+			logger.Error("user logic EmailOrUsernameExists error:", err)
 		}
 		return false
 	}
@@ -216,7 +210,6 @@ func (UserLogic) EmailOrUsernameExists(ctx context.Context, email, username stri
 
 // FindUserInfos 获得用户信息，uniq 可能是 uid slice 或 username slice
 func (self UserLogic) FindUserInfos(ctx context.Context, uniq interface{}) map[int]*model.User {
-	objLog := GetLogger(ctx)
 
 	field := "uid"
 	if uids, ok := uniq.([]int); ok {
@@ -232,19 +225,18 @@ func (self UserLogic) FindUserInfos(ctx context.Context, uniq interface{}) map[i
 
 	usersMap := make(map[int]*model.User)
 	if err := db.MasterDB.In(field, uniq).Find(&usersMap); err != nil {
-		objLog.Errorln("user logic FindUserInfos not record found:", err)
+		logger.Error("user logic FindUserInfos not record found:", err)
 		return nil
 	}
 	return usersMap
 }
 
 func (self UserLogic) FindOne(ctx context.Context, field string, val interface{}) *model.User {
-	objLog := GetLogger(ctx)
 
 	user := &model.User{}
 	_, err := db.MasterDB.Where(field+"=?", val).Get(user)
 	if err != nil {
-		objLog.Errorln("user logic FindOne error:", err)
+		logger.Error("user logic FindOne error:", err)
 	}
 
 	if user.Uid != 0 {
@@ -258,7 +250,7 @@ func (self UserLogic) FindOne(ctx context.Context, field string, val interface{}
 		userRoleList := make([]*model.UserRole, 0)
 		err = db.MasterDB.Where("uid=?", user.Uid).OrderBy("roleid ASC").Find(&userRoleList)
 		if err != nil {
-			objLog.Errorf("获取用户 %s 角色 信息失败：%s", val, err)
+			logger.Error("获取用户 %s 角色 信息失败：%s", val, err)
 			return nil
 		}
 
@@ -277,7 +269,6 @@ func (self UserLogic) FindOne(ctx context.Context, field string, val interface{}
 
 // 获取当前登录用户信息（常用信息）
 func (self UserLogic) FindCurrentUser(ctx context.Context, username interface{}) *model.Me {
-	objLog := GetLogger(ctx)
 
 	user := &model.User{}
 	var err error
@@ -289,11 +280,11 @@ func (self UserLogic) FindCurrentUser(ctx context.Context, username interface{})
 	}
 
 	if err != nil {
-		objLog.Errorf("获取用户 %q 信息失败：%s", username, err)
+		logger.Error("获取用户 %q 信息失败：%s", username, err)
 		return &model.Me{}
 	}
 	if user.Uid == 0 {
-		logger.Infof("用户 %q 不存在或状态不正常！", username)
+		logger.Info("用户 %q 不存在或状态不正常！", username)
 		return &model.Me{}
 	}
 
@@ -329,7 +320,7 @@ func (self UserLogic) FindCurrentUser(ctx context.Context, username interface{})
 	userRoleList := make([]*model.UserRole, 0)
 	err = db.MasterDB.Where("uid=?", user.Uid).Find(&userRoleList)
 	if err != nil {
-		logger.Errorf("获取用户 %q 角色 信息失败：%s", username, err)
+		logger.Error("获取用户 %q 角色 信息失败：%s", username, err)
 		return me
 	}
 	for _, userRole := range userRoleList {
@@ -347,25 +338,22 @@ func (self UserLogic) FindCurrentUser(ctx context.Context, username interface{})
 // findUsers 获得用户信息，包内使用。
 // s 是包含用户 UID 的二维数组
 func (self UserLogic) findUsers(ctx context.Context, s interface{}) []*model.User {
-	objLog := GetLogger(ctx)
-
 	uids := slices.StructsIntSlice(s, "Uid")
 
 	users := make([]*model.User, 0)
 	if err := db.MasterDB.In("uid", uids).Find(&users); err != nil {
-		objLog.Errorln("user logic findUsers not record found:", err)
+		logger.Error("user logic findUsers not record found:", err)
 		return nil
 	}
 	return users
 }
 
 func (self UserLogic) findUser(ctx context.Context, uid int) *model.User {
-	objLog := GetLogger(ctx)
 
 	user := &model.User{}
 	_, err := db.MasterDB.Id(uid).Get(user)
 	if err != nil {
-		objLog.Errorln("user logic findUser not record found:", err)
+		logger.Error("user logic findUser not record found:", err)
 	}
 
 	return user
@@ -375,7 +363,7 @@ func (self UserLogic) findUser(ctx context.Context, uid int) *model.User {
 func (UserLogic) Total() int64 {
 	total, err := db.MasterDB.Count(new(model.User))
 	if err != nil {
-		logger.Errorln("UserLogic Total error:", err)
+		logger.Error("UserLogic Total error:%+v", err)
 	}
 	return total
 }
@@ -387,17 +375,16 @@ var (
 
 // Login 登录；成功返回用户登录信息(user_login)
 func (self UserLogic) Login(ctx context.Context, username, passwd string) (*model.UserLogin, error) {
-	objLog := GetLogger(ctx)
 
 	userLogin := &model.UserLogin{}
 	_, err := db.MasterDB.Where("username=? OR email=?", username, username).Get(userLogin)
 	if err != nil {
-		objLog.Errorf("user %q login failure: %s", username, err)
+		logger.Error("user %q login failure: %s", username, err)
 		return nil, errors.New("内部错误，请稍后再试！")
 	}
 	// 校验用户
 	if userLogin.Uid == 0 {
-		objLog.Infof("user %q is not exists!", username)
+		logger.Info("user %q is not exists!", username)
 		return nil, ErrUsername
 	}
 
@@ -405,7 +392,7 @@ func (self UserLogic) Login(ctx context.Context, username, passwd string) (*mode
 	user := &model.User{}
 	db.MasterDB.Id(userLogin.Uid).Get(user)
 	if user.Status > model.UserStatusAudit {
-		objLog.Infof("用户 %q 的状态非审核通过, 用户的状态值：%d", username, user.Status)
+		logger.Info("用户 %q 的状态非审核通过, 用户的状态值：%d", username, user.Status)
 		var errMap = map[int]error{
 			model.UserStatusRefuse: errors.New("您的账号审核拒绝"),
 			model.UserStatusFreeze: errors.New("您的账号因为非法发布信息已被冻结，请联系管理员！"),
@@ -415,9 +402,9 @@ func (self UserLogic) Login(ctx context.Context, username, passwd string) (*mode
 	}
 
 	md5Passwd := goutils.Md5(passwd + userLogin.Passcode)
-	objLog.Debugf("passwd: %s, passcode: %s, md5passwd: %s, dbpasswd: %s", passwd, userLogin.Passcode, md5Passwd, userLogin.Passwd)
+	logger.Debug("passwd: %s, passcode: %s, md5passwd: %s, dbpasswd: %s", passwd, userLogin.Passcode, md5Passwd, userLogin.Passwd)
 	if md5Passwd != userLogin.Passwd {
-		objLog.Infof("用户名 %q 填写的密码错误", username)
+		logger.Info("用户名 %q 填写的密码错误", username)
 		return nil, ErrPasswd
 	}
 
@@ -458,7 +445,7 @@ func (self UserLogic) UpdatePasswd(ctx context.Context, username, curPasswd, new
 	}
 	_, err = db.MasterDB.Table(userLogin).Where("username=?", username).Update(changeData)
 	if err != nil {
-		logger.Errorf("用户 %s 更新密码错误：%s", username, err)
+		logger.Error("用户 %s 更新密码错误：%s", username, err)
 		return "对不起，内部服务错误！", err
 	}
 	return "", nil
@@ -475,7 +462,6 @@ func (UserLogic) HasPasswd(ctx context.Context, uid int) bool {
 }
 
 func (self UserLogic) ResetPasswd(ctx context.Context, email, passwd string) (string, error) {
-	objLog := GetLogger(ctx)
 
 	userLogin := &model.UserLogin{
 		Passwd: passwd,
@@ -491,7 +477,7 @@ func (self UserLogic) ResetPasswd(ctx context.Context, email, passwd string) (st
 	}
 	_, err = db.MasterDB.Table(userLogin).Where("email=?", email).Update(changeData)
 	if err != nil {
-		objLog.Errorf("用户 %s 更新密码错误：%s", email, err)
+		logger.Error("用户 %s 更新密码错误：%s", email, err)
 		return "对不起，内部服务错误！", err
 	}
 	return "", nil
@@ -499,7 +485,6 @@ func (self UserLogic) ResetPasswd(ctx context.Context, email, passwd string) (st
 
 // Activate 用户激活
 func (self UserLogic) Activate(ctx context.Context, email, uuid string, timestamp int64, sign string) (*model.User, error) {
-	objLog := GetLogger(ctx)
 
 	realSign := DefaultEmail.genActivateSign(email, uuid, timestamp)
 	if sign != realSign {
@@ -515,7 +500,7 @@ func (self UserLogic) Activate(ctx context.Context, email, uuid string, timestam
 
 	_, err := db.MasterDB.Id(user.Uid).Update(user)
 	if err != nil {
-		objLog.Errorf("activate [%s] failure:%s", email, err)
+		logger.Error("activate [%s] failure:%s", email, err)
 		return nil, err
 	}
 
@@ -526,7 +511,7 @@ func (self UserLogic) Activate(ctx context.Context, email, uuid string, timestam
 func (UserLogic) IncrUserWeight(field string, value interface{}, weight int) {
 	_, err := db.MasterDB.Where(field+"=?", value).Incr("weight", weight).Update(new(model.UserActive))
 	if err != nil {
-		logger.Errorln("UserActive update Error:", err)
+		logger.Error("UserActive update Error:%+v", err)
 	}
 }
 
@@ -537,10 +522,10 @@ func (UserLogic) DecrUserWeight(field string, value interface{}, divide int) {
 
 	strSql := fmt.Sprintf("UPDATE user_active SET weight=weight/%d WHERE %s=?", divide, field)
 	if result, err := db.MasterDB.Exec(strSql, value); err != nil {
-		logger.Errorln("UserActive update Error:", err)
+		logger.Error("UserActive update Error:%+v", err)
 	} else {
 		n, _ := result.RowsAffected()
-		logger.Debugln(strSql, "affected num:", n)
+		logger.Debug("sql:%+v,affected num:%+v", strSql, n)
 	}
 }
 
@@ -549,31 +534,29 @@ func (UserLogic) RecordLoginTime(username string) error {
 	_, err := db.MasterDB.Table(new(model.UserLogin)).Where("username=?", username).
 		Update(map[string]interface{}{"login_time": time.Now()})
 	if err != nil {
-		logger.Errorf("记录用户 %q 登录时间错误：%s", username, err)
+		logger.Error("记录用户 %q 登录时间错误：%s", username, err)
 	}
 	return err
 }
 
 // FindActiveUsers 获得活跃用户
 func (UserLogic) FindActiveUsers(ctx context.Context, limit int, offset ...int) []*model.UserActive {
-	objLog := GetLogger(ctx)
 
 	activeUsers := make([]*model.UserActive, 0)
 	err := db.MasterDB.OrderBy("weight DESC").Limit(limit, offset...).Find(&activeUsers)
 	if err != nil {
-		objLog.Errorln("UserLogic FindActiveUsers error:", err)
+		logger.Error("UserLogic FindActiveUsers error:", err)
 		return nil
 	}
 	return activeUsers
 }
 
 func (UserLogic) FindDAUUsers(ctx context.Context, uids []int) map[int]*model.User {
-	objLog := GetLogger(ctx)
 
 	users := make(map[int]*model.User)
 	err := db.MasterDB.In("uid", uids).Find(&users)
 	if err != nil {
-		objLog.Errorln("UserLogic FindDAUUsers error:", err)
+		logger.Error("UserLogic FindDAUUsers error:", err)
 		return nil
 	}
 	return users
@@ -581,12 +564,11 @@ func (UserLogic) FindDAUUsers(ctx context.Context, uids []int) map[int]*model.Us
 
 // FindNewUsers 最新加入会员
 func (UserLogic) FindNewUsers(ctx context.Context, limit int, offset ...int) []*model.User {
-	objLog := GetLogger(ctx)
 
 	users := make([]*model.User, 0)
 	err := db.MasterDB.OrderBy("ctime DESC").Limit(limit, offset...).Find(&users)
 	if err != nil {
-		objLog.Errorln("UserLogic FindNewUsers error:", err)
+		logger.Error("UserLogic FindNewUsers error:", err)
 		return nil
 	}
 	return users
@@ -594,8 +576,6 @@ func (UserLogic) FindNewUsers(ctx context.Context, limit int, offset ...int) []*
 
 // 获取用户列表（分页）：后台用
 func (UserLogic) FindUserByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.User, int) {
-	objLog := GetLogger(ctx)
-
 	session := db.MasterDB.NewSession()
 
 	for k, v := range conds {
@@ -608,13 +588,13 @@ func (UserLogic) FindUserByPage(ctx context.Context, conds map[string]string, cu
 	userList := make([]*model.User, 0)
 	err := session.OrderBy("uid DESC").Limit(limit, offset).Find(&userList)
 	if err != nil {
-		objLog.Errorln("UserLogic find error:", err)
+		logger.Error("UserLogic find error:", err)
 		return nil, 0
 	}
 
 	total, err := totalSession.Count(new(model.User))
 	if err != nil {
-		objLog.Errorln("UserLogic find count error:", err)
+		logger.Error("UserLogic find count error:", err)
 		return nil, 0
 	}
 
@@ -654,7 +634,7 @@ func (UserLogic) GetUserMentions(term string, limit int, isHttps bool) []map[str
 	userActives := make([]*model.UserActive, 0)
 	err := db.MasterDB.Where("username like ?", "%"+term+"%").Desc("mtime").Limit(limit).Find(&userActives)
 	if err != nil {
-		logger.Errorln("UserLogic GetUserMentions Error:", err)
+		logger.Error("UserLogic GetUserMentions Error:%+v", err)
 		return nil
 	}
 
@@ -680,7 +660,7 @@ func (UserLogic) FindNotLoginUsers(loginTime time.Time) (userList []*model.UserL
 func (UserLogic) EmailSubscribe(ctx context.Context, uid, unsubscribe int) {
 	_, err := db.MasterDB.Table(&model.User{}).Id(uid).Update(map[string]interface{}{"unsubscribe": unsubscribe})
 	if err != nil {
-		logger.Errorln("user:", uid, "Email Subscribe Error:", err)
+		logger.Error("user:%d,Email Subscribe Error:%+v", uid, err)
 	}
 }
 
@@ -688,7 +668,7 @@ func (UserLogic) FindBindUsers(ctx context.Context, uid int) []*model.BindUser {
 	bindUsers := make([]*model.BindUser, 0)
 	err := db.MasterDB.Where("uid=?", uid).Find(&bindUsers)
 	if err != nil {
-		logger.Errorln("user:", uid, "FindBindUsers Error:", err)
+		logger.Error("user:%d,FindBindUsers Error:%+v", uid, err)
 	}
 	return bindUsers
 }

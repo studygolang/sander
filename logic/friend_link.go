@@ -8,6 +8,7 @@ package logic
 
 import (
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -18,8 +19,6 @@ type FriendLinkLogic struct{}
 var DefaultFriendLink = FriendLinkLogic{}
 
 func (FriendLinkLogic) FindAll(ctx context.Context, limits ...int) []*model.FriendLink {
-	objLog := GetLogger(ctx)
-
 	friendLinks := make([]*model.FriendLink, 0)
 	session := db.MasterDB.OrderBy("seq asc")
 	if len(limits) > 0 {
@@ -27,7 +26,7 @@ func (FriendLinkLogic) FindAll(ctx context.Context, limits ...int) []*model.Frie
 	}
 	err := session.Find(&friendLinks)
 	if err != nil {
-		objLog.Errorln("FriendLinkLogic FindAll error:", err)
+		logger.Error("FriendLinkLogic FindAll error:", err)
 		return nil
 	}
 

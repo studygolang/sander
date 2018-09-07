@@ -10,12 +10,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"sander/logger"
 	"sander/logic"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/websocket"
 )
 
@@ -47,7 +47,7 @@ func (this *WebsocketController) Ws(wsConn *websocket.Conn) {
 	message := logic.NewMessage(logic.WsMsgOnline, onlineInfo)
 	err := websocket.JSON.Send(wsConn, message)
 	if err != nil {
-		logger.Errorln("Sending onlineusers error:", err)
+		logger.Error("Sending onlineusers error:%+v", err)
 		return
 	}
 
@@ -70,13 +70,13 @@ func (this *WebsocketController) Ws(wsConn *websocket.Conn) {
 		}
 		if clientClosed {
 			logic.Book.DelUser(user, serverId, isUid)
-			logger.Infoln("user:", user, "client close")
+			logger.Info("user:%+v client close", user)
 			break
 		}
 	}
 	// 用户退出时需要变更其他用户看到的在线用户数
 	if !logic.Book.UserIsOnline(user) {
-		logger.Infoln("user:", user, "had leave")
+		logger.Info("user:%+v had leave", user)
 
 		message := logic.NewMessage(logic.WsMsgOnline, map[string]int{"online": logic.Book.Len()})
 		go logic.Book.BroadcastAllUsersMessage(message)

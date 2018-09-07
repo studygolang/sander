@@ -14,13 +14,13 @@ import (
 
 	"sander/db"
 	"sander/db/nosql"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/go-xorm/xorm"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"
 	"golang.org/x/net/context"
 )
@@ -49,7 +49,7 @@ func (self UserRichLogic) AwardCooper() {
 	for {
 		cursor, resultSlice, err = redisClient.ZSCAN(key, cursor, "COUNT", count)
 		if err != nil {
-			logger.Errorln("AwardCooper ZSCAN error:", err)
+			logger.Error("AwardCooper ZSCAN error:%+v", err)
 			break
 		}
 
@@ -60,7 +60,7 @@ func (self UserRichLogic) AwardCooper() {
 			)
 			resultSlice, err = redis.Scan(resultSlice, &uid, &weight)
 			if err != nil {
-				logger.Errorln("AwardCooper redis Scan error:", err)
+				logger.Error("AwardCooper redis Scan error:%+v", err)
 				continue
 			}
 
@@ -91,7 +91,7 @@ func (self UserRichLogic) AwardCooper() {
 // IncrUserRich 增加或减少用户财富
 func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc string) {
 	if award == 0 {
-		logger.Errorln("IncrUserRich, but award is empty!")
+		logger.Error("IncrUserRich, but award is empty!")
 		return
 	}
 
@@ -105,7 +105,7 @@ func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc st
 		// 因为活跃奖励铜币，自动帮其领取初始资本
 		total, err = db.MasterDB.Where("uid=?", user.Uid).Count(new(model.UserBalanceDetail))
 		if err != nil {
-			logger.Errorln("IncrUserRich count error:", err)
+			logger.Error("IncrUserRich count error:%+v", err)
 			return
 		}
 	}
@@ -118,7 +118,7 @@ func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc st
 	if total == 0 {
 		initialAward, err = self.autoCompleteInitial(session, user)
 		if err != nil {
-			logger.Errorln("IncrUserRich autoCompleteInitial error:", err)
+			logger.Error("IncrUserRich autoCompleteInitial error:%+v", err)
 			session.Rollback()
 			return
 		}
@@ -130,7 +130,7 @@ func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc st
 	}
 	_, err = session.Where("uid=?", user.Uid).Cols("balance").Update(user)
 	if err != nil {
-		logger.Errorln("IncrUserRich update error:", err)
+		logger.Error("IncrUserRich update error:%+v", err)
 		session.Rollback()
 		return
 	}
@@ -144,7 +144,7 @@ func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc st
 	}
 	_, err = session.Insert(balanceDetail)
 	if err != nil {
-		logger.Errorln("IncrUserRich insert error:", err)
+		logger.Error("IncrUserRich insert error:%+v", err)
 		session.Rollback()
 		return
 	}
@@ -153,7 +153,6 @@ func (self UserRichLogic) IncrUserRich(user *model.User, typ, award int, desc st
 }
 
 func (UserRichLogic) FindBalanceDetail(ctx context.Context, me *model.Me, types ...int) []*model.UserBalanceDetail {
-	objLog := GetLogger(ctx)
 
 	balanceDetails := make([]*model.UserBalanceDetail, 0)
 	session := db.MasterDB.Where("uid=?", me.Uid)
@@ -163,7 +162,7 @@ func (UserRichLogic) FindBalanceDetail(ctx context.Context, me *model.Me, types 
 
 	err := session.Desc("id").Find(&balanceDetails)
 	if err != nil {
-		objLog.Errorln("UserRichLogic FindBalanceDetail error:", err)
+		logger.Error("UserRichLogic FindBalanceDetail error:", err)
 		return nil
 	}
 
@@ -173,17 +172,16 @@ func (UserRichLogic) FindBalanceDetail(ctx context.Context, me *model.Me, types 
 func (UserRichLogic) Total(ctx context.Context, uid int) int64 {
 	total, err := db.MasterDB.Where("uid=?", uid).Count(new(model.UserBalanceDetail))
 	if err != nil {
-		logger.Errorln("UserRichLogic Total error:", err)
+		logger.Error("UserRichLogic Total error:%+v", err)
 	}
 	return total
 }
 
 func (self UserRichLogic) FindRecharge(ctx context.Context, me *model.Me) int {
-	objLog := GetLogger(ctx)
 
 	total, err := db.MasterDB.Where("uid=?", me.Uid).SumInt(new(model.UserRecharge), "amount")
 	if err != nil {
-		objLog.Errorln("UserRichLogic FindRecharge error:", err)
+		logger.Error("UserRichLogic FindRecharge error:", err)
 		return 0
 	}
 
@@ -192,7 +190,6 @@ func (self UserRichLogic) FindRecharge(ctx context.Context, me *model.Me) int {
 
 // Recharge 用户充值
 func (self UserRichLogic) Recharge(ctx context.Context, uid string, form url.Values) {
-	objLog := GetLogger(ctx)
 
 	createdAt, _ := time.ParseInLocation("2006-01-02 15:04:05", form.Get("time"), time.Local)
 	userRecharge := &model.UserRecharge{
@@ -208,7 +205,7 @@ func (self UserRichLogic) Recharge(ctx context.Context, uid string, form url.Val
 	_, err := session.Insert(userRecharge)
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("UserRichLogic Recharge error:", err)
+		logger.Error("UserRichLogic Recharge error:", err)
 		return
 	}
 
@@ -223,7 +220,7 @@ func (self UserRichLogic) Recharge(ctx context.Context, uid string, form url.Val
 	err = DefaultMission.changeUserBalance(session, me, model.MissionTypeAdd, award, desc)
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("UserRichLogic changeUserBalance error:", err)
+		logger.Error("UserRichLogic changeUserBalance error:", err)
 		return
 	}
 	session.Commit()

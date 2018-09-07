@@ -11,11 +11,11 @@ import (
 	"strings"
 
 	"sander/config"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
-	"github.com/polaris1119/logger"
 )
 
 var (
@@ -42,7 +42,7 @@ func Sensivite() echo.MiddlewareFunc {
 					if hasSensitiveChar(title, s) {
 						// 把账号冻结
 						logic.DefaultUser.UpdateUserStatus(ctx, user.Uid, model.UserStatusFreeze)
-						logger.Infoln("user=", user.Uid, "publish ad, title=", title, ". freeze")
+						logger.Info("user=%+v,publish ad, title=%+v. freeze", user.Uid, title)
 						return ctx.String(http.StatusOK, `{"ok":0,"error":"对不起，您的账号已被冻结！"}`)
 					}
 				}
@@ -51,7 +51,7 @@ func Sensivite() echo.MiddlewareFunc {
 			if hasSensitive(title, contentSensitives) || hasSensitive(content, contentSensitives) {
 				// 把账号冻结
 				logic.DefaultUser.UpdateUserStatus(ctx, user.Uid, model.UserStatusFreeze)
-				logger.Infoln("user=", user.Uid, "publish ad, title=", title, ";content=", content, ". freeze")
+				logger.Info("user=", user.Uid, "publish ad, title=", title, ";content=", content, ". freeze")
 				return ctx.String(http.StatusOK, `{"ok":0,"error":"对不起，您的账号已被冻结！"}`)
 			}
 

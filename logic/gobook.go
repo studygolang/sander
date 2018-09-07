@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 )
 
@@ -22,8 +22,6 @@ type GoBookLogic struct{}
 var DefaultGoBook = GoBookLogic{}
 
 func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Values) (err error) {
-	objLog := GetLogger(ctx)
-
 	id := form.Get("id")
 	isModify := id != ""
 
@@ -32,7 +30,7 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 	if isModify {
 		_, err = db.MasterDB.Id(id).Get(book)
 		if err != nil {
-			objLog.Errorln("Publish Book find error:", err)
+			logger.Error("Publish Book find error:", err)
 			return
 		}
 
@@ -43,13 +41,13 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 
 		err = schemaDecoder.Decode(book, form)
 		if err != nil {
-			objLog.Errorln("Publish Book schema decode error:", err)
+			logger.Error("Publish Book schema decode error:", err)
 			return
 		}
 	} else {
 		err = schemaDecoder.Decode(book, form)
 		if err != nil {
-			objLog.Errorln("Publish Book schema decode error:", err)
+			logger.Error("Publish Book schema decode error:", err)
 			return
 		}
 
@@ -65,7 +63,7 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 	}
 
 	if err != nil {
-		objLog.Errorln("Publish Book error:", err)
+		logger.Error("Publish Book error:", err)
 		return
 	}
 
@@ -84,8 +82,6 @@ func (self GoBookLogic) Publish(ctx context.Context, user *model.Me, form url.Va
 
 // FindBy 获取图书列表（分页）
 func (GoBookLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*model.Book {
-	objLog := GetLogger(ctx)
-
 	dbSession := db.MasterDB.OrderBy("id DESC")
 
 	if len(lastIds) > 0 && lastIds[0] > 0 {
@@ -95,7 +91,7 @@ func (GoBookLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*mod
 	books := make([]*model.Book, 0)
 	err := dbSession.OrderBy("id DESC").Limit(limit).Find(&books)
 	if err != nil {
-		objLog.Errorln("GoBookLogic FindBy Error:", err)
+		logger.Error("GoBookLogic FindBy Error:", err)
 		return nil
 	}
 
@@ -104,12 +100,10 @@ func (GoBookLogic) FindBy(ctx context.Context, limit int, lastIds ...int) []*mod
 
 // FindAll 支持多页翻看
 func (GoBookLogic) FindAll(ctx context.Context, paginator *Paginator, orderBy string) []*model.Book {
-	objLog := GetLogger(ctx)
-
 	bookList := make([]*model.Book, 0)
 	err := db.MasterDB.OrderBy(orderBy).Limit(paginator.PerPage(), paginator.Offset()).Find(&bookList)
 	if err != nil {
-		objLog.Errorln("GoBookLogic FindAll error:", err)
+		logger.Error("GoBookLogic FindAll error:", err)
 		return nil
 	}
 
@@ -117,7 +111,6 @@ func (GoBookLogic) FindAll(ctx context.Context, paginator *Paginator, orderBy st
 }
 
 func (GoBookLogic) Count(ctx context.Context) int64 {
-	objLog := GetLogger(ctx)
 
 	var (
 		total int64
@@ -126,7 +119,7 @@ func (GoBookLogic) Count(ctx context.Context) int64 {
 	total, err = db.MasterDB.Count(new(model.Book))
 
 	if err != nil {
-		objLog.Errorln("GoBookLogic Count error:", err)
+		logger.Error("GoBookLogic Count error:", err)
 	}
 
 	return total
@@ -140,7 +133,7 @@ func (GoBookLogic) FindByIds(ids []int) []*model.Book {
 	books := make([]*model.Book, 0)
 	err := db.MasterDB.In("id", ids).Find(&books)
 	if err != nil {
-		logger.Errorln("GoBookLogic FindByIds error:", err)
+		logger.Error("GoBookLogic FindByIds error:%+v", err)
 		return nil
 	}
 	return books
@@ -155,7 +148,7 @@ func (GoBookLogic) findByIds(ids []int) map[int]*model.Book {
 	books := make(map[int]*model.Book)
 	err := db.MasterDB.In("id", ids).Find(&books)
 	if err != nil {
-		logger.Errorln("GoBookLogic findByIds error:", err)
+		logger.Error("GoBookLogic findByIds error:%+v", err)
 		return nil
 	}
 	return books
@@ -166,7 +159,7 @@ func (GoBookLogic) FindById(ctx context.Context, id interface{}) (*model.Book, e
 	book := &model.Book{}
 	_, err := db.MasterDB.Id(id).Get(book)
 	if err != nil {
-		logger.Errorln("book logic FindById Error:", err)
+		logger.Error("book logic FindById Error:%+v", err)
 	}
 
 	return book, err
@@ -176,7 +169,7 @@ func (GoBookLogic) FindById(ctx context.Context, id interface{}) (*model.Book, e
 func (GoBookLogic) Total() int64 {
 	total, err := db.MasterDB.Count(new(model.Book))
 	if err != nil {
-		logger.Errorln("GoBookLogic Total error:", err)
+		logger.Error("GoBookLogic Total error:%+v", err)
 	}
 	return total
 }
@@ -193,7 +186,7 @@ func (self BookComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
 		"lastreplytime": cmttime,
 	})
 	if err != nil {
-		logger.Errorln("更新图书评论数失败：", err)
+		logger.Error("更新图书评论数失败：%+v", err)
 	}
 }
 
@@ -229,7 +222,7 @@ func (self BookLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
 	_, err := db.MasterDB.Where("id=?", objid).Incr("likenum", num).Update(new(model.Book))
 	if err != nil {
-		logger.Errorln("更新图书喜欢数失败：", err)
+		logger.Error("更新图书喜欢数失败：%+v", err)
 	}
 }
 

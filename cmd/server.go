@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"sander/config"
+	"sander/logger"
 	"sander/logic"
 
-	"github.com/polaris1119/logger"
 	"github.com/robfig/cron"
 )
 
@@ -59,11 +59,11 @@ func IndexingServer() {
 }
 
 func indexing(isAll bool) {
-	logger.Infoln("indexing start...")
+	logger.Info("indexing start...")
 
 	start := time.Now()
 	defer func() {
-		logger.Infoln("indexing spend time:", time.Now().Sub(start))
+		logger.Info("indexing spend time:", time.Now().Sub(start))
 	}()
 
 	logic.DefaultSearcher.Indexing(isAll)

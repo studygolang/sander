@@ -8,9 +8,9 @@ package logic
 
 import (
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 )
 
@@ -23,7 +23,7 @@ func (DynamicLogic) FindBy(ctx context.Context, lastId int, limit int) []*model.
 	dynamicList := make([]*model.Dynamic, 0)
 	err := db.MasterDB.Where("id>?", lastId).OrderBy("seq DESC").Limit(limit).Find(&dynamicList)
 	if err != nil {
-		logger.Errorln("DynamicLogic FindBy Error:", err)
+		logger.Error("DynamicLogic FindBy Error:%+v", err)
 	}
 
 	return dynamicList

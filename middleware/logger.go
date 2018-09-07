@@ -5,10 +5,10 @@ import (
 	"net"
 	"time"
 
+	"sander/logger"
+
 	"github.com/labstack/echo"
-	"github.com/polaris1119/logger"
 	"github.com/twinj/uuid"
-	"golang.org/x/net/context"
 )
 
 const HeaderKey = "X-Request-Id"
@@ -22,10 +22,7 @@ func EchoLogger() echo.MiddlewareFunc {
 			req := ctx.Request()
 			resp := ctx.Response()
 
-			objLogger := logger.GetLogger()
-			ctx.SetContext(context.WithValue(context.Background(), "logger", objLogger))
-
-			objLogger.Infoln("query params:", ctx.QueryParams())
+			logger.Info("query params:%+v", ctx.QueryParams())
 
 			remoteAddr := req.RemoteAddress()
 			if ip := req.Header().Get(echo.HeaderXRealIP); ip != "" {
@@ -64,9 +61,7 @@ func EchoLogger() echo.MiddlewareFunc {
 				stop := time.Now()
 				// [remoteAddr method path request_id "UA" code time size]
 				uri := fmt.Sprintf(`[%s %s %s %s "%s" %d %s %d]`, remoteAddr, method, path, id, req.UserAgent(), code, stop.Sub(start), size)
-				objLogger.SetContext(context.WithValue(ctx.Context(), "uri", uri))
-				objLogger.Flush()
-				logger.PutLogger(objLogger)
+				logger.Info(uri)
 			}()
 
 			if err := next(ctx); err != nil {

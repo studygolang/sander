@@ -13,13 +13,13 @@ import (
 
 	xhttp "sander/http"
 	"sander/http/middleware"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 	"sander/util/echoutils"
 
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 // 在需要评论（喜欢）且要回调的地方注册评论（喜欢）对象
@@ -58,7 +58,7 @@ func (ArticleController) ReadList(ctx echo.Context) error {
 	unTopArticles := logic.DefaultArticle.FindAll(ctx, paginator, "id DESC", "top!=1")
 	articles := append(topArticles, unTopArticles...)
 	if articles == nil {
-		logger.Errorln("article controller: find article error")
+		logger.Error("article controller: find article error")
 		return ctx.Redirect(http.StatusSeeOther, "/articles")
 	}
 

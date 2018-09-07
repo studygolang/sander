@@ -11,12 +11,12 @@ import (
 
 	xhttp "sander/http"
 	"sander/http/middleware"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 // 在需要评论（喜欢）且要回调的地方注册评论（喜欢）对象
@@ -107,7 +107,7 @@ func (WikiController) ReadList(ctx echo.Context) error {
 	lastId := goutils.MustInt(ctx.QueryParam("lastid"))
 	wikis := logic.DefaultWiki.FindBy(ctx, limit+5, lastId)
 	if wikis == nil {
-		logger.Errorln("wiki controller: find wikis error")
+		logger.Error("wiki controller: find wikis error")
 		return ctx.Redirect(http.StatusSeeOther, "/wiki")
 	}
 

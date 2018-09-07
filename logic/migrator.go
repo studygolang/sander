@@ -16,8 +16,7 @@ import (
 	"sync"
 
 	"sander/config"
-
-	"github.com/polaris1119/logger"
+	"sander/logger"
 )
 
 type MigratorLogic struct{}
@@ -44,15 +43,15 @@ func (MigratorLogic) Migrator(changeVersion string) {
 	versionDir := changeLogDir + "/" + changeVersion
 	changeLogVersion, err := os.Stat(versionDir)
 
-	logger.Infoln("migrator:changelog dir is:", versionDir)
+	logger.Info("migrator:changelog dir is:%+v", versionDir)
 
 	if err == nil && changeLogVersion.IsDir() {
 
-		logger.Infoln("migrator:exec changelog version:", changeVersion, ", files in ", versionDir)
+		logger.Info("migrator:exec changelog version:%+v, files in ", changeVersion, versionDir)
 
 		changeLogs, err := ioutil.ReadDir(versionDir)
 		if err != nil {
-			logger.Errorln("migrator:read changelog files error:", err)
+			logger.Error("migrator:read changelog files error:%+v", err)
 			os.Exit(1)
 		}
 
@@ -69,7 +68,7 @@ func (MigratorLogic) Migrator(changeVersion string) {
 		wg.Wait()
 
 	} else {
-		logger.Errorln("migrator:read changelog version dir error:", err)
+		logger.Error("migrator:read changelog version dir error:%+v", err)
 		os.Exit(1)
 	}
 }

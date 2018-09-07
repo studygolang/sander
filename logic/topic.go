@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
 	"github.com/fatih/structs"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/set"
 	"golang.org/x/net/context"
 )
@@ -31,14 +31,13 @@ var DefaultTopic = TopicLogic{}
 
 // Publish 发布主题。入topics和topics_ex库
 func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Values) (tid int, err error) {
-	objLog := GetLogger(ctx)
 
 	tid = goutils.MustInt(form.Get("tid"))
 	if tid != 0 {
 		topic := &model.Topic{}
 		_, err = db.MasterDB.Id(tid).Get(topic)
 		if err != nil {
-			objLog.Errorln("Publish Topic find error:", err)
+			logger.Error("Publish Topic find error:", err)
 			return
 		}
 
@@ -49,7 +48,7 @@ func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Value
 
 		_, err = self.Modify(ctx, me, form)
 		if err != nil {
-			objLog.Errorln("Publish Topic modify error:", err)
+			logger.Error("Publish Topic modify error:", err)
 			return
 		}
 
@@ -79,7 +78,7 @@ func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Value
 		topic := &model.Topic{}
 		err = schemaDecoder.Decode(topic, form)
 		if err != nil {
-			objLog.Errorln("TopicLogic Publish decode error:", err)
+			logger.Error("TopicLogic Publish decode error:", err)
 			return
 		}
 		topic.Uid = me.Uid
@@ -92,7 +91,7 @@ func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Value
 		_, err = session.Insert(topic)
 		if err != nil {
 			session.Rollback()
-			objLog.Errorln("TopicLogic Publish insert error:", err)
+			logger.Error("TopicLogic Publish insert error:", err)
 			return
 		}
 
@@ -103,7 +102,7 @@ func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Value
 		_, err = session.Insert(topicEx)
 		if err != nil {
 			session.Rollback()
-			objLog.Errorln("TopicLogic Publish Insert TopicEx error:", err)
+			logger.Error("TopicLogic Publish Insert TopicEx error:", err)
 			return
 		}
 		session.Commit()
@@ -112,7 +111,7 @@ func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Value
 			// 同一个首页不显示的节点，一天发布主题数超过3个，扣 1 千铜币
 			topicNum, err := db.MasterDB.Where("uid=? AND ctime>?", me.Uid, time.Now().Format("2006-01-02 00:00:00")).Count(new(model.Topic))
 			if err != nil {
-				logger.Errorln("find today topic num error:", err)
+				logger.Error("find today topic num error:%+v", err)
 				return
 			}
 
@@ -155,7 +154,6 @@ func (self TopicLogic) Publish(ctx context.Context, me *model.Me, form url.Value
 // Modify 修改主题
 // user 修改人的（有可能是作者或管理员）
 func (TopicLogic) Modify(ctx context.Context, user *model.Me, form url.Values) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
 
 	change := map[string]interface{}{
 		"editor_uid": user.Uid,
@@ -169,7 +167,7 @@ func (TopicLogic) Modify(ctx context.Context, user *model.Me, form url.Values) (
 	tid := form.Get("tid")
 	_, err = db.MasterDB.Table(new(model.Topic)).Id(tid).Update(change)
 	if err != nil {
-		objLog.Errorf("更新主题 【%s】 信息失败：%s\n", tid, err)
+		logger.Error("更新主题 【%s】 信息失败：%s\n", tid, err)
 		errMsg = "对不起，服务器内部错误，请稍后再试！"
 		return
 	}
@@ -181,12 +179,11 @@ func (TopicLogic) Modify(ctx context.Context, user *model.Me, form url.Values) (
 
 // Append 主题附言
 func (self TopicLogic) Append(ctx context.Context, uid, tid int, content string) error {
-	objLog := GetLogger(ctx)
 
 	// 当前已经附言了几条，最多 3 条
 	num, err := db.MasterDB.Where("tid=?", tid).Count(new(model.TopicAppend))
 	if err != nil {
-		objLog.Errorln("TopicLogic Append error:", err)
+		logger.Error("TopicLogic Append error:", err)
 		return err
 	}
 
@@ -201,7 +198,7 @@ func (self TopicLogic) Append(ctx context.Context, uid, tid int, content string)
 	_, err = db.MasterDB.Insert(topicAppend)
 
 	if err != nil {
-		objLog.Errorln("TopicLogic Append insert error:", err)
+		logger.Error("TopicLogic Append insert error:", err)
 		return err
 	}
 
@@ -212,7 +209,6 @@ func (self TopicLogic) Append(ctx context.Context, uid, tid int, content string)
 
 // SetTop 置顶
 func (self TopicLogic) SetTop(ctx context.Context, me *model.Me, tid int) error {
-	objLog := GetLogger(ctx)
 
 	if !me.IsAdmin {
 		topic := self.findByTid(tid)
@@ -230,14 +226,14 @@ func (self TopicLogic) SetTop(ctx context.Context, me *model.Me, tid int) error 
 		"top_time": time.Now().Unix(),
 	})
 	if err != nil {
-		objLog.Errorln("TopicLogic SetTop error:", err)
+		logger.Error("TopicLogic SetTop error:", err)
 		session.Rollback()
 		return err
 	}
 
 	err = DefaultFeed.setTop(session, tid, model.TypeTopic, 1)
 	if err != nil {
-		objLog.Errorln("TopicLogic SetTop feed error:", err)
+		logger.Error("TopicLogic SetTop feed error:", err)
 		session.Rollback()
 		return err
 	}
@@ -251,7 +247,6 @@ func (self TopicLogic) SetTop(ctx context.Context, me *model.Me, tid int) error 
 
 // UnsetTop 取消置顶
 func (self TopicLogic) UnsetTop(ctx context.Context, tid int) error {
-	objLog := GetLogger(ctx)
 
 	session := db.MasterDB.NewSession()
 	defer session.Close()
@@ -261,14 +256,14 @@ func (self TopicLogic) UnsetTop(ctx context.Context, tid int) error {
 		"top": 0,
 	})
 	if err != nil {
-		objLog.Errorln("TopicLogic UnsetTop error:", err)
+		logger.Error("TopicLogic UnsetTop error:", err)
 		session.Rollback()
 		return err
 	}
 
 	err = DefaultFeed.setTop(session, tid, model.TypeTopic, 0)
 	if err != nil {
-		objLog.Errorln("TopicLogic UnsetTop feed error:", err)
+		logger.Error("TopicLogic UnsetTop feed error:", err)
 		session.Rollback()
 		return err
 	}
@@ -283,7 +278,7 @@ func (self TopicLogic) AutoUnsetTop() error {
 	topics := make([]*model.Topic, 0)
 	err := db.MasterDB.Where("top=1").Find(&topics)
 	if err != nil {
-		logger.Errorln("TopicLogic AutoUnsetTop error:", err)
+		logger.Error("TopicLogic AutoUnsetTop error:%+v", err)
 		return err
 	}
 
@@ -300,7 +295,6 @@ func (self TopicLogic) AutoUnsetTop() error {
 
 // FindAll 支持多页翻看
 func (self TopicLogic) FindAll(ctx context.Context, paginator *Paginator, orderBy string, querystring string, args ...interface{}) []map[string]interface{} {
-	objLog := GetLogger(ctx)
 
 	topicInfos := make([]*model.TopicInfo, 0)
 
@@ -310,7 +304,7 @@ func (self TopicLogic) FindAll(ctx context.Context, paginator *Paginator, orderB
 	}
 	err := session.OrderBy(orderBy).Limit(paginator.PerPage(), paginator.Offset()).Find(&topicInfos)
 	if err != nil {
-		objLog.Errorln("TopicLogic FindAll error:", err)
+		logger.Error("TopicLogic FindAll error:", err)
 		return nil
 	}
 
@@ -334,7 +328,7 @@ func (TopicLogic) FindRecent(limit int, uids ...int) []*model.Topic {
 
 	topics := make([]*model.Topic, 0)
 	if err := dbSession.Find(&topics); err != nil {
-		logger.Errorln("TopicLogic FindRecent error:", err)
+		logger.Error("TopicLogic FindRecent error:%+v", err)
 	}
 	for _, topic := range topics {
 		topic.Node = GetNodeName(topic.Nid)
@@ -344,12 +338,11 @@ func (TopicLogic) FindRecent(limit int, uids ...int) []*model.Topic {
 
 // FindByNid 获得某个节点下的主题列表（侧边栏推荐）
 func (TopicLogic) FindByNid(ctx context.Context, nid, curTid string) []*model.Topic {
-	objLog := GetLogger(ctx)
 
 	topics := make([]*model.Topic, 0)
 	err := db.MasterDB.Where("nid=? AND tid!=?", nid, curTid).Limit(10).Find(&topics)
 	if err != nil {
-		objLog.Errorln("TopicLogic FindByNid Error:", err)
+		logger.Error("TopicLogic FindByNid Error:", err)
 	}
 
 	return topics
@@ -364,7 +357,7 @@ func (TopicLogic) FindByTids(tids []int) []*model.Topic {
 	topics := make([]*model.Topic, 0)
 	err := db.MasterDB.In("tid", tids).Find(&topics)
 	if err != nil {
-		logger.Errorln("TopicLogic FindByTids error:", err)
+		logger.Error("TopicLogic FindByTids error:%+v", err)
 		return nil
 	}
 	return topics
@@ -375,7 +368,7 @@ func (self TopicLogic) FindFullinfoByTids(tids []int) []map[string]interface{} {
 
 	err := db.MasterDB.Join("INNER", "topics_ex", "topics.tid=topics_ex.tid").In("topics.tid", tids).Find(&topicInfoMap)
 	if err != nil {
-		logger.Errorln("TopicLogic FindFullinfoByTids error:", err)
+		logger.Error("TopicLogic FindFullinfoByTids error:%+v", err)
 		return nil
 	}
 
@@ -391,12 +384,11 @@ func (self TopicLogic) FindFullinfoByTids(tids []int) []map[string]interface{} {
 
 // FindByTid 获得主题详细信息（包括详细回复）
 func (self TopicLogic) FindByTid(ctx context.Context, tid int) (topicMap map[string]interface{}, replies []map[string]interface{}, err error) {
-	objLog := GetLogger(ctx)
 
 	topicInfo := &model.TopicInfo{}
 	_, err = db.MasterDB.Join("INNER", "topics_ex", "topics.tid=topics_ex.tid").Where("topics.tid=?", tid).Get(topicInfo)
 	if err != nil {
-		objLog.Errorln("TopicLogic FindByTid get error:", err)
+		logger.Error("TopicLogic FindByTid get error:", err)
 		return
 	}
 
@@ -404,7 +396,7 @@ func (self TopicLogic) FindByTid(ctx context.Context, tid int) (topicMap map[str
 
 	if topic.Tid == 0 {
 		err = errors.New("The topic of tid is not exists")
-		objLog.Errorln("TopicLogic FindByTid get error:", err)
+		logger.Error("TopicLogic FindByTid get error:", err)
 		return
 	}
 
@@ -441,7 +433,6 @@ func (self TopicLogic) FindByTid(ctx context.Context, tid int) (topicMap map[str
 
 // 获取列表（分页）：后台用
 func (TopicLogic) FindByPage(ctx context.Context, conds map[string]string, curPage, limit int) ([]*model.Topic, int) {
-	objLog := GetLogger(ctx)
 
 	session := db.MasterDB.NewSession()
 
@@ -455,13 +446,13 @@ func (TopicLogic) FindByPage(ctx context.Context, conds map[string]string, curPa
 	topicList := make([]*model.Topic, 0)
 	err := session.OrderBy("tid DESC").Limit(limit, offset).Find(&topicList)
 	if err != nil {
-		objLog.Errorln("find error:", err)
+		logger.Error("find error:", err)
 		return nil, 0
 	}
 
 	total, err := totalSession.Count(new(model.Topic))
 	if err != nil {
-		objLog.Errorln("find count error:", err)
+		logger.Error("find count error:", err)
 		return nil, 0
 	}
 
@@ -469,12 +460,11 @@ func (TopicLogic) FindByPage(ctx context.Context, conds map[string]string, curPa
 }
 
 func (TopicLogic) FindAppend(ctx context.Context, tid int) []*model.TopicAppend {
-	objLog := GetLogger(ctx)
 
 	topicAppends := make([]*model.TopicAppend, 0)
 	err := db.MasterDB.Where("tid=?", tid).Find(&topicAppends)
 	if err != nil {
-		objLog.Errorln("TopicLogic FindAppend error:", err)
+		logger.Error("TopicLogic FindAppend error:", err)
 	}
 
 	return topicAppends
@@ -484,7 +474,7 @@ func (TopicLogic) findByTid(tid int) *model.Topic {
 	topic := &model.Topic{}
 	_, err := db.MasterDB.Where("tid=?", tid).Get(topic)
 	if err != nil {
-		logger.Errorln("TopicLogic findByTid error:", err)
+		logger.Error("TopicLogic findByTid error:%+v", err)
 	}
 	return topic
 }
@@ -498,7 +488,7 @@ func (TopicLogic) findByTids(tids []int) map[int]*model.Topic {
 	topics := make(map[int]*model.Topic)
 	err := db.MasterDB.In("tid", tids).Find(&topics)
 	if err != nil {
-		logger.Errorln("TopicLogic findByTids error:", err)
+		logger.Error("TopicLogic findByTids error:%+v", err)
 		return nil
 	}
 	return topics
@@ -557,15 +547,13 @@ func (TopicLogic) FindHotNodes(ctx context.Context) []map[string]interface{} {
 		return hotNodesCache
 	}
 
-	objLog := GetLogger(ctx)
-
 	hotNum := 10
 
 	lastWeek := time.Now().Add(-7 * 24 * time.Hour).Format("2006-01-02 15:04:05")
 	strSql := fmt.Sprintf("SELECT nid, COUNT(1) AS topicnum FROM topics WHERE ctime>='%s' GROUP BY nid ORDER BY topicnum DESC LIMIT 15", lastWeek)
 	rows, err := db.MasterDB.DB().DB.Query(strSql)
 	if err != nil {
-		objLog.Errorln("TopicLogic FindHotNodes error:", err)
+		logger.Error("TopicLogic FindHotNodes error:", err)
 		return nil
 	}
 
@@ -574,7 +562,7 @@ func (TopicLogic) FindHotNodes(ctx context.Context) []map[string]interface{} {
 		var nid, topicnum int
 		err = rows.Scan(&nid, &topicnum)
 		if err != nil {
-			objLog.Errorln("rows.Scan error:", err)
+			logger.Error("rows.Scan error:", err)
 			continue
 		}
 
@@ -611,7 +599,7 @@ func (TopicLogic) FindHotNodes(ctx context.Context) []map[string]interface{} {
 func (TopicLogic) Total() int64 {
 	total, err := db.MasterDB.Count(new(model.Topic))
 	if err != nil {
-		logger.Errorln("TopicLogic Total error:", err)
+		logger.Error("TopicLogic Total error:%+v", err)
 	}
 	return total
 }
@@ -626,7 +614,6 @@ func (TopicLogic) JSEscape(topics []*model.Topic) []*model.Topic {
 }
 
 func (TopicLogic) Count(ctx context.Context, querystring string, args ...interface{}) int64 {
-	objLog := GetLogger(ctx)
 
 	var (
 		total int64
@@ -639,7 +626,7 @@ func (TopicLogic) Count(ctx context.Context, querystring string, args ...interfa
 	}
 
 	if err != nil {
-		objLog.Errorln("TopicLogic Count error:", err)
+		logger.Error("TopicLogic Count error:", err)
 	}
 
 	return total
@@ -650,7 +637,7 @@ func (TopicLogic) getOwner(tid int) int {
 	topic := &model.Topic{}
 	_, err := db.MasterDB.Id(tid).Get(topic)
 	if err != nil {
-		logger.Errorln("topic logic getOwner Error:", err)
+		logger.Error("topic logic getOwner Error:%+v", err)
 		return 0
 	}
 	return topic.Uid
@@ -681,7 +668,7 @@ func (self TopicComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
 		"lastreplytime": cmttime,
 	})
 	if err != nil {
-		logger.Errorln("更新主题最后回复人信息失败：", err)
+		logger.Error("更新主题最后回复人信息失败：%+v", err)
 		session.Rollback()
 		return
 	}
@@ -689,7 +676,7 @@ func (self TopicComment) UpdateComment(cid, objid, uid int, cmttime time.Time) {
 	// 更新回复数（TODO：暂时每次都更新表）
 	_, err = db.MasterDB.Id(objid).Incr("reply", 1).Update(new(model.TopicUpEx))
 	if err != nil {
-		logger.Errorln("更新主题回复数失败：", err)
+		logger.Error("更新主题回复数失败：%+v", err)
 		session.Rollback()
 		return
 	}
@@ -730,7 +717,7 @@ func (self TopicLike) UpdateLike(objid, num int) {
 	// 更新喜欢数（TODO：暂时每次都更新表）
 	_, err := db.MasterDB.Where("tid=?", objid).Incr("like", num).Update(new(model.TopicUpEx))
 	if err != nil {
-		logger.Errorln("更新主题喜欢数失败：", err)
+		logger.Error("更新主题喜欢数失败：%+v", err)
 	}
 }
 

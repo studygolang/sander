@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 )
 
@@ -19,12 +20,10 @@ type GCTTLogic struct{}
 var DefaultGCTT = GCTTLogic{}
 
 func (self GCTTLogic) FindTranslator(ctx context.Context, me *model.Me) *model.GCTTUser {
-	objLog := GetLogger(ctx)
-
 	gcttUser := &model.GCTTUser{}
 	_, err := db.MasterDB.Where("uid=?", me.Uid).Get(gcttUser)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindTranslator error:", err)
+		logger.Error("GCTTLogic FindTranslator error:", err)
 		return nil
 	}
 
@@ -32,12 +31,10 @@ func (self GCTTLogic) FindTranslator(ctx context.Context, me *model.Me) *model.G
 }
 
 func (self GCTTLogic) FindOne(ctx context.Context, username string) *model.GCTTUser {
-	objLog := GetLogger(ctx)
-
 	gcttUser := &model.GCTTUser{}
 	_, err := db.MasterDB.Where("username=?", username).Get(gcttUser)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindOne error:", err)
+		logger.Error("GCTTLogic FindOne error:", err)
 		return nil
 	}
 
@@ -45,8 +42,6 @@ func (self GCTTLogic) FindOne(ctx context.Context, username string) *model.GCTTU
 }
 
 func (self GCTTLogic) BindUser(ctx context.Context, gcttUser *model.GCTTUser, uid int, githubUser *model.BindUser) error {
-	objLog := GetLogger(ctx)
-
 	var err error
 
 	if gcttUser.Id > 0 {
@@ -63,53 +58,45 @@ func (self GCTTLogic) BindUser(ctx context.Context, gcttUser *model.GCTTUser, ui
 	}
 
 	if err != nil {
-		objLog.Errorln("GCTTLogic BindUser error:", err)
+		logger.Error("GCTTLogic BindUser error:", err)
 	}
 
 	return err
 }
 
 func (self GCTTLogic) FindCoreUsers(ctx context.Context) []*model.GCTTUser {
-	objLog := GetLogger(ctx)
-
 	gcttUsers := make([]*model.GCTTUser, 0)
 	err := db.MasterDB.Where("role!=?", model.GCTTRoleTranslator).OrderBy("role ASC").Find(&gcttUsers)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindUsers error:", err)
+		logger.Error("GCTTLogic FindUsers error:", err)
 	}
 
 	return gcttUsers
 }
 
 func (self GCTTLogic) FindUsers(ctx context.Context) []*model.GCTTUser {
-	objLog := GetLogger(ctx)
-
 	gcttUsers := make([]*model.GCTTUser, 0)
 	err := db.MasterDB.Where("num>0").OrderBy("num DESC,words DESC").Find(&gcttUsers)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindUsers error:", err)
+		logger.Error("GCTTLogic FindUsers error:", err)
 	}
 
 	return gcttUsers
 }
 
 func (self GCTTLogic) FindUnTranslateIssues(ctx context.Context, limit int) []*model.GCTTIssue {
-	objLog := GetLogger(ctx)
-
 	gcttIssues := make([]*model.GCTTIssue, 0)
 
 	err := db.MasterDB.Where("state=?", model.IssueOpened).
 		Limit(limit).OrderBy("id DESC").Find(&gcttIssues)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindUnTranslateIssues error:", err)
+		logger.Error("GCTTLogic FindUnTranslateIssues error:", err)
 	}
 
 	return gcttIssues
 }
 
 func (self GCTTLogic) FindIssues(ctx context.Context, paginator *Paginator, querysring string, args ...interface{}) []*model.GCTTIssue {
-	objLog := GetLogger(ctx)
-
 	gcttIssues := make([]*model.GCTTIssue, 0)
 
 	session := db.MasterDB.Limit(paginator.PerPage(), paginator.Offset())
@@ -124,15 +111,13 @@ func (self GCTTLogic) FindIssues(ctx context.Context, paginator *Paginator, quer
 	}
 	err := session.Limit(paginator.PerPage(), paginator.Offset()).Find(&gcttIssues)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindIssues error:", err)
+		logger.Error("GCTTLogic FindIssues error:", err)
 	}
 
 	return gcttIssues
 }
 
 func (self GCTTLogic) IssueCount(ctx context.Context, querystring string, args ...interface{}) int64 {
-	objLog := GetLogger(ctx)
-
 	var (
 		total int64
 		err   error
@@ -144,32 +129,28 @@ func (self GCTTLogic) IssueCount(ctx context.Context, querystring string, args .
 	}
 
 	if err != nil {
-		objLog.Errorln("GCTTLogic Count error:", err)
+		logger.Error("GCTTLogic Count error:", err)
 	}
 
 	return total
 }
 
 func (self GCTTLogic) FindNewestGit(ctx context.Context) []*model.GCTTGit {
-	objLog := GetLogger(ctx)
-
 	gcttGits := make([]*model.GCTTGit, 0)
 	err := db.MasterDB.Where("translated_at!=0").OrderBy("translated_at DESC").
 		Limit(10).Find(&gcttGits)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindNewestGit error:", err)
+		logger.Error("GCTTLogic FindNewestGit error:", err)
 	}
 
 	return gcttGits
 }
 
 func (self GCTTLogic) FindTimeLines(ctx context.Context) []*model.GCTTTimeLine {
-	objLog := GetLogger(ctx)
-
 	gcttTimeLines := make([]*model.GCTTTimeLine, 0)
 	err := db.MasterDB.Find(&gcttTimeLines)
 	if err != nil {
-		objLog.Errorln("GCTTLogic FindTimeLines error:", err)
+		logger.Error("GCTTLogic FindTimeLines error:", err)
 	}
 	return gcttTimeLines
 }

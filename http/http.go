@@ -18,6 +18,7 @@ import (
 
 	"sander/config"
 	"sander/global"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 	"sander/util"
@@ -26,7 +27,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"
 )
 
@@ -183,12 +183,12 @@ func tplInclude(file string, dot map[string]interface{}) template.HTML {
 	tpl, err := template.New(filepath.Base(file)).Funcs(funcMap).ParseFiles(config.TemplateDir + file)
 	// tpl, err := template.ParseFiles(config.TemplateDir + file)
 	if err != nil {
-		logger.Errorf("parse template file(%s) error:%v\n", file, err)
+		logger.Error("parse template file(%s) error:%v\n", file, err)
 		return ""
 	}
 	err = tpl.Execute(buffer, dot)
 	if err != nil {
-		logger.Errorf("template file(%s) syntax error:%v", file, err)
+		logger.Error("template file(%s) syntax error:%v", file, err)
 		return ""
 	}
 	return template.HTML(buffer.String())
@@ -224,8 +224,6 @@ func Render(ctx echo.Context, contentTpl string, data map[string]interface{}) er
 		data = map[string]interface{}{}
 	}
 
-	objLog := logic.GetLogger(ctx)
-
 	contentTpl = LayoutTpl + "," + contentTpl
 	// 为了使用自定义的模板函数，首先New一个以第一个模板文件名为模板名。
 	// 这样，在ParseFiles时，新返回的*Template便还是原来的模板实例
@@ -236,7 +234,7 @@ func Render(ctx echo.Context, contentTpl string, data map[string]interface{}) er
 	tpl, err := template.New("layout.html").Funcs(funcMap).
 		Funcs(template.FuncMap{"include": tplInclude}).ParseFiles(htmlFiles...)
 	if err != nil {
-		objLog.Errorf("解析模板出错（ParseFiles）：[%q] %s\n", Request(ctx).RequestURI, err)
+		logger.Error("解析模板出错（ParseFiles）：[%q] %s\n", Request(ctx).RequestURI, err)
 		return err
 	}
 
@@ -266,8 +264,6 @@ func RenderAdmin(ctx echo.Context, contentTpl string, data map[string]interface{
 		data = map[string]interface{}{}
 	}
 
-	objLog := logic.GetLogger(ctx)
-
 	contentTpl = AdminLayoutTpl + "," + contentTpl
 	// 为了使用自定义的模板函数，首先New一个以第一个模板文件名为模板名。
 	// 这样，在ParseFiles时，新返回的*Template便还是原来的模板实例
@@ -279,7 +275,7 @@ func RenderAdmin(ctx echo.Context, contentTpl string, data map[string]interface{
 	requestURI := Request(ctx).RequestURI
 	tpl, err := template.New("common.html").Funcs(funcMap).ParseFiles(htmlFiles...)
 	if err != nil {
-		objLog.Errorf("解析模板出错（ParseFiles）：[%q] %s\n", requestURI, err)
+		logger.Error("解析模板出错（ParseFiles）：[%q] %s\n", requestURI, err)
 		return err
 	}
 
@@ -298,7 +294,6 @@ func RenderAdmin(ctx echo.Context, contentTpl string, data map[string]interface{
 
 // 后台 query 查询返回结果
 func RenderQuery(ctx echo.Context, contentTpl string, data map[string]interface{}) error {
-	objLog := logic.GetLogger(ctx)
 
 	contentTpl = "common_query.html," + contentTpl
 	contentTpls := strings.Split(contentTpl, ",")
@@ -309,14 +304,14 @@ func RenderQuery(ctx echo.Context, contentTpl string, data map[string]interface{
 	requestURI := Request(ctx).RequestURI
 	tpl, err := template.New("common_query.html").Funcs(funcMap).ParseFiles(contentTpls...)
 	if err != nil {
-		objLog.Errorf("解析模板出错（ParseFiles）：[%q] %s\n", requestURI, err)
+		logger.Error("解析模板出错（ParseFiles）：[%q] %s\n", requestURI, err)
 		return err
 	}
 
 	buf := new(bytes.Buffer)
 	err = tpl.Execute(buf, data)
 	if err != nil {
-		objLog.Errorf("执行模板出错（Execute）：[%q] %s\n", requestURI, err)
+		logger.Error("执行模板出错（Execute）：[%q] %s\n", requestURI, err)
 		return err
 	}
 
@@ -324,7 +319,6 @@ func RenderQuery(ctx echo.Context, contentTpl string, data map[string]interface{
 }
 
 func executeTpl(ctx echo.Context, tpl *template.Template, data map[string]interface{}) error {
-	objLog := logic.GetLogger(ctx)
 
 	// 如果没有定义css和js模板，则定义之
 	if jsTpl := tpl.Lookup("js"); jsTpl == nil {
@@ -387,7 +381,7 @@ func executeTpl(ctx echo.Context, tpl *template.Template, data map[string]interf
 	buf := new(bytes.Buffer)
 	err := tpl.Execute(buf, data)
 	if err != nil {
-		objLog.Errorln("excute template error:", err)
+		logger.Error("excute template error:", err)
 		return err
 	}
 

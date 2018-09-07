@@ -17,6 +17,7 @@ import (
 	xhttp "sander/http"
 	"sander/http/internal/helper"
 	"sander/http/middleware"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 	"sander/util"
@@ -25,7 +26,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	guuid "github.com/twinj/uuid"
 )
 
@@ -285,7 +285,6 @@ func (self AccountController) Edit(ctx echo.Context) error {
 
 // ChangeAvatar 更换头像
 func (AccountController) ChangeAvatar(ctx echo.Context) error {
-	objLog := getLogger(ctx)
 
 	curUser := ctx.Get("user").(*model.Me)
 
@@ -293,7 +292,7 @@ func (AccountController) ChangeAvatar(ctx echo.Context) error {
 	avatar := ctx.FormValue("avatar")
 	err := logic.DefaultUser.ChangeAvatar(ctx, curUser.Uid, avatar)
 	if err != nil {
-		objLog.Errorln("account controller change avatar error:", err)
+		logger.Error("account controller change avatar error:", err)
 
 		return fail(ctx, 2, "更换头像失败")
 	}
@@ -340,7 +339,7 @@ func (AccountController) ForgetPasswd(ctx echo.Context) error {
 				resetPwdMap[uuid] = email
 				break
 			}
-			logger.Infoln("forget passwd GenUUID 冲突....")
+			logger.Info("forget passwd GenUUID 冲突....")
 		}
 		var emailUrl string
 		if strings.HasSuffix(email, "@gmail.com") {

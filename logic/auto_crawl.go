@@ -18,11 +18,11 @@ import (
 	"time"
 
 	"sander/config"
-	. "sander/db"
+	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/polaris1119/logger"
 	"github.com/tidwall/gjson"
 	"golang.org/x/net/context"
 )
@@ -35,9 +35,9 @@ var DefaultAutoCrawl = AutoCrawlLogic{}
 
 func (self AutoCrawlLogic) DoCrawl(isAll bool) error {
 	autoCrawlConfList := make([]*model.AutoCrawlRule, 0)
-	err := MasterDB.Where("status=?", model.AutoCrawlOn).Find(&autoCrawlConfList)
+	err := db.MasterDB.Where("status=?", model.AutoCrawlOn).Find(&autoCrawlConfList)
 	if err != nil {
-		logger.Errorln("AutoCrawlLogic FindBy Error:", err)
+		logger.Error("AutoCrawlLogic FindBy Error:%+v", err)
 		return err
 	}
 
@@ -51,7 +51,7 @@ func (self AutoCrawlLogic) DoCrawl(isAll bool) error {
 // 通过网站标识抓取
 func (self AutoCrawlLogic) CrawlWebsite(website string, isAll bool) error {
 	autoCrawlConf := &model.AutoCrawlRule{}
-	_, err := MasterDB.Where("website=?", website).Get(autoCrawlConf)
+	_, err := db.MasterDB.Where("website=?", website).Get(autoCrawlConf)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (self AutoCrawlLogic) crawlOneWebsite(autoCrawlConf *model.AutoCrawlRule, i
 
 			// 标题不包含 go 等关键词的，也入库
 			if err := self.parseArticleList(curUrl, autoCrawlConf, false); err != nil {
-				logger.Errorln("parse article url", curUrl, "error:", err)
+				logger.Error("parse article url:%+v,error:", curUrl, err)
 				break
 			}
 		}
@@ -119,7 +119,7 @@ func (self AutoCrawlLogic) crawlOneWebsite(autoCrawlConf *model.AutoCrawlRule, i
 				err = self.parseArticleList(curUrl, autoCrawlConf, true)
 			}
 			if err != nil {
-				logger.Errorln("parse article url", curUrl, "error:", err)
+				logger.Error("parse article url:%+v,error:%+v", curUrl, err)
 			}
 
 			time.Sleep(30 * time.Second)
@@ -129,7 +129,7 @@ func (self AutoCrawlLogic) crawlOneWebsite(autoCrawlConf *model.AutoCrawlRule, i
 
 func (self AutoCrawlLogic) parseArticleList(strUrl string, autoCrawlConf *model.AutoCrawlRule, isSearch bool) (err error) {
 
-	logger.Infoln("parse url:", strUrl)
+	logger.Info("parse url:%+v", strUrl)
 
 	var doc *goquery.Document
 
@@ -162,7 +162,7 @@ func (self AutoCrawlLogic) parseArticleList(strUrl string, autoCrawlConf *model.
 
 	u, err := url.Parse(autoCrawlConf.IncrUrl)
 	if err != nil {
-		logger.Errorln("parse incr_url error:", err)
+		logger.Error("parse incr_url error:%+v", err)
 		return
 	}
 	host := u.Scheme + "://" + u.Host
@@ -181,7 +181,7 @@ func (self AutoCrawlLogic) parseArticleList(strUrl string, autoCrawlConf *model.
 
 			matched, err := regexp.MatchString(titlePattern, title)
 			if err != nil {
-				logger.Errorln(err)
+				logger.Error("error:%+v", err)
 				continue
 			}
 
@@ -208,7 +208,7 @@ func (self AutoCrawlLogic) parseArticleList(strUrl string, autoCrawlConf *model.
 }
 
 func (self AutoCrawlLogic) fetchArticleListFromApi(strUrl string, autoCrawlConf *model.AutoCrawlRule, isSearch bool) error {
-	logger.Infoln("parse api url:", strUrl)
+	logger.Info("parse api url:%+v", strUrl)
 
 	// jianshu must be POST
 	req, err := http.NewRequest("POST", strUrl, nil)
@@ -231,7 +231,7 @@ func (self AutoCrawlLogic) fetchArticleListFromApi(strUrl string, autoCrawlConf 
 
 	u, err := url.Parse(autoCrawlConf.IncrUrl)
 	if err != nil {
-		logger.Errorln("parse incr_url error:", err)
+		logger.Error("parse incr_url error:%+v", err)
 		return err
 	}
 	host := u.Scheme + "://" + u.Host

@@ -12,9 +12,9 @@ import (
 	"math/rand"
 	"sander/cmd"
 	"sander/config"
+	"sander/logger"
 
 	"github.com/polaris1119/keyword"
-	"github.com/polaris1119/logger"
 )
 
 func init() {
@@ -23,7 +23,7 @@ func init() {
 }
 
 func main() {
-	logger.Init(config.ROOT+"/log", config.ConfigFile.MustValue("global", "log_level", "DEBUG"), "crawl")
+	logger.Init(config.ROOT + "/log/crawler")
 	go keyword.Extractor.Init(keyword.DefaultProps, true, config.ROOT+"/data/programming.txt,"+config.ROOT+"/data/dictionary.txt")
 
 	server.CrawlServer()

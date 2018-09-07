@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
@@ -24,7 +25,6 @@ type SettingLogic struct{}
 var DefaultSetting = SettingLogic{}
 
 func (SettingLogic) Update(ctx context.Context, form url.Values) error {
-	objLog := GetLogger(ctx)
 
 	name := form.Get("name")
 	if name != "" {
@@ -80,7 +80,7 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 
 		docMenusBytes, err := json.Marshal(docMenus)
 		if err != nil {
-			objLog.Errorln("marshal doc menu error:", err)
+			logger.Error("marshal doc menu error:", err)
 			return err
 		}
 
@@ -109,7 +109,7 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 
 		indexNavsBytes, err := json.Marshal(indexNavs)
 		if err != nil {
-			objLog.Errorln("marshal index tab nav error:", err)
+			logger.Error("marshal index tab nav error:", err)
 			return err
 		}
 
@@ -135,7 +135,7 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 
 		footerNavsBytes, err := json.Marshal(footerNavs)
 		if err != nil {
-			objLog.Errorln("marshal footer nav error:", err)
+			logger.Error("marshal footer nav error:", err)
 			return err
 		}
 
@@ -160,7 +160,7 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 
 		friendLogosBytes, err := json.Marshal(friendLogos)
 		if err != nil {
-			objLog.Errorln("marshal friend logo error:", err)
+			logger.Error("marshal friend logo error:", err)
 			return err
 		}
 
@@ -170,7 +170,7 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 
 	_, err := db.MasterDB.Update(WebsiteSetting)
 	if err != nil {
-		objLog.Errorln("Update setting error:", err)
+		logger.Error("Update setting error:", err)
 		return err
 	}
 
@@ -178,7 +178,6 @@ func (SettingLogic) Update(ctx context.Context, form url.Values) error {
 }
 
 func (SettingLogic) UpdateIndexTabChildren(ctx context.Context, form url.Values) error {
-	objLog := GetLogger(ctx)
 
 	if _, ok := form["tab"]; !ok {
 		return errors.New("父 tab 没有指定")
@@ -204,7 +203,7 @@ func (SettingLogic) UpdateIndexTabChildren(ctx context.Context, form url.Values)
 
 	indexNavsBytes, err := json.Marshal(WebsiteSetting.IndexNavs)
 	if err != nil {
-		objLog.Errorln("marshal index child tab nav error:", err)
+		logger.Error("marshal index child tab nav error:", err)
 		return err
 	}
 
@@ -212,7 +211,7 @@ func (SettingLogic) UpdateIndexTabChildren(ctx context.Context, form url.Values)
 
 	_, err = db.MasterDB.Update(WebsiteSetting)
 	if err != nil {
-		objLog.Errorln("Update index child tab error:", err)
+		logger.Error("Update index child tab error:", err)
 		return err
 	}
 

@@ -18,12 +18,12 @@ import (
 	"sander/config"
 	"sander/db"
 	"sander/global"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
 	"github.com/polaris1119/email"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 type EmailLogic struct{}
@@ -77,10 +77,10 @@ func (EmailLogic) SendMail(subject, content string, tos []string, isRegs ...bool
 	}
 
 	if err != nil {
-		logger.Errorln("Send Mail to", strings.Join(tos, ","), "error:", err)
+		logger.Error("Send Mail to %s error:%+v", strings.Join(tos, ","), err)
 		return
 	}
-	logger.Infoln("Send Mail to", strings.Join(tos, ","), "Successfully")
+	logger.Info("Send Mail to %s Successfully", strings.Join(tos, ","))
 	return
 }
 
@@ -158,19 +158,19 @@ func (self EmailLogic) EmailNotice() {
 	// 本周晨读（过去 7 天）
 	readings, err := DefaultReading.FindLastList(beginTime)
 	if err != nil {
-		logger.Errorln("find morning reading error:", err)
+		logger.Error("find morning reading error:%+v", err)
 	}
 
 	// 本周精彩文章
 	articles, err := DefaultArticle.FindLastList(beginTime, 10)
 	if err != nil {
-		logger.Errorln("find article error:", err)
+		logger.Error("find article error:%+v", err)
 	}
 
 	// 本周热门主题
 	topics, err := DefaultTopic.FindLastList(beginTime, 10)
 	if err != nil {
-		logger.Errorln("find topic error:", err)
+		logger.Error("find topic error:%+v", err)
 	}
 
 	global.App.SetCopyright()
@@ -198,7 +198,7 @@ func (self EmailLogic) EmailNotice() {
 	for {
 		err = db.MasterDB.Where("uid>?", lastUid).Asc("uid").Limit(limit).Find(&users)
 		if err != nil {
-			logger.Errorln("find user error:", err)
+			logger.Error("find user error:%+v", err)
 			continue
 		}
 
@@ -216,17 +216,17 @@ func (self EmailLogic) EmailNotice() {
 			}
 
 			if user.Unsubscribe == 1 {
-				logger.Infoln("user unsubscribe", user)
+				logger.Info("user unsubscribe:%+v", user)
 				continue
 			}
 
 			if user.Status != model.UserStatusAudit {
-				logger.Infoln("user is not normal:", user)
+				logger.Info("user is not normal:%+v", user)
 				continue
 			}
 
 			if user.IsThird == 1 && strings.HasSuffix(user.Email, "github.com") {
-				logger.Infoln("the email is not exists:", user)
+				logger.Info("the email is not exists:%+v", user)
 				continue
 			}
 
@@ -235,7 +235,7 @@ func (self EmailLogic) EmailNotice() {
 
 			content, err := self.genEmailContent(data)
 			if err != nil {
-				logger.Errorln("from email.html gen email content error:", err)
+				logger.Error("from email.html gen email content error:%+v", err)
 				continue
 			}
 
@@ -258,7 +258,7 @@ func (EmailLogic) GenUnsubscribeToken(user *model.User) string {
 func (EmailLogic) genEmailContent(data map[string]interface{}) (string, error) {
 	buffer := &bytes.Buffer{}
 	if err := emailTpl.Execute(buffer, data); err != nil {
-		logger.Errorln("email logic execute template error:", err)
+		logger.Error("email logic execute template error:%+v", err)
 		return "", err
 	}
 

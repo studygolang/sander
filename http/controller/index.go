@@ -16,12 +16,12 @@ import (
 
 	"sander/config"
 	xhttp "sander/http"
+	"sander/logger"
 	"sander/logic"
 	"sander/model"
 
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 type IndexController struct{}
@@ -165,12 +165,12 @@ func (IndexController) WrapUrl(ctx echo.Context) error {
 	go func() {
 		resp, err := http.Head(tUrl)
 		if err != nil {
-			logger.Errorln("[iframe] head url:", tUrl, "error:", err)
+			logger.Error("[iframe] head url:%+v,error:%+v", tUrl, err)
 			return
 		}
 		defer resp.Body.Close()
 		if resp.Header.Get("X-Frame-Options") != "" {
-			logger.Errorln("[iframe] deny:", tUrl)
+			logger.Error("[iframe] deny:%+v", tUrl)
 			return
 		}
 	}()
@@ -183,14 +183,14 @@ func (IndexController) Pkgdoc(ctx echo.Context) error {
 	// return render(ctx, "pkgdoc.html", map[string]interface{}{"activeDoc": "active"})
 	tpl, err := template.ParseFiles(config.TemplateDir + "pkgdoc.html")
 	if err != nil {
-		logger.Errorln("parse file error:", err)
+		logger.Error("parse file error:%+v", err)
 		return err
 	}
 
 	buf := new(bytes.Buffer)
 	err = tpl.Execute(buf, nil)
 	if err != nil {
-		logger.Errorln("execute template error:", err)
+		logger.Error("execute template error:%+v", err)
 		return err
 	}
 

@@ -13,16 +13,11 @@ import (
 
 	"sander/db/nosql"
 	xhttp "sander/http"
-	"sander/logic"
+	"sander/logger"
 
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
-
-func getLogger(ctx echo.Context) *logger.Logger {
-	return logic.GetLogger(ctx)
-}
 
 // render html 输出
 func render(ctx echo.Context, contentTpl string, data map[string]interface{}) error {
@@ -57,7 +52,6 @@ func success(ctx echo.Context, data interface{}) error {
 	}(b)
 
 	if ctx.Response().Committed() {
-		getLogger(ctx).Flush()
 		return nil
 	}
 
@@ -68,7 +62,6 @@ func success(ctx echo.Context, data interface{}) error {
 
 func fail(ctx echo.Context, code int, msg string) error {
 	if ctx.Response().Committed() {
-		getLogger(ctx).Flush()
 		return nil
 	}
 
@@ -77,7 +70,7 @@ func fail(ctx echo.Context, code int, msg string) error {
 		"error": msg,
 	}
 
-	getLogger(ctx).Errorln("operate fail:", result)
+	logger.Error("operate fail:%+v", result)
 
 	return ctx.JSON(http.StatusOK, result)
 }

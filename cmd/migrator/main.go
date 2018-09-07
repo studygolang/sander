@@ -8,11 +8,10 @@ package main
 import (
 	"sander/cmd"
 	"sander/config"
-
-	"github.com/polaris1119/logger"
+	"sander/logger"
 )
 
 func main() {
-	logger.Init(config.ROOT+"/log", config.ConfigFile.MustValue("global", "log_level", "DEBUG"))
+	logger.Init(config.ROOT + "/log/migrator")
 	server.MigratorServer()
 }

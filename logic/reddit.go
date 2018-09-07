@@ -18,11 +18,11 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 type RedditLogic struct {
@@ -58,7 +58,7 @@ func (this *RedditLogic) Parse(redditUrl string) error {
 
 	// if doc, err = goquery.NewDocument(redditUrl); err != nil {
 	if doc, err = this.newDocumentFromResp(redditUrl); err != nil {
-		logger.Errorln("goquery reddit newdocument error:", err)
+		logger.Error("goquery reddit newdocument error:%+v", err)
 		return err
 	}
 
@@ -67,9 +67,8 @@ func (this *RedditLogic) Parse(redditUrl string) error {
 
 	for i := resourcesSelection.Length() - 1; i >= 0; i-- {
 		err = this.dealRedditOneResource(goquery.NewDocumentFromNode(resourcesSelection.Get(i)).Selection)
-
 		if err != nil {
-			logger.Errorln(err)
+			logger.Error("Parse error:%+v", err)
 		}
 	}
 
@@ -188,7 +187,7 @@ func (this *RedditLogic) dealRedditOneResource(contentSelection *goquery.Selecti
 	if ok {
 		dtime, err := time.ParseInLocation(time.RFC3339, datetime, time.UTC)
 		if err != nil {
-			logger.Errorln("parse ctime error:", err)
+			logger.Error("parse ctime error:%+v", err)
 		} else {
 			ctime = dtime.Local()
 		}

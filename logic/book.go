@@ -18,9 +18,9 @@ import (
 
 	"sander/config"
 	"sander/db/nosql"
+	"sander/logger"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"
 )
 
@@ -85,7 +85,7 @@ func (this *UserData) SendMessage(message *Message) {
 		if len(messageQueue) < MessageQueueLen {
 			messageQueue <- message
 		} else {
-			logger.Infoln("server_id:", serverId, "had close")
+			logger.Info("server_id:%+v had close", serverId)
 
 			delete(this.serverMsgQueue, serverId)
 		}
@@ -150,7 +150,7 @@ func (this *book) AddUser(user, serverId int, isUid bool) *UserData {
 		// 存入 redis
 		this.newUser2Redis(user)
 
-		logger.Infoln("user:", user, "had enter")
+		logger.Info("user:%+v had enter", user)
 
 		length := this.Len()
 
@@ -276,14 +276,14 @@ func (this *book) PostMessage(uid int, message *Message) {
 	this.rwMutex.RLock()
 	defer this.rwMutex.RUnlock()
 	if userData, ok := this.users[uid]; ok {
-		logger.Infoln("post message to", uid, message)
+		logger.Info("post message to", uid, message)
 		go userData.SendMessage(message)
 	}
 }
 
 // 给所有用户广播消息
 func (this *book) BroadcastAllUsersMessage(message *Message) {
-	logger.Infoln("BroadcastAllUsersMessage message", message)
+	logger.Info("BroadcastAllUsersMessage message", message)
 
 	this.rwMutex.Lock()
 	defer this.rwMutex.Unlock()
@@ -298,7 +298,7 @@ func (this *book) BroadcastAllUsersMessage(message *Message) {
 
 // 给除了自己的其他用户广播消息
 func (this *book) BroadcastToOthersMessage(message *Message, myself int) {
-	logger.Infoln("BroadcastToOthersMessage message", message)
+	logger.Info("BroadcastToOthersMessage message", message)
 
 	this.rwMutex.Lock()
 	defer this.rwMutex.Unlock()
@@ -367,7 +367,7 @@ func initMaxOnlineNum() {
 	if maxOnlineNum == 0 {
 		data, err := ioutil.ReadFile(getDataFile())
 		if err != nil {
-			logger.Errorln("read data file error:", err)
+			logger.Error("read data file error:%+v", err)
 			return
 		}
 		maxOnlineNum = goutils.MustInt(strings.TrimSpace(string(data)))
@@ -386,7 +386,7 @@ func saveMaxOnlineNum() {
 	data := []byte(strconv.Itoa(MaxOnlineNum()))
 	err := ioutil.WriteFile(getDataFile(), data, 0777)
 	if err != nil {
-		logger.Errorln("write data file error:", err)
+		logger.Error("write data file error:%+v", err)
 		return
 	}
 }
@@ -404,7 +404,7 @@ func getDataFile() string {
 	// 文件夹不存在，则创建
 	dataPath := filepath.Dir(dataFile)
 	if err := os.MkdirAll(dataPath, 0777); err != nil {
-		logger.Errorln("MkdirAll error:", err)
+		logger.Error("MkdirAll error:%+v", err)
 	}
 	return dataFile
 }

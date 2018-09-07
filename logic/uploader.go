@@ -25,10 +25,10 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 	"github.com/polaris1119/times"
 	"github.com/qiniu/api.v6/conf"
 	"github.com/qiniu/api.v6/io"
@@ -103,12 +103,12 @@ func (this *UploaderLogic) uploadLocalFile(localFile, key string) (err error) {
 
 	if err != nil {
 		//上传产生错误
-		logger.Errorln("io.PutFile failed:", err)
+		logger.Error("io.PutFile failed:%+v", err)
 		return
 	}
 
 	//上传成功，处理返回值
-	logger.Debugln(ret.Hash, ret.Key)
+	logger.Debug("hash:%+v,key:%+v", ret.Hash, ret.Key)
 
 	return
 }
@@ -133,12 +133,12 @@ func (this *UploaderLogic) uploadMemoryFile(r gio.Reader, key string, size int) 
 
 	// 上传产生错误
 	if err != nil {
-		logger.Errorln("io.Put failed:", err)
+		logger.Error("io.Put failed:%+v", err)
 
 		errInfo := make(map[string]interface{})
 		err = json.Unmarshal([]byte(err.Error()), &errInfo)
 		if err != nil {
-			logger.Errorln("io.Put Unmarshal failed:", err)
+			logger.Error("io.Put Unmarshal failed:%+v", err)
 			return
 		}
 
@@ -151,18 +151,17 @@ func (this *UploaderLogic) uploadMemoryFile(r gio.Reader, key string, size int) 
 	}
 
 	// 上传成功，处理返回值
-	logger.Debugln(ret.Hash, ret.Key)
+	logger.Debug("hash:%+v,key:%+v", ret.Hash, ret.Key)
 
 	return
 }
 
 func (this *UploaderLogic) UploadImage(ctx context.Context, reader gio.Reader, imgDir string, buf []byte, ext string) (string, error) {
-	objLogger := GetLogger(ctx)
 
 	md5 := goutils.Md5Buf(buf)
 	objImage, err := this.findImage(md5)
 	if err != nil {
-		objLogger.Errorln("find image:", md5, "error:", err)
+		logger.Error("find image:%+v,error:%+v", md5, err)
 		return "", err
 	}
 
@@ -197,7 +196,7 @@ func (this *UploaderLogic) TransferUrl(ctx context.Context, origUrl string, pref
 	md5 := goutils.Md5Buf(buf)
 	objImage, err := this.findImage(md5)
 	if err != nil {
-		logger.Errorln("find image:", md5, "error:", err)
+		logger.Error("find image:%+v,error:%+v", md5, err)
 		return origUrl, err
 	}
 
@@ -255,7 +254,7 @@ func (this *UploaderLogic) saveImage(buf []byte, path string) {
 	reader := bytes.NewReader(buf)
 	img, _, err := image.Decode(reader)
 	if err != nil {
-		logger.Errorln("image decode err:", err)
+		logger.Error("image decode err:%+v", err)
 	} else {
 		objImage.Width = img.Bounds().Dx()
 		objImage.Height = img.Bounds().Dy()
@@ -263,6 +262,6 @@ func (this *UploaderLogic) saveImage(buf []byte, path string) {
 
 	_, err = db.MasterDB.Insert(objImage)
 	if err != nil {
-		logger.Errorln("image insert err:", err)
+		logger.Error("image insert err:%+v", err)
 	}
 }

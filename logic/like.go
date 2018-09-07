@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
 	"golang.org/x/net/context"
@@ -22,12 +23,11 @@ var DefaultLike = LikeLogic{}
 
 // HadLike 某个用户是否已经喜欢某个对象
 func (LikeLogic) HadLike(ctx context.Context, uid, objid, objtype int) int {
-	objLog := GetLogger(ctx)
 
 	like := &model.Like{}
 	_, err := db.MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid, objtype).Get(like)
 	if err != nil {
-		objLog.Errorln("LikeLogic HadLike error:", err)
+		logger.Error("LikeLogic HadLike error:", err)
 		return 0
 	}
 
@@ -37,7 +37,6 @@ func (LikeLogic) HadLike(ctx context.Context, uid, objid, objtype int) int {
 // FindUserLikeObjects 获取用户对一批对象是否喜欢的状态
 // objids 两个值
 func (LikeLogic) FindUserLikeObjects(ctx context.Context, uid, objtype int, objids ...int) (map[int]int, error) {
-	objLog := GetLogger(ctx)
 
 	if len(objids) < 2 {
 		return nil, errors.New("参数错误")
@@ -52,7 +51,7 @@ func (LikeLogic) FindUserLikeObjects(ctx context.Context, uid, objtype int, obji
 	err := db.MasterDB.Where("uid=? AND objtype=? AND objid BETWEEN ? AND ?", uid, objtype, littleId, greatId).
 		Find(&likes)
 	if err != nil {
-		objLog.Errorln("LikeLogic FindUserLikeObjects error:", err)
+		logger.Error("LikeLogic FindUserLikeObjects error:", err)
 		return nil, err
 	}
 
@@ -68,15 +67,13 @@ func (LikeLogic) FindUserLikeObjects(ctx context.Context, uid, objtype int, obji
 // objid 注册的喜欢对象
 // uid 喜欢的人
 func (LikeLogic) LikeObject(ctx context.Context, uid, objid, objtype, likeFlag int) error {
-	objLog := GetLogger(ctx)
-
 	// 点喜欢，活跃度+3
 	go DefaultUser.IncrUserWeight("uid", uid, 3)
 
 	like := &model.Like{}
 	_, err := db.MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid, objtype).Get(like)
 	if err != nil {
-		objLog.Errorln("LikeLogic LikeObject get error:", err)
+		logger.Error("LikeLogic LikeObject get error:", err)
 		return err
 	}
 
@@ -92,7 +89,7 @@ func (LikeLogic) LikeObject(ctx context.Context, uid, objid, objtype, likeFlag i
 			// db.MasterDB.Where("uid=? AND objid=? AND objtype=?", uid, objid,objtype).Delete(like)
 			_, err = db.MasterDB.Delete(like)
 			if err != nil {
-				objLog.Errorln("LikeLogic LikeObject delete error:", err)
+				logger.Error("LikeLogic LikeObject delete error:", err)
 				return err
 			}
 
@@ -114,7 +111,7 @@ func (LikeLogic) LikeObject(ctx context.Context, uid, objid, objtype, likeFlag i
 
 	affectedRows, err := db.MasterDB.Insert(like)
 	if err != nil {
-		objLog.Errorln("LikeLogic LikeObject error:", err)
+		logger.Error("LikeLogic LikeObject error:", err)
 		return err
 	}
 

@@ -15,6 +15,7 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
@@ -30,7 +31,6 @@ var jscodeRUL = "https://api.weixin.qq.com/sns/jscode2session"
 
 // CheckSession 微信小程序登录凭证校验
 func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.WechatUser, error) {
-	objLog := GetLogger(ctx)
 
 	appid := config.ConfigFile.MustValue("wechat.xcx", "appid")
 	appsecret := config.ConfigFile.MustValue("wechat.xcx", "appsecret")
@@ -47,7 +47,7 @@ func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.W
 
 	openidResult := result.Get("openid")
 	if !openidResult.Exists() {
-		objLog.Errorln("WechatLogic WxLogin error:", result.Raw)
+		logger.Error("WechatLogic WxLogin error:", result.Raw)
 		return nil, errors.New(result.Get("errmsg").String())
 	}
 
@@ -55,7 +55,7 @@ func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.W
 	wechatUser := &model.WechatUser{}
 	_, err = db.MasterDB.Where("openid=?", openid).Get(wechatUser)
 	if err != nil {
-		objLog.Errorln("WechatLogic WxLogin find wechat user error:", err)
+		logger.Error("WechatLogic WxLogin find wechat user error:", err)
 		return nil, err
 	}
 
@@ -64,7 +64,7 @@ func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.W
 		wechatUser.SessionKey = result.Get("session_key").String()
 		_, err = db.MasterDB.Insert(wechatUser)
 		if err != nil {
-			objLog.Errorln("WechatLogic WxLogin insert wechat user error:", err)
+			logger.Error("WechatLogic WxLogin insert wechat user error:", err)
 			return nil, err
 		}
 	}
@@ -73,7 +73,6 @@ func (self WechatLogic) CheckSession(ctx context.Context, code string) (*model.W
 }
 
 func (self WechatLogic) Bind(ctx context.Context, id, uid int, userInfo string) (*model.WechatUser, error) {
-	objLog := GetLogger(ctx)
 
 	result := gjson.Parse(userInfo)
 
@@ -85,7 +84,7 @@ func (self WechatLogic) Bind(ctx context.Context, id, uid int, userInfo string) 
 	}
 	_, err := db.MasterDB.Id(id).Update(wechatUser)
 	if err != nil {
-		objLog.Errorln("WechatLogic Bind update error:", err)
+		logger.Error("WechatLogic Bind update error:", err)
 		return nil, err
 	}
 
@@ -93,12 +92,11 @@ func (self WechatLogic) Bind(ctx context.Context, id, uid int, userInfo string) 
 }
 
 func (self WechatLogic) AutoReply(ctx context.Context, reqData []byte) (*model.WechatReply, error) {
-	objLog := GetLogger(ctx)
 
 	wechatMsg := &model.WechatMsg{}
 	err := xml.Unmarshal(reqData, wechatMsg)
 	if err != nil {
-		objLog.Errorln("wechat autoreply xml unmarshal error:", err)
+		logger.Error("wechat autoreply xml unmarshal error:", err)
 		return nil, err
 	}
 
@@ -221,11 +219,10 @@ func (self WechatLogic) readingContent(ctx context.Context, wechatMsg *model.Wec
 }
 
 func (self WechatLogic) searchContent(ctx context.Context, wechatMsg *model.WechatMsg) (*model.WechatReply, error) {
-	objLog := GetLogger(ctx)
 
 	respBody, err := DefaultSearcher.SearchByField("title", wechatMsg.Content, 0, 5)
 	if err != nil {
-		objLog.Errorln("wechat search by field error:", err)
+		logger.Error("wechat search by field error:", err)
 		return nil, err
 	}
 

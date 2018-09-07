@@ -14,10 +14,9 @@ import (
 
 	"sander/config"
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
-
-	"github.com/polaris1119/logger"
 )
 
 // 自定义模板函数
@@ -142,7 +141,7 @@ func GenSitemap() {
 		large = little + step
 
 		if err != nil {
-			logger.Errorln("sitemap resource find error:", err)
+			logger.Error("sitemap resource find error:%+v", err)
 			continue
 		}
 
@@ -260,7 +259,7 @@ func GenSitemap() {
 
 	file, err := os.Create(sitemapPath + "sitemapindex.xml")
 	if err != nil {
-		logger.Errorln("gen sitemap index file error:", err)
+		logger.Error("gen sitemap index file error:%+v", err)
 		return
 	}
 	defer file.Close()
@@ -270,7 +269,7 @@ func GenSitemap() {
 		"sitemapFiles": sitemapFiles,
 	})
 	if err != nil {
-		logger.Errorln("execute sitemap index template error:", err)
+		logger.Error("execute sitemap index template error:%+v", err)
 	}
 }
 
@@ -278,12 +277,12 @@ func output(filename string, data map[string]interface{}) (err error) {
 	var file *os.File
 	file, err = os.Create(sitemapPath + filename)
 	if err != nil {
-		logger.Errorln("open file error:", err)
+		logger.Error("open file error:%+v", err)
 		return
 	}
 	defer file.Close()
 	if err = sitemapTpl.Execute(file, data); err != nil {
-		logger.Errorln("execute template error:", err)
+		logger.Error("execute template error:%+v", err)
 	}
 
 	return

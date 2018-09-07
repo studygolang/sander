@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"sander/db/nosql"
+	"sander/logger"
 
 	"github.com/labstack/echo"
 	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
 )
 
 type CacheKeyAlgorithm interface {
@@ -54,7 +54,7 @@ func EchoCache(cacheMaxEntryNum ...int) echo.MiddlewareFunc {
 								goto NEXT
 							}
 
-							logger.Debugln("cache hit:", cacheData.StoreTime, "now:", time.Now())
+							logger.Debug("cache hit:%+v,now:%+v", cacheData.StoreTime, time.Now())
 							return ctx.JSONBlob(http.StatusOK, value)
 						}
 					}

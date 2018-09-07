@@ -5,10 +5,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/polaris1119/goutils"
-	"github.com/polaris1119/logger"
+	"sander/logger"
 
 	"github.com/golang/groupcache/lru"
+	"github.com/polaris1119/goutils"
 )
 
 const defaultMaxEntryNum = 100
@@ -36,7 +36,7 @@ func (this *CacheData) Compress(value []byte) (err error) {
 	buf := new(bytes.Buffer)
 	_, err = goutils.Gzip(value, buf)
 	if err != nil {
-		logger.Errorln("Compress -> gzip error:", err)
+		logger.Error("Compress -> gzip error:%+v", err)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (this *LRUCache) CompressAndAdd(key interface{}, value []byte, compressor C
 	defer func() {
 		// 避免 cache 中对象被 gc
 		if err := recover(); err != nil {
-			logger.Errorln("lru RemoveOldest panic:", err)
+			logger.Error("lru RemoveOldest panic:%+v", err)
 		}
 	}()
 

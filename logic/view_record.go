@@ -8,9 +8,9 @@ package logic
 
 import (
 	"sander/db"
+	"sander/logger"
 	"sander/model"
 
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 )
 
@@ -22,7 +22,7 @@ func (ViewRecordLogic) Record(objid, objtype, uid int) {
 
 	total, err := db.MasterDB.Where("objid=? AND objtype=? AND uid=?", objid, objtype, uid).Count(new(model.ViewRecord))
 	if err != nil {
-		logger.Errorln("ViewRecord logic Record count error:", err)
+		logger.Error("ViewRecord logic Record count error:%+v", err)
 		return
 	}
 
@@ -37,7 +37,7 @@ func (ViewRecordLogic) Record(objid, objtype, uid int) {
 	}
 
 	if _, err = db.MasterDB.Insert(viewRecord); err != nil {
-		logger.Errorln("ViewRecord logic Record insert Error:", err)
+		logger.Error("ViewRecord logic Record insert Error:%+v", err)
 		return
 	}
 
@@ -45,11 +45,10 @@ func (ViewRecordLogic) Record(objid, objtype, uid int) {
 }
 
 func (ViewRecordLogic) FindUserNum(ctx context.Context, objid, objtype int) int64 {
-	objLog := GetLogger(ctx)
 
 	total, err := db.MasterDB.Where("objid=? AND objtype=?", objid, objtype).Count(new(model.ViewRecord))
 	if err != nil {
-		objLog.Errorln("ViewRecordLogic FindUserNum error:", err)
+		logger.Error("ViewRecordLogic FindUserNum error:%+v", err)
 	}
 
 	return total

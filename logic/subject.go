@@ -13,6 +13,7 @@ import (
 
 	"sander/db"
 	"sander/global"
+	"sander/logger"
 	"sander/model"
 	"sander/util"
 
@@ -27,13 +28,12 @@ type SubjectLogic struct{}
 var DefaultSubject = SubjectLogic{}
 
 func (self SubjectLogic) FindBy(ctx context.Context, paginator *Paginator) []*model.Subject {
-	objLog := GetLogger(ctx)
 
 	subjects := make([]*model.Subject, 0)
 	err := db.MasterDB.OrderBy("article_num DESC").Limit(paginator.PerPage(), paginator.Offset()).
 		Find(&subjects)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindBy error:", err)
+		logger.Error("SubjectLogic FindBy error:", err)
 	}
 
 	if len(subjects) > 0 {
@@ -55,12 +55,11 @@ func (self SubjectLogic) FindBy(ctx context.Context, paginator *Paginator) []*mo
 }
 
 func (self SubjectLogic) FindOne(ctx context.Context, sid int) *model.Subject {
-	objLog := GetLogger(ctx)
 
 	subject := &model.Subject{}
 	_, err := db.MasterDB.Id(sid).Get(subject)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindOne get error:", err)
+		logger.Error("SubjectLogic FindOne get error:", err)
 	}
 
 	if subject.Uid > 0 {
@@ -85,7 +84,6 @@ func (self SubjectLogic) findByIds(ids []int) map[int]*model.Subject {
 }
 
 func (self SubjectLogic) FindArticles(ctx context.Context, sid int, paginator *Paginator, orderBy string) []*model.Article {
-	objLog := GetLogger(ctx)
 
 	order := "subject_article.created_at DESC"
 	if orderBy == "commented_at" {
@@ -98,7 +96,7 @@ func (self SubjectLogic) FindArticles(ctx context.Context, sid int, paginator *P
 		Limit(paginator.PerPage(), paginator.Offset()).
 		OrderBy(order).Find(&subjectArticles)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindArticles Find subject_article error:", err)
+		logger.Error("SubjectLogic FindArticles Find subject_article error:", err)
 		return nil
 	}
 
@@ -117,11 +115,10 @@ func (self SubjectLogic) FindArticles(ctx context.Context, sid int, paginator *P
 
 // FindArticleTotal 专栏收录的文章数
 func (self SubjectLogic) FindArticleTotal(ctx context.Context, sid int) int64 {
-	objLog := GetLogger(ctx)
 
 	total, err := db.MasterDB.Where("sid=?", sid).Count(new(model.SubjectArticle))
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindArticleTotal error:", err)
+		logger.Error("SubjectLogic FindArticleTotal error:", err)
 	}
 
 	return total
@@ -129,12 +126,11 @@ func (self SubjectLogic) FindArticleTotal(ctx context.Context, sid int) int64 {
 
 // FindFollowers 专栏关注的用户
 func (self SubjectLogic) FindFollowers(ctx context.Context, sid int) []*model.SubjectFollower {
-	objLog := GetLogger(ctx)
 
 	followers := make([]*model.SubjectFollower, 0)
 	err := db.MasterDB.Where("sid=?", sid).OrderBy("id DESC").Limit(8).Find(&followers)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindFollowers error:", err)
+		logger.Error("SubjectLogic FindFollowers error:", err)
 	}
 
 	if len(followers) == 0 {
@@ -159,11 +155,10 @@ func (self SubjectLogic) findFollowersBySid(sid int) []*model.SubjectFollower {
 
 // FindFollowerTotal 专栏关注的用户数
 func (self SubjectLogic) FindFollowerTotal(ctx context.Context, sid int) int64 {
-	objLog := GetLogger(ctx)
 
 	total, err := db.MasterDB.Where("sid=?", sid).Count(new(model.SubjectFollower))
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindFollowerTotal error:", err)
+		logger.Error("SubjectLogic FindFollowerTotal error:", err)
 	}
 
 	return total
@@ -171,18 +166,17 @@ func (self SubjectLogic) FindFollowerTotal(ctx context.Context, sid int) int64 {
 
 // Follow 关注或取消关注
 func (self SubjectLogic) Follow(ctx context.Context, sid int, me *model.Me) (err error) {
-	objLog := GetLogger(ctx)
 
 	follower := &model.SubjectFollower{}
 	_, err = db.MasterDB.Where("sid=? AND uid=?", sid, me.Uid).Get(follower)
 	if err != nil {
-		objLog.Errorln("SubjectLogic Follow Get error:", err)
+		logger.Error("SubjectLogic Follow Get error:", err)
 	}
 
 	if follower.Id > 0 {
 		_, err = db.MasterDB.Where("sid=? AND uid=?", sid, me.Uid).Delete(new(model.SubjectFollower))
 		if err != nil {
-			objLog.Errorln("SubjectLogic Follow Delete error:", err)
+			logger.Error("SubjectLogic Follow Delete error:", err)
 		}
 
 		return
@@ -192,17 +186,16 @@ func (self SubjectLogic) Follow(ctx context.Context, sid int, me *model.Me) (err
 	follower.Uid = me.Uid
 	_, err = db.MasterDB.Insert(follower)
 	if err != nil {
-		objLog.Errorln("SubjectLogic Follow insert error:", err)
+		logger.Error("SubjectLogic Follow insert error:", err)
 	}
 	return
 }
 
 func (self SubjectLogic) HadFollow(ctx context.Context, sid int, me *model.Me) bool {
-	objLog := GetLogger(ctx)
 
 	num, err := db.MasterDB.Where("sid=? AND uid=?", sid, me.Uid).Count(new(model.SubjectFollower))
 	if err != nil {
-		objLog.Errorln("SubjectLogic Follow insert error:", err)
+		logger.Error("SubjectLogic Follow insert error:", err)
 	}
 
 	return num > 0
@@ -210,7 +203,6 @@ func (self SubjectLogic) HadFollow(ctx context.Context, sid int, me *model.Me) b
 
 // Contribute 投稿
 func (self SubjectLogic) Contribute(ctx context.Context, me *model.Me, sid, articleId int) error {
-	objLog := GetLogger(ctx)
 
 	subject := self.FindOne(ctx, sid)
 	if subject.Id == 0 {
@@ -249,14 +241,14 @@ func (self SubjectLogic) Contribute(ctx context.Context, me *model.Me, sid, arti
 	_, err := session.Insert(subjectArticle)
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("SubjectLogic Contribute insert error:", err)
+		logger.Error("SubjectLogic Contribute insert error:", err)
 		return errors.New("投稿失败:" + err.Error())
 	}
 
 	_, err = session.Id(sid).Incr("article_num", 1).Update(new(model.Subject))
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("SubjectLogic Contribute update subject article num error:", err)
+		logger.Error("SubjectLogic Contribute update subject article num error:", err)
 		return errors.New("投稿失败:" + err.Error())
 	}
 
@@ -282,7 +274,6 @@ func (self SubjectLogic) sendMsgForFollower(ctx context.Context, subject *model.
 
 // RemoveContribute 删除投稿
 func (self SubjectLogic) RemoveContribute(ctx context.Context, sid, articleId int) error {
-	objLog := GetLogger(ctx)
 
 	session := db.MasterDB.NewSession()
 	defer session.Close()
@@ -291,14 +282,14 @@ func (self SubjectLogic) RemoveContribute(ctx context.Context, sid, articleId in
 	_, err := session.Where("sid=? AND article_id=?", sid, articleId).Delete(new(model.SubjectArticle))
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("SubjectLogic RemoveContribute delete error:", err)
+		logger.Error("SubjectLogic RemoveContribute delete error:", err)
 		return errors.New("删除投稿失败:" + err.Error())
 	}
 
 	_, err = session.Id(sid).Decr("article_num", 1).Update(new(model.Subject))
 	if err != nil {
 		session.Rollback()
-		objLog.Errorln("SubjectLogic RemoveContribute update subject article num error:", err)
+		logger.Error("SubjectLogic RemoveContribute update subject article num error:", err)
 		return errors.New("删除投稿失败:" + err.Error())
 	}
 
@@ -314,20 +305,19 @@ func (self SubjectLogic) ExistByName(name string) bool {
 
 // Publish 发布专栏。
 func (self SubjectLogic) Publish(ctx context.Context, me *model.Me, form url.Values) (sid int, err error) {
-	objLog := GetLogger(ctx)
 
 	sid = goutils.MustInt(form.Get("sid"))
 	if sid != 0 {
 		subject := &model.Subject{}
 		_, err = db.MasterDB.Id(sid).Get(subject)
 		if err != nil {
-			objLog.Errorln("Publish Subject find error:", err)
+			logger.Error("Publish Subject find error:", err)
 			return
 		}
 
 		_, err = self.Modify(ctx, me, form)
 		if err != nil {
-			objLog.Errorln("Publish Subject modify error:", err)
+			logger.Error("Publish Subject modify error:", err)
 			return
 		}
 
@@ -335,14 +325,14 @@ func (self SubjectLogic) Publish(ctx context.Context, me *model.Me, form url.Val
 		subject := &model.Subject{}
 		err = schemaDecoder.Decode(subject, form)
 		if err != nil {
-			objLog.Errorln("SubjectLogic Publish decode error:", err)
+			logger.Error("SubjectLogic Publish decode error:", err)
 			return
 		}
 		subject.Uid = me.Uid
 
 		_, err = db.MasterDB.Insert(subject)
 		if err != nil {
-			objLog.Errorln("SubjectLogic Publish insert error:", err)
+			logger.Error("SubjectLogic Publish insert error:", err)
 			return
 		}
 		sid = subject.Id
@@ -352,8 +342,6 @@ func (self SubjectLogic) Publish(ctx context.Context, me *model.Me, form url.Val
 
 // Modify 修改专栏
 func (SubjectLogic) Modify(ctx context.Context, user *model.Me, form url.Values) (errMsg string, err error) {
-	objLog := GetLogger(ctx)
-
 	change := map[string]interface{}{}
 
 	fields := []string{"name", "description", "cover", "contribute", "audit"}
@@ -364,7 +352,7 @@ func (SubjectLogic) Modify(ctx context.Context, user *model.Me, form url.Values)
 	sid := form.Get("sid")
 	_, err = db.MasterDB.Table(new(model.Subject)).Id(sid).Update(change)
 	if err != nil {
-		objLog.Errorf("更新专栏 【%s】 信息失败：%s\n", sid, err)
+		logger.Error("更新专栏 【%s】 信息失败：%s\n", sid, err)
 		errMsg = "对不起，服务器内部错误，请稍后再试！"
 		return
 	}
@@ -373,12 +361,11 @@ func (SubjectLogic) Modify(ctx context.Context, user *model.Me, form url.Values)
 }
 
 func (self SubjectLogic) FindArticleSubjects(ctx context.Context, articleId int) []*model.Subject {
-	objLog := GetLogger(ctx)
 
 	subjectArticles := make([]*model.SubjectArticle, 0)
 	err := db.MasterDB.Where("article_id=?", articleId).Find(&subjectArticles)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindArticleSubjects find error:", err)
+		logger.Error("SubjectLogic FindArticleSubjects find error:", err)
 		return nil
 	}
 
@@ -395,7 +382,7 @@ func (self SubjectLogic) FindArticleSubjects(ctx context.Context, articleId int)
 	subjects := make([]*model.Subject, 0)
 	err = db.MasterDB.In("id", sids).Find(&subjects)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindArticleSubjects find subject error:", err)
+		logger.Error("SubjectLogic FindArticleSubjects find subject error:", err)
 		return nil
 	}
 
@@ -404,7 +391,6 @@ func (self SubjectLogic) FindArticleSubjects(ctx context.Context, articleId int)
 
 // FindMine 获取我管理的专栏列表
 func (self SubjectLogic) FindMine(ctx context.Context, me *model.Me, articleId int, kw string) []map[string]interface{} {
-	objLog := GetLogger(ctx)
 
 	subjects := make([]*model.Subject, 0)
 	// 先是我创建的专栏
@@ -414,7 +400,7 @@ func (self SubjectLogic) FindMine(ctx context.Context, me *model.Me, articleId i
 	}
 	err := session.Find(&subjects)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindMine find subject error:", err)
+		logger.Error("SubjectLogic FindMine find subject error:", err)
 		return nil
 	}
 
@@ -426,13 +412,13 @@ func (self SubjectLogic) FindMine(ctx context.Context, me *model.Me, articleId i
 	}
 	err = db.MasterDB.Sql(strSql, me.Uid).Find(&adminSubjects)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindMine find admin subject error:", err)
+		logger.Error("SubjectLogic FindMine find admin subject error:", err)
 	}
 
 	subjectArticles := make([]*model.SubjectArticle, 0)
 	err = db.MasterDB.Where("article_id=?", articleId).Find(&subjectArticles)
 	if err != nil {
-		objLog.Errorln("SubjectLogic FindMine find subject article error:", err)
+		logger.Error("SubjectLogic FindMine find subject article error:", err)
 	}
 	subjectArticleMap := make(map[int]struct{})
 	for _, sa := range subjectArticles {

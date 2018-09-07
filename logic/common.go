@@ -9,7 +9,6 @@ package logic
 import (
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"time"
 
@@ -17,7 +16,6 @@ import (
 	"sander/util"
 
 	"github.com/gorilla/schema"
-	"github.com/polaris1119/logger"
 	"golang.org/x/net/context"
 )
 
@@ -32,19 +30,6 @@ var (
 	NotModifyAuthorityErr = errors.New("没有修改权限")
 	NotFoundErr           = errors.New("Not Found")
 )
-
-func GetLogger(ctx context.Context) *logger.Logger {
-	if ctx == nil {
-		return logger.New(os.Stdout)
-	}
-
-	_logger, ok := ctx.Value("logger").(*logger.Logger)
-	if ok {
-		return _logger
-	}
-
-	return logger.New(os.Stdout)
-}
 
 // parseAtUser 解析 @某人
 func parseAtUser(ctx context.Context, content string) string {
