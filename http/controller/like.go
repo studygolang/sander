@@ -21,8 +21,8 @@ import (
 type LikeController struct{}
 
 // 注册路由
-func (self LikeController) RegisterRoute(g *echo.Group) {
-	g.POST("/like/:objid", self.Like, middleware.NeedLogin())
+func (l LikeController) RegisterRoute(g *echo.Group) {
+	g.POST("/like/:objid", l.Like, middleware.NeedLogin())
 }
 
 // Like 喜欢（或取消喜欢）

@@ -1,5 +1,5 @@
 // Copyright 2017 The StudyGolang Authors. All rights reserved.
-// Use of self source code is governed by a BSD-style
+// Use of w source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -18,11 +18,11 @@ import (
 type WechatController struct{}
 
 // 注册路由
-func (self WechatController) RegisterRoute(g *echo.Group) {
-	g.Any("/wechat/autoreply", self.AutoReply)
+func (w WechatController) RegisterRoute(g *echo.Group) {
+	g.Any("/wechat/autoreply", w.AutoReply)
 }
 
-func (self WechatController) AutoReply(ctx echo.Context) error {
+func (w WechatController) AutoReply(ctx echo.Context) error {
 	// 配置微信（不校验，直接返回成功）
 	if ctx.QueryParam("echostr") != "" {
 		return ctx.String(http.StatusOK, ctx.QueryParam("echostr"))

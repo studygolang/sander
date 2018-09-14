@@ -30,24 +30,24 @@ func init() {
 type TopicController struct{}
 
 // 注册路由
-func (self TopicController) RegisterRoute(g *echo.Group) {
-	g.GET("/topics", self.TopicList)
-	g.GET("/topics/no_reply", self.TopicsNoReply)
-	g.GET("/topics/last", self.TopicsLast)
-	g.GET("/topics/:tid", self.Detail)
-	g.GET("/topics/node/:nid", self.NodeTopics)
-	g.GET("/go/:node", self.GoNodeTopics)
-	g.GET("/nodes", self.Nodes)
+func (t TopicController) RegisterRoute(g *echo.Group) {
+	g.GET("/topics", t.TopicList)
+	g.GET("/topics/no_reply", t.TopicsNoReply)
+	g.GET("/topics/last", t.TopicsLast)
+	g.GET("/topics/:tid", t.Detail)
+	g.GET("/topics/node/:nid", t.NodeTopics)
+	g.GET("/go/:node", t.GoNodeTopics)
+	g.GET("/nodes", t.Nodes)
 
-	g.Match([]string{"GET", "POST"}, "/topics/new", self.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
-	g.Match([]string{"GET", "POST"}, "/topics/modify", self.Modify, middleware.NeedLogin(), middleware.Sensivite())
+	g.Match([]string{"GET", "POST"}, "/topics/new", t.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
+	g.Match([]string{"GET", "POST"}, "/topics/modify", t.Modify, middleware.NeedLogin(), middleware.Sensivite())
 
-	g.POST("/topics/set_top", self.SetTop, middleware.NeedLogin())
+	g.POST("/topics/set_top", t.SetTop, middleware.NeedLogin())
 
-	g.Match([]string{"GET", "POST"}, "/append/topic/:tid", self.Append, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck())
+	g.Match([]string{"GET", "POST"}, "/append/topic/:tid", t.Append, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck())
 }
 
-func (self TopicController) TopicList(ctx echo.Context) error {
+func (t TopicController) TopicList(ctx echo.Context) error {
 	tab := ctx.QueryParam("tab")
 	if tab == "" {
 		tab = xhttp.GetFromCookie(ctx, "TOPIC_TAB")
@@ -58,23 +58,23 @@ func (self TopicController) TopicList(ctx echo.Context) error {
 	if tab != "" && tab != "all" {
 		nid := logic.GetNidByEname(tab)
 		if nid > 0 {
-			return self.topicList(ctx, tab, "topics.mtime DESC", "nid=? AND top!=1", nid)
+			return t.topicList(ctx, tab, "topics.mtime DESC", "nid=? AND top!=1", nid)
 		}
 	}
 
-	return self.topicList(ctx, "all", "topics.mtime DESC", "top!=1")
+	return t.topicList(ctx, "all", "topics.mtime DESC", "top!=1")
 }
 
-func (self TopicController) Topics(ctx echo.Context) error {
-	return self.topicList(ctx, "", "topics.mtime DESC", "")
+func (t TopicController) Topics(ctx echo.Context) error {
+	return t.topicList(ctx, "", "topics.mtime DESC", "")
 }
 
-func (self TopicController) TopicsNoReply(ctx echo.Context) error {
-	return self.topicList(ctx, "no_reply", "topics.mtime DESC", "lastreplyuid=?", 0)
+func (t TopicController) TopicsNoReply(ctx echo.Context) error {
+	return t.topicList(ctx, "no_reply", "topics.mtime DESC", "lastreplyuid=?", 0)
 }
 
-func (self TopicController) TopicsLast(ctx echo.Context) error {
-	return self.topicList(ctx, "last", "ctime DESC", "")
+func (t TopicController) TopicsLast(ctx echo.Context) error {
+	return t.topicList(ctx, "last", "ctime DESC", "")
 }
 
 func (TopicController) topicList(ctx echo.Context, tab, orderBy, querystring string, args ...interface{}) error {

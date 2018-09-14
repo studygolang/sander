@@ -14,13 +14,14 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// NodeController .
 type NodeController struct{}
 
-// 注册路由
-func (self NodeController) RegisterRoute(g *echo.Group) {
-	g.GET("/community/node/list", self.List)
-	g.Match([]string{"GET", "POST"}, "/community/node/modify", self.Modify)
-	g.Post("/community/node/modify_seq", self.ModifySeq)
+// RegisterRoute 注册路由
+func (n NodeController) RegisterRoute(g *echo.Group) {
+	g.GET("/community/node/list", n.List)
+	g.Match([]string{"GET", "POST"}, "/community/node/modify", n.Modify)
+	g.Post("/community/node/modify_seq", n.ModifySeq)
 }
 
 // List 所有主题节点
@@ -48,6 +49,7 @@ func (NodeController) List(ctx echo.Context) error {
 	return render(ctx, "topic/node.html", data)
 }
 
+// Modify .
 func (NodeController) Modify(ctx echo.Context) error {
 	if ctx.FormValue("submit") == "1" {
 		err := logic.DefaultNode.Modify(ctx, ctx.FormParams())
@@ -82,6 +84,7 @@ func (NodeController) Modify(ctx echo.Context) error {
 	return render(ctx, "topic/node_modify.html", data)
 }
 
+// ModifySeq .
 func (NodeController) ModifySeq(ctx echo.Context) error {
 	nid := goutils.MustInt(ctx.FormValue("nid"))
 	seq := goutils.MustInt(ctx.FormValue("seq"))

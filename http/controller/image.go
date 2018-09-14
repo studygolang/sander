@@ -1,5 +1,5 @@
 // Copyright 2016 The StudyGolang Authors. All rights reserved.
-// Use of self source code is governed by a BSD-style
+// Use of ImageController source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -27,43 +27,43 @@ import (
 // 图片处理
 type ImageController struct{}
 
-func (self ImageController) RegisterRoute(g *echo.Group) {
+func (i ImageController) RegisterRoute(eg *echo.Group) {
 	// todo 这三个upload差不多啊
-	g.POST("/image/upload", self.Upload)
-	g.POST("/image/paste_upload", self.PasteUpload)
-	g.POST("/image/quick_upload", self.QuickUpload)
-	g.Match([]string{"GET", "POST"}, "/image/transfer", self.Transfer)
+	eg.POST("/image/upload", i.Upload)
+	eg.POST("/image/paste_upload", i.PasteUpload)
+	eg.POST("/image/quick_upload", i.QuickUpload)
+	eg.Match([]string{"GET", "POST"}, "/image/transfer", i.Transfer)
 }
 
 // PasteUpload jquery 粘贴上传图片
-func (self ImageController) PasteUpload(ctx echo.Context) error {
+func (i ImageController) PasteUpload(ctx echo.Context) error {
 
 	file, fileHeader, err := xhttp.Request(ctx).FormFile("imageFile")
 	if err != nil {
 		logger.Error("upload error:%+v", err)
-		return self.pasteUploadFail(ctx, err.Error())
+		return i.pasteUploadFail(ctx, err.Error())
 	}
 	defer file.Close()
 
 	// 如果是临时文件，存在硬盘中，则是 *os.File（大于32M），直接报错
 	if _, ok := file.(*os.File); ok {
 		logger.Error("upload error:file too large!")
-		return self.pasteUploadFail(ctx, "文件太大！")
+		return i.pasteUploadFail(ctx, "文件太大！")
 	}
 
 	buf, err := ioutil.ReadAll(file)
 	if err != nil {
-		return self.pasteUploadFail(ctx, "文件读取失败！")
+		return i.pasteUploadFail(ctx, "文件读取失败！")
 	}
 	if len(buf) > logic.MaxImageSize {
-		return self.pasteUploadFail(ctx, "文件太大！")
+		return i.pasteUploadFail(ctx, "文件太大！")
 	}
 
 	imgDir := times.Format("ymd")
 	file.Seek(0, io.SeekStart)
 	path, err := logic.DefaultUploader.UploadImage(ctx, file, imgDir, buf, filepath.Ext(fileHeader.Filename))
 	if err != nil {
-		return self.pasteUploadFail(ctx, "文件上传失败！")
+		return i.pasteUploadFail(ctx, "文件上传失败！")
 	}
 
 	cdnDomain := global.App.CanonicalCDN(xhttp.CheckIsHttps(ctx))
@@ -80,27 +80,27 @@ func (self ImageController) PasteUpload(ctx echo.Context) error {
 }
 
 // QuickUpload CKEditor 编辑器，上传图片，支持粘贴方式上传
-func (self ImageController) QuickUpload(ctx echo.Context) error {
+func (i ImageController) QuickUpload(ctx echo.Context) error {
 
 	file, fileHeader, err := xhttp.Request(ctx).FormFile("upload")
 	if err != nil {
 		logger.Error("upload error:%+v", err)
-		return self.quickUploadFail(ctx, err.Error())
+		return i.quickUploadFail(ctx, err.Error())
 	}
 	defer file.Close()
 
 	// 如果是临时文件，存在硬盘中，则是 *os.File（大于32M），直接报错
 	if _, ok := file.(*os.File); ok {
 		logger.Error("upload error:file too large!")
-		return self.quickUploadFail(ctx, "文件太大！")
+		return i.quickUploadFail(ctx, "文件太大！")
 	}
 
 	buf, err := ioutil.ReadAll(file)
 	if err != nil {
-		return self.quickUploadFail(ctx, "文件读取失败！")
+		return i.quickUploadFail(ctx, "文件读取失败！")
 	}
 	if len(buf) > logic.MaxImageSize {
-		return self.quickUploadFail(ctx, "文件太大！")
+		return i.quickUploadFail(ctx, "文件太大！")
 	}
 
 	fileName := goutils.Md5Buf(buf) + filepath.Ext(fileHeader.Filename)
@@ -108,7 +108,7 @@ func (self ImageController) QuickUpload(ctx echo.Context) error {
 	file.Seek(0, io.SeekStart)
 	path, err := logic.DefaultUploader.UploadImage(ctx, file, imgDir, buf, filepath.Ext(fileHeader.Filename))
 	if err != nil {
-		return self.quickUploadFail(ctx, "文件上传失败！")
+		return i.quickUploadFail(ctx, "文件上传失败！")
 	}
 
 	cdnDomain := global.App.CanonicalCDN(xhttp.CheckIsHttps(ctx))

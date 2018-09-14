@@ -12,17 +12,18 @@ import (
 	"github.com/labstack/echo"
 )
 
+// SettingController .
 type SettingController struct{}
 
-// 注册路由
-func (self SettingController) RegisterRoute(g *echo.Group) {
-	g.Match([]string{"GET", "POST"}, "/setting/genneral/modify", self.GenneralModify)
-	g.Match([]string{"GET", "POST"}, "/setting/nav/modify", self.NavModify)
-	g.Match([]string{"GET", "POST"}, "/setting/index_tab/children", self.IndexTabChildren)
+// RegisterRoute 注册路由
+func (s SettingController) RegisterRoute(g *echo.Group) {
+	g.Match([]string{"GET", "POST"}, "/setting/genneral/modify", s.GenneralModify)
+	g.Match([]string{"GET", "POST"}, "/setting/nav/modify", s.NavModify)
+	g.Match([]string{"GET", "POST"}, "/setting/index_tab/children", s.IndexTabChildren)
 }
 
 // GenneralModify 常规选项修改
-func (self SettingController) GenneralModify(ctx echo.Context) error {
+func (s SettingController) GenneralModify(ctx echo.Context) error {
 	if ctx.FormValue("submit") == "1" {
 		err := logic.DefaultSetting.Update(ctx, ctx.FormParams())
 		if err != nil {
@@ -36,7 +37,7 @@ func (self SettingController) GenneralModify(ctx echo.Context) error {
 }
 
 // NavModify 菜单、导航修改
-func (self SettingController) NavModify(ctx echo.Context) error {
+func (s SettingController) NavModify(ctx echo.Context) error {
 	if ctx.FormValue("submit") == "1" {
 		err := logic.DefaultSetting.Update(ctx, ctx.FormParams())
 		if err != nil {
@@ -48,7 +49,8 @@ func (self SettingController) NavModify(ctx echo.Context) error {
 	return render(ctx, "setting/menu_nav.html", nil)
 }
 
-func (self SettingController) IndexTabChildren(ctx echo.Context) error {
+// IndexTabChildren .
+func (s SettingController) IndexTabChildren(ctx echo.Context) error {
 	if ctx.FormValue("submit") == "1" {
 		err := logic.DefaultSetting.UpdateIndexTabChildren(ctx, ctx.FormParams())
 		if err != nil {

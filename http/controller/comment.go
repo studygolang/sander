@@ -24,14 +24,14 @@ import (
 
 type CommentController struct{}
 
-func (self CommentController) RegisterRoute(g *echo.Group) {
-	g.Get("/at/users", self.AtUsers)
-	g.Post("/comment/:objid", self.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
-	g.Get("/object/comments", self.CommentList)
-	g.Post("/object/comments/:cid", self.Modify, middleware.NeedLogin(), middleware.Sensivite())
+func (c CommentController) RegisterRoute(g *echo.Group) {
+	g.Get("/at/users", c.AtUsers)
+	g.Post("/comment/:objid", c.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
+	g.Get("/object/comments", c.CommentList)
+	g.Post("/object/comments/:cid", c.Modify, middleware.NeedLogin(), middleware.Sensivite())
 
-	g.Get("/topics/:objid/comment/:cid", self.TopicDetail)
-	g.Get("/articles/:objid/comment/:cid", self.ArticleDetail)
+	g.Get("/topics/:objid/comment/:cid", c.TopicDetail)
+	g.Get("/articles/:objid/comment/:cid", c.ArticleDetail)
 }
 
 // AtUsers 评论或回复 @ 某人 suggest
@@ -112,7 +112,7 @@ func (CommentController) CommentList(ctx echo.Context) error {
 	return success(ctx, result)
 }
 
-func (self CommentController) TopicDetail(ctx echo.Context) error {
+func (c CommentController) TopicDetail(ctx echo.Context) error {
 	objid := goutils.MustInt(ctx.Param("objid"))
 	cid := goutils.MustInt(ctx.Param("cid"))
 
@@ -129,7 +129,7 @@ func (self CommentController) TopicDetail(ctx echo.Context) error {
 	}
 	data["appends"] = logic.DefaultTopic.FindAppend(ctx, objid)
 
-	err := self.fillCommentAndUser(ctx, data, cid, objid, model.TypeTopic)
+	err := c.fillCommentAndUser(ctx, data, cid, objid, model.TypeTopic)
 
 	if err != nil {
 		return ctx.Redirect(http.StatusSeeOther, "/topics/"+strconv.Itoa(objid))
@@ -138,7 +138,7 @@ func (self CommentController) TopicDetail(ctx echo.Context) error {
 	return render(ctx, "topics/comment.html", data)
 }
 
-func (self CommentController) ArticleDetail(ctx echo.Context) error {
+func (c CommentController) ArticleDetail(ctx echo.Context) error {
 	objid := goutils.MustInt(ctx.Param("objid"))
 	cid := goutils.MustInt(ctx.Param("cid"))
 
@@ -153,7 +153,7 @@ func (self CommentController) ArticleDetail(ctx echo.Context) error {
 		"article_gctt": articleGCTT,
 	}
 
-	err = self.fillCommentAndUser(ctx, data, cid, objid, model.TypeArticle)
+	err = c.fillCommentAndUser(ctx, data, cid, objid, model.TypeArticle)
 
 	if err != nil {
 		return ctx.Redirect(http.StatusSeeOther, "/articles/"+strconv.Itoa(objid))

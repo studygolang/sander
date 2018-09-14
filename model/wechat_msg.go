@@ -55,10 +55,12 @@ type WechatMsg struct {
 	Event string
 }
 
+// CData .
 type CData struct {
 	Val string `xml:",cdata"`
 }
 
+// WechatReply .
 type WechatReply struct {
 	XMLName      xml.Name `xml:"xml"`
 	ToUserName   *CData

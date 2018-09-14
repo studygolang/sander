@@ -14,12 +14,13 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// IndexController .
 type IndexController struct{}
 
-// 注册路由
-func (self IndexController) RegisterRoute(g *echo.Group) {
-	g.GET("/home", self.Home)
-	g.GET("/stat/site", self.WebsiteStat)
+// RegisterRoute 注册路由
+func (i IndexController) RegisterRoute(g *echo.Group) {
+	g.GET("/home", i.Home)
+	g.GET("/stat/site", i.WebsiteStat)
 }
 
 // Home 首页

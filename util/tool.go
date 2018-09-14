@@ -16,7 +16,7 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
-// 获取头像
+// Gravatar 获取头像
 func Gravatar(avatar string, emailI interface{}, size uint16, isHttps bool) string {
 	gravatarDomain := "http://gravatar.com"
 	if isHttps {
@@ -38,11 +38,12 @@ func Gravatar(avatar string, emailI interface{}, size uint16, isHttps bool) stri
 	return fmt.Sprintf("%s/avatar/%s?s=%d", gravatarDomain, goutils.Md5(email), size)
 }
 
+// Max .
 func Max(x, y int) int {
 	return int(math.Max(float64(x), float64(y)))
 }
 
-// 最小值，但不会小于0
+// UMin 最小值，但不会小于0
 func UMin(x, y int) int {
 	if x < 0 || y < 0 {
 		return 0
@@ -50,7 +51,7 @@ func UMin(x, y int) int {
 	return int(math.Min(float64(x), float64(y)))
 }
 
-// 内嵌 Wide iframe 版
+// EmbedWide 内嵌 Wide iframe 版
 func EmbedWide(content string) string {
 	if !strings.Contains(content, "&lt;iframe") {
 		return content

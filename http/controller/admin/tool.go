@@ -12,14 +12,15 @@ import (
 	"github.com/labstack/echo"
 )
 
+// ToolController .
 type ToolController struct{}
 
-// 注册路由
-func (self ToolController) RegisterRoute(g *echo.Group) {
-	g.GET("/tool/sitemap", self.GenSitemap)
+// RegisterRoute 注册路由
+func (t ToolController) RegisterRoute(g *echo.Group) {
+	g.GET("/tool/sitemap", t.GenSitemap)
 }
 
-// GenSitemap
+// GenSitemap .
 func (ToolController) GenSitemap(ctx echo.Context) error {
 	logic.GenSitemap()
 	return render(ctx, "tool/sitemap.html", nil)

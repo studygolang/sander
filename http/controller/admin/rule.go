@@ -15,15 +15,16 @@ import (
 	"github.com/labstack/echo"
 )
 
+// RuleController .
 type RuleController struct{}
 
-// 注册路由
-func (self RuleController) RegisterRoute(g *echo.Group) {
-	g.GET("/crawl/rule/list", self.RuleList)
-	g.POST("/crawl/rule/query.html", self.Query)
-	g.Match([]string{"GET", "POST"}, "/crawl/rule/new", self.New)
-	g.Match([]string{"GET", "POST"}, "/crawl/rule/modify", self.Modify)
-	g.POST("/crawl/rule/del", self.Del)
+// RegisterRoute 注册路由
+func (r RuleController) RegisterRoute(g *echo.Group) {
+	g.GET("/crawl/rule/list", r.RuleList)
+	g.POST("/crawl/rule/query.html", r.Query)
+	g.Match([]string{"GET", "POST"}, "/crawl/rule/new", r.New)
+	g.Match([]string{"GET", "POST"}, "/crawl/rule/modify", r.Modify)
+	g.POST("/crawl/rule/del", r.Del)
 }
 
 // RuleList 所有规则（分页）
@@ -47,7 +48,7 @@ func (RuleController) RuleList(ctx echo.Context) error {
 	return render(ctx, "rule/list.html,rule/query.html", data)
 }
 
-// Query
+// Query .
 func (RuleController) Query(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 	conds := parseConds(ctx, []string{"domain"})
@@ -86,7 +87,7 @@ func (RuleController) New(ctx echo.Context) error {
 }
 
 // Modify 编辑规则
-func (self RuleController) Modify(ctx echo.Context) error {
+func (r RuleController) Modify(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
 	if ctx.FormValue("submit") == "1" {
@@ -101,7 +102,7 @@ func (self RuleController) Modify(ctx echo.Context) error {
 
 	rule := logic.DefaultRule.FindById(ctx, ctx.QueryParam("id"))
 	if rule == nil {
-		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(self.RuleList)))
+		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(r.RuleList)))
 	}
 
 	data["rule"] = rule
@@ -109,6 +110,7 @@ func (self RuleController) Modify(ctx echo.Context) error {
 	return render(ctx, "rule/modify.html", data)
 }
 
+// Del .
 func (RuleController) Del(ctx echo.Context) error {
 	err := logic.DefaultRule.Delete(ctx, ctx.FormValue("id"))
 	if err != nil {

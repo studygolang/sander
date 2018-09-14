@@ -6,7 +6,14 @@
 
 package global
 
+// AuthorityChan .
 var AuthorityChan = make(chan struct{}, 1)
+
+// RoleChan .
 var RoleChan = make(chan struct{}, 1)
+
+// RoleAuthChan .
 var RoleAuthChan = make(chan struct{}, 1)
+
+// UserSettingChan .
 var UserSettingChan = make(chan struct{}, 1)

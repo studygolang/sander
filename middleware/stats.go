@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// Stats .
 type Stats struct {
 	Uptime       time.Time      `json:"uptime"`
 	RequestCount uint64         `json:"request_count"`
@@ -16,6 +17,7 @@ type Stats struct {
 	mutex        sync.RWMutex
 }
 
+// NewStats .
 func NewStats() *Stats {
 	return &Stats{
 		Uptime:   time.Now(),
@@ -23,6 +25,7 @@ func NewStats() *Stats {
 	}
 }
 
+// Process .
 func (s *Stats) Process() echo.MiddlewareFunc {
 	return s.process
 }
@@ -37,12 +40,7 @@ func (s *Stats) process(next echo.HandlerFunc) echo.HandlerFunc {
 			status := strconv.Itoa(ctx.Response().Status())
 			s.Statuses[status]++
 		}()
-
-		if err := next(ctx); err != nil {
-			return err
-		}
-
-		return nil
+		return next(ctx)
 	}
 }
 

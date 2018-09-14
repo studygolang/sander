@@ -19,7 +19,8 @@ import (
 )
 
 var (
-	dns      string
+	dns string
+	// MasterDB .
 	MasterDB *xorm.Engine
 )
 
@@ -37,8 +38,10 @@ func init() {
 }
 
 var (
-	ConnectDBErr = errors.New("connect db error")
-	UseDBErr     = errors.New("use db error")
+	// ErrConnectDB .
+	ErrConnectDB = errors.New("connect db error")
+	// ErrUseDB .
+	ErrUseDB = errors.New("use db error")
 )
 
 // TestDB 测试数据库
@@ -65,7 +68,7 @@ func TestDB() error {
 	// 测试数据库连接是否 OK
 	if err = egnine.Ping(); err != nil {
 		fmt.Println("ping db error:", err)
-		return ConnectDBErr
+		return ErrConnectDB
 	}
 
 	_, err = egnine.Exec("use " + mysqlConfig["dbname"])
@@ -75,7 +78,7 @@ func TestDB() error {
 		if err != nil {
 			fmt.Println("create database error:", err)
 
-			return UseDBErr
+			return ErrUseDB
 		}
 		fmt.Println("create database successfully!")
 	}

@@ -14,12 +14,13 @@ import (
 	"github.com/labstack/echo"
 )
 
+// AuthorityController .
 type AuthorityController struct{}
 
-// 注册路由
-func (self AuthorityController) RegisterRoute(g *echo.Group) {
-	g.GET("/user/auth/list", self.AuthList)
-	g.POST("/user/auth/query.html", self.AuthQuery)
+// RegisterRoute 注册路由
+func (a AuthorityController) RegisterRoute(g *echo.Group) {
+	g.GET("/user/auth/list", a.AuthList)
+	g.POST("/user/auth/query.html", a.AuthQuery)
 }
 
 // AuthList 所有权限（分页）
@@ -43,6 +44,7 @@ func (AuthorityController) AuthList(ctx echo.Context) error {
 	return render(ctx, "authority/list.html,authority/query.html", data)
 }
 
+// AuthQuery .
 func (AuthorityController) AuthQuery(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 

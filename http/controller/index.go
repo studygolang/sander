@@ -27,12 +27,12 @@ import (
 type IndexController struct{}
 
 // 注册路由
-func (self IndexController) RegisterRoute(g *echo.Group) {
-	g.GET("/", self.Index)
-	g.GET("/wr", self.WrapUrl)
-	g.GET("/pkgdoc", self.Pkgdoc)
-	g.GET("/markdown", self.Markdown)
-	g.GET("/link", self.Link)
+func (i IndexController) RegisterRoute(g *echo.Group) {
+	g.GET("/", i.Index)
+	g.GET("/wr", i.WrapUrl)
+	g.GET("/pkgdoc", i.Pkgdoc)
+	g.GET("/markdown", i.Markdown)
+	g.GET("/link", i.Link)
 }
 
 func (IndexController) Index(ctx echo.Context) error {

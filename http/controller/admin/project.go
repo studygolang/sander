@@ -16,14 +16,15 @@ import (
 	"github.com/labstack/echo"
 )
 
+// ProjectController .
 type ProjectController struct{}
 
-// 注册路由
-func (self ProjectController) RegisterRoute(g *echo.Group) {
-	g.GET("/crawl/project/list", self.ProjectList)
-	g.POST("/crawl/project/query.html", self.ProjectQuery)
-	g.Match([]string{"GET", "POST"}, "/crawl/project/new", self.CrawlProject)
-	g.Match([]string{"GET", "POST"}, "/crawl/project/modify", self.Modify)
+// RegisterRoute 注册路由
+func (p ProjectController) RegisterRoute(g *echo.Group) {
+	g.GET("/crawl/project/list", p.ProjectList)
+	g.POST("/crawl/project/query.html", p.ProjectQuery)
+	g.Match([]string{"GET", "POST"}, "/crawl/project/new", p.CrawlProject)
+	g.Match([]string{"GET", "POST"}, "/crawl/project/modify", p.Modify)
 }
 
 // ProjectList 所有文章（分页）
@@ -46,7 +47,7 @@ func (ProjectController) ProjectList(ctx echo.Context) error {
 	return render(ctx, "article/list.html,article/query.html", data)
 }
 
-// ProjectQuery
+// ProjectQuery .
 func (ProjectController) ProjectQuery(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 	conds := parseConds(ctx, []string{"id", "domain", "title"})
@@ -68,7 +69,7 @@ func (ProjectController) ProjectQuery(ctx echo.Context) error {
 	return renderQuery(ctx, "article/query.html", data)
 }
 
-// CrawlProject
+// CrawlProject .
 func (ProjectController) CrawlProject(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
@@ -76,8 +77,8 @@ func (ProjectController) CrawlProject(ctx echo.Context) error {
 		urls := strings.Split(ctx.FormValue("urls"), "\n")
 
 		var errMsg string
-		for _, projectUrl := range urls {
-			err := logic.DefaultProject.ParseOneProject(strings.TrimSpace(projectUrl))
+		for _, url := range urls {
+			err := logic.DefaultProject.ParseOneProject(strings.TrimSpace(url))
 			if err != nil {
 				errMsg = err.Error()
 			}
@@ -92,8 +93,8 @@ func (ProjectController) CrawlProject(ctx echo.Context) error {
 	return render(ctx, "project/new.html", data)
 }
 
-// Modify
-func (self ProjectController) Modify(ctx echo.Context) error {
+// Modify .
+func (p ProjectController) Modify(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
 	if ctx.FormValue("submit") == "1" {
@@ -106,7 +107,7 @@ func (self ProjectController) Modify(ctx echo.Context) error {
 	}
 	article, err := logic.DefaultArticle.FindById(ctx, ctx.QueryParam("id"))
 	if err != nil {
-		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(self.ProjectList)))
+		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(p.ProjectList)))
 	}
 
 	data["article"] = article

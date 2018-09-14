@@ -13,14 +13,15 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// UserController .
 type UserController struct{}
 
-// 注册路由
-func (self UserController) RegisterRoute(g *echo.Group) {
-	g.GET("/user/user/list", self.UserList)
-	g.POST("/user/user/query.html", self.UserQuery)
-	g.GET("/user/user/detail", self.Detail)
-	g.POST("/user/user/modify", self.Modify)
+// RegisterRoute 注册路由
+func (u UserController) RegisterRoute(g *echo.Group) {
+	g.GET("/user/user/list", u.UserList)
+	g.POST("/user/user/query.html", u.UserQuery)
+	g.GET("/user/user/detail", u.Detail)
+	g.POST("/user/user/modify", u.Modify)
 }
 
 // UserList 所有用户（分页）
@@ -40,6 +41,7 @@ func (UserController) UserList(ctx echo.Context) error {
 	return render(ctx, "user/list.html,user/query.html", data)
 }
 
+// UserQuery .
 func (UserController) UserQuery(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 	conds := parseConds(ctx, []string{"uid", "username", "email"})
@@ -57,6 +59,7 @@ func (UserController) UserQuery(ctx echo.Context) error {
 	return renderQuery(ctx, "user/query.html", data)
 }
 
+// Detail .
 func (UserController) Detail(ctx echo.Context) error {
 	user := logic.DefaultUser.FindOne(ctx, "uid", ctx.QueryParam("uid"))
 
@@ -67,6 +70,7 @@ func (UserController) Detail(ctx echo.Context) error {
 	return render(ctx, "user/detail.html", data)
 }
 
+// Modify .
 func (UserController) Modify(ctx echo.Context) error {
 	uid := ctx.FormValue("uid")
 

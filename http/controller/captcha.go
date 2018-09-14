@@ -1,5 +1,5 @@
 // Copyright 2016 The StudyGolang Authors. All rights reserved.
-// Use of self source code is governed by a BSD-style
+// Use of captchaHandler source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -18,8 +18,8 @@ var captchaHandler = captcha.Server(100, 40)
 // 验证码
 type CaptchaController struct{}
 
-func (self CaptchaController) RegisterRoute(g *echo.Group) {
-	g.Get("/captcha/*", self.Server)
+func (c CaptchaController) RegisterRoute(g *echo.Group) {
+	g.Get("/captcha/*", c.Server)
 }
 
 func (CaptchaController) Server(ctx echo.Context) error {

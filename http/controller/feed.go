@@ -22,16 +22,16 @@ import (
 type FeedController struct{}
 
 // 注册路由
-func (self FeedController) RegisterRoute(g *echo.Group) {
-	g.Get("/feed.html", self.Atom)
-	g.Get("/feed.xml", self.List)
+func (f FeedController) RegisterRoute(g *echo.Group) {
+	g.Get("/feed.html", f.Atom)
+	g.Get("/feed.xml", f.List)
 }
 
-func (self FeedController) Atom(ctx echo.Context) error {
+func (f FeedController) Atom(ctx echo.Context) error {
 	return xhttp.Render(ctx, "atom.html", map[string]interface{}{})
 }
 
-func (self FeedController) List(ctx echo.Context) error {
+func (f FeedController) List(ctx echo.Context) error {
 	link := logic.WebsiteSetting.Domain
 	if logic.WebsiteSetting.OnlyHttps {
 		link = "https://" + link + "/"
@@ -89,7 +89,7 @@ func (self FeedController) List(ctx echo.Context) error {
 		return err
 	}
 
-	return self.responseXML(ctx, atom)
+	return f.responseXML(ctx, atom)
 }
 
 func (FeedController) responseXML(ctx echo.Context, data string) (err error) {

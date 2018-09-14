@@ -28,6 +28,7 @@ func MonthDayNum(t time.Time) int {
 	}
 }
 
+// TimeAgo .
 func TimeAgo(t time.Time) string {
 	now := time.Now()
 	diff := now.Sub(t)

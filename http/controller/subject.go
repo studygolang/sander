@@ -23,16 +23,16 @@ import (
 type SubjectController struct{}
 
 // 注册路由
-func (self SubjectController) RegisterRoute(g *echo.Group) {
-	g.Get("/subject/:id", self.Index)
-	g.Post("/subject/follow", self.Follow, middleware.NeedLogin())
-	g.Get("/subject/my_articles", self.MyArticles, middleware.NeedLogin())
-	g.Post("/subject/contribute", self.Contribute, middleware.NeedLogin())
-	g.Post("/subject/remove_contribute", self.RemoveContribute, middleware.NeedLogin())
-	g.Get("/subject/mine", self.Mine, middleware.NeedLogin())
+func (s SubjectController) RegisterRoute(g *echo.Group) {
+	g.Get("/subject/:id", s.Index)
+	g.Post("/subject/follow", s.Follow, middleware.NeedLogin())
+	g.Get("/subject/my_articles", s.MyArticles, middleware.NeedLogin())
+	g.Post("/subject/contribute", s.Contribute, middleware.NeedLogin())
+	g.Post("/subject/remove_contribute", s.RemoveContribute, middleware.NeedLogin())
+	g.Get("/subject/mine", s.Mine, middleware.NeedLogin())
 
-	g.Match([]string{"GET", "POST"}, "/subject/new", self.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
-	g.Match([]string{"GET", "POST"}, "/subject/modify", self.Modify, middleware.NeedLogin(), middleware.Sensivite())
+	g.Match([]string{"GET", "POST"}, "/subject/new", s.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
+	g.Match([]string{"GET", "POST"}, "/subject/modify", s.Modify, middleware.NeedLogin(), middleware.Sensivite())
 }
 
 func (SubjectController) Index(ctx echo.Context) error {
@@ -87,7 +87,7 @@ func (SubjectController) Index(ctx echo.Context) error {
 	return render(ctx, "subject/index.html", data)
 }
 
-func (self SubjectController) Follow(ctx echo.Context) error {
+func (s SubjectController) Follow(ctx echo.Context) error {
 	sid := goutils.MustInt(ctx.FormValue("sid"))
 
 	me := ctx.Get("user").(*model.Me)
@@ -99,7 +99,7 @@ func (self SubjectController) Follow(ctx echo.Context) error {
 	return success(ctx, nil)
 }
 
-func (self SubjectController) MyArticles(ctx echo.Context) error {
+func (s SubjectController) MyArticles(ctx echo.Context) error {
 	kw := ctx.QueryParam("kw")
 	sid := goutils.MustInt(ctx.FormValue("sid"))
 
@@ -113,7 +113,7 @@ func (self SubjectController) MyArticles(ctx echo.Context) error {
 }
 
 // Contribute 投稿
-func (self SubjectController) Contribute(ctx echo.Context) error {
+func (s SubjectController) Contribute(ctx echo.Context) error {
 	sid := goutils.MustInt(ctx.FormValue("sid"))
 	articleId := goutils.MustInt(ctx.FormValue("article_id"))
 
@@ -128,7 +128,7 @@ func (self SubjectController) Contribute(ctx echo.Context) error {
 }
 
 // RemoveContribute 删除投稿
-func (self SubjectController) RemoveContribute(ctx echo.Context) error {
+func (s SubjectController) RemoveContribute(ctx echo.Context) error {
 	sid := goutils.MustInt(ctx.FormValue("sid"))
 	articleId := goutils.MustInt(ctx.FormValue("article_id"))
 
@@ -141,7 +141,7 @@ func (self SubjectController) RemoveContribute(ctx echo.Context) error {
 }
 
 // Mine 我管理的专栏
-func (self SubjectController) Mine(ctx echo.Context) error {
+func (s SubjectController) Mine(ctx echo.Context) error {
 	kw := ctx.QueryParam("kw")
 	articleId := goutils.MustInt(ctx.FormValue("article_id"))
 	me := ctx.Get("user").(*model.Me)

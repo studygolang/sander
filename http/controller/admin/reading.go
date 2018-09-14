@@ -16,13 +16,14 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// ReadingController .
 type ReadingController struct{}
 
-// 注册路由
-func (self ReadingController) RegisterRoute(g *echo.Group) {
-	g.GET("/reading/list", self.ReadingList)
-	g.POST("/reading/query.html", self.ReadingQuery)
-	g.Match([]string{"GET", "POST"}, "/reading/publish", self.Publish)
+// RegisterRoute 注册路由
+func (r ReadingController) RegisterRoute(g *echo.Group) {
+	g.GET("/reading/list", r.ReadingList)
+	g.POST("/reading/query.html", r.ReadingQuery)
+	g.Match([]string{"GET", "POST"}, "/reading/publish", r.Publish)
 }
 
 // ReadingList 所有晨读（分页）
@@ -45,7 +46,7 @@ func (ReadingController) ReadingList(ctx echo.Context) error {
 	return render(ctx, "reading/list.html,reading/query.html", data)
 }
 
-// ReadingQuery
+// ReadingQuery .
 func (ReadingController) ReadingQuery(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 	conds := parseConds(ctx, []string{"id", "rtype"})
@@ -66,7 +67,7 @@ func (ReadingController) ReadingQuery(ctx echo.Context) error {
 	return render(ctx, "reading/query.html", data)
 }
 
-// Publish
+// Publish .
 func (ReadingController) Publish(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 

@@ -15,12 +15,13 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// ResourceController .
 type ResourceController struct{}
 
-// 注册路由
-func (self ResourceController) RegisterRoute(g *echo.Group) {
-	g.GET("/resources", self.ReadList)
-	g.GET("/resource/detail", self.Detail)
+// RegisterRoute 注册路由
+func (r ResourceController) RegisterRoute(g *echo.Group) {
+	g.GET("/resources", r.ReadList)
+	g.GET("/resource/detail", r.Detail)
 }
 
 // ReadList 资源索引页

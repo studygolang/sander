@@ -83,7 +83,7 @@ func (s *String) Slice(i, j int) string {
 		return s.str[i:j]
 	}
 	if i < 0 || j > s.numRunes || i > j {
-		panic(sliceOutOfRange)
+		panic(errSliceOutOfRange)
 	}
 	if i == j {
 		return ""
@@ -119,7 +119,7 @@ func (s *String) At(i int) rune {
 
 	// Now we do need to know the index is valid.
 	if i < 0 || i >= s.numRunes {
-		panic(outOfRange)
+		panic(errOutOfRange)
 	}
 
 	var r rune
@@ -203,7 +203,7 @@ func (s *String) At(i int) rune {
 	return r
 }
 
-// 求子串
+// Substring 求子串
 func Substring(str string, length int, suffix string) string {
 	if length >= len(str) {
 		return str
@@ -215,10 +215,10 @@ func Substring(str string, length int, suffix string) string {
 	return utf8Str.Slice(0, length) + suffix
 }
 
-var outOfRange = errors.New("utf8string: index out of range")
-var sliceOutOfRange = errors.New("utf8string: slice index out of range")
+var errOutOfRange = errors.New("utf8string: index out of range")
+var errSliceOutOfRange = errors.New("utf8string: slice index out of range")
 
-// 驼峰式写法转为下划线写法
+// UnderscoreName 驼峰式写法转为下划线写法
 func UnderscoreName(name string) string {
 	buffer := goutils.NewBuffer()
 	for i, r := range name {
@@ -235,6 +235,7 @@ func UnderscoreName(name string) string {
 	return buffer.String()
 }
 
+// SafeHtml .
 func SafeHtml(s string) string {
 	r := strings.NewReplacer("<input", "&lt;input", "<a ", "&lt; a")
 	return r.Replace(s)

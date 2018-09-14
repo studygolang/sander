@@ -18,10 +18,10 @@ import (
 type GiftController struct{}
 
 // 注册路由
-func (self GiftController) RegisterRoute(g *echo.Group) {
-	g.Get("/gift", self.GiftList)
-	g.Post("/gift/exchange", self.Exchange, middleware.NeedLogin())
-	g.Get("/gift/mine", self.MyGift, middleware.NeedLogin())
+func (g GiftController) RegisterRoute(eg *echo.Group) {
+	eg.Get("/gift", g.GiftList)
+	eg.Post("/gift/exchange", g.Exchange, middleware.NeedLogin())
+	eg.Get("/gift/mine", g.MyGift, middleware.NeedLogin())
 }
 
 func (GiftController) GiftList(ctx echo.Context) error {

@@ -36,10 +36,13 @@ import (
 )
 
 const (
-	DefaultCDNHttp  = "http://studygolang.qiniudn.com/"
-	DefaultCDNHttps = "https://static.studygolang.com/"
+	// DefaultCDNHTTP .
+	DefaultCDNHTTP = "http://studygolang.qiniudn.com/"
+	// DefaultCDNHTTPS .
+	DefaultCDNHTTPS = "https://static.studygolang.com/"
 )
 
+// Build .
 var Build string
 
 type app struct {
@@ -70,14 +73,18 @@ type app struct {
 	locker sync.Mutex
 }
 
+// App .
 var App = &app{}
 
 var showVersion = flag.Bool("version", false, "Print version of this binary")
 
 const (
-	DEV  = "dev"
+	// DEV .
+	DEV = "dev"
+	// TEST .
 	TEST = "test"
-	PRO  = "pro"
+	// PRO .
+	PRO = "pro"
 )
 
 func init() {
@@ -95,35 +102,39 @@ func init() {
 
 	App.Env = config.ConfigFile.MustValue("global", "env")
 
-	App.CDNHttp = config.ConfigFile.MustValue("qiniu", "http_domain", DefaultCDNHttp)
-	App.CDNHttps = config.ConfigFile.MustValue("qiniu", "https_domain", DefaultCDNHttps)
+	App.CDNHttp = config.ConfigFile.MustValue("qiniu", "http_domain", DefaultCDNHTTP)
+	App.CDNHttps = config.ConfigFile.MustValue("qiniu", "https_domain", DefaultCDNHTTPS)
 }
 
-func (this *app) Init(domain string) {
-	this.Domain = config.ConfigFile.MustValue("global", "domain", domain)
+// Init .
+func (a *app) Init(domain string) {
+	a.Domain = config.ConfigFile.MustValue("global", "domain", domain)
 }
 
-func (this *app) SetUptime() {
-	this.locker.Lock()
-	defer this.locker.Unlock()
-	this.Uptime = time.Now().Sub(this.LaunchTime)
+// SetUptime .
+func (a *app) SetUptime() {
+	a.locker.Lock()
+	defer a.locker.Unlock()
+	a.Uptime = time.Now().Sub(a.LaunchTime)
 }
 
-func (this *app) SetCopyright() {
+// SetCopyright .
+func (a *app) SetCopyright() {
 	curYear := time.Now().Year()
-	this.locker.Lock()
-	defer this.locker.Unlock()
+	a.locker.Lock()
+	defer a.locker.Unlock()
 	if curYear == model.WebsiteSetting.StartYear {
-		this.Copyright = fmt.Sprintf("%d %s", model.WebsiteSetting.StartYear, model.WebsiteSetting.Domain)
+		a.Copyright = fmt.Sprintf("%d %s", model.WebsiteSetting.StartYear, model.WebsiteSetting.Domain)
 	} else {
-		this.Copyright = fmt.Sprintf("%d-%d %s", model.WebsiteSetting.StartYear, curYear, model.WebsiteSetting.Domain)
+		a.Copyright = fmt.Sprintf("%d-%d %s", model.WebsiteSetting.StartYear, curYear, model.WebsiteSetting.Domain)
 	}
 }
 
-func (this *app) CanonicalCDN(isHTTPS bool) string {
-	cdnDomain := this.CDNHttp
+// CanonicalCDN .
+func (a *app) CanonicalCDN(isHTTPS bool) string {
+	cdnDomain := a.CDNHttp
 	if isHTTPS {
-		cdnDomain = this.CDNHttps
+		cdnDomain = a.CDNHttps
 	}
 	if !strings.HasSuffix(cdnDomain, "/") {
 		cdnDomain += "/"
@@ -132,6 +143,7 @@ func (this *app) CanonicalCDN(isHTTPS bool) string {
 	return cdnDomain
 }
 
+// PrintVersion .
 func PrintVersion(w io.Writer) {
 	if !flag.Parsed() {
 		flag.Parse()
@@ -149,6 +161,7 @@ func PrintVersion(w io.Writer) {
 	os.Exit(0)
 }
 
+// OnlineEnv .
 func OnlineEnv() bool {
 	return App.Env == PRO
 }

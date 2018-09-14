@@ -19,9 +19,9 @@ import (
 type OAuthController struct{}
 
 // 注册路由
-func (self OAuthController) RegisterRoute(g *echo.Group) {
-	g.Get("/oauth/github/callback", self.GithubCallback)
-	g.Get("/oauth/github/login", self.GithubLogin)
+func (o OAuthController) RegisterRoute(g *echo.Group) {
+	g.Get("/oauth/github/callback", o.GithubCallback)
+	g.Get("/oauth/github/login", o.GithubLogin)
 }
 
 func (OAuthController) GithubLogin(ctx echo.Context) error {

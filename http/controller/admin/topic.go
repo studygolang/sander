@@ -15,13 +15,14 @@ import (
 	"github.com/labstack/echo"
 )
 
+// TopicController .
 type TopicController struct{}
 
-// 注册路由
-func (self TopicController) RegisterRoute(g *echo.Group) {
-	g.GET("/community/topic/list", self.List)
-	g.POST("/community/topic/query.html", self.Query)
-	g.Match([]string{"GET", "POST"}, "/community/topic/modify", self.Modify)
+// RegisterRoute 注册路由
+func (t TopicController) RegisterRoute(g *echo.Group) {
+	g.GET("/community/topic/list", t.List)
+	g.POST("/community/topic/query.html", t.Query)
+	g.Match([]string{"GET", "POST"}, "/community/topic/modify", t.Modify)
 }
 
 // List 所有主题（分页）
@@ -44,7 +45,7 @@ func (TopicController) List(ctx echo.Context) error {
 	return render(ctx, "topic/list.html,topic/query.html", data)
 }
 
-// Query
+// Query .
 func (TopicController) Query(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 	conds := parseConds(ctx, []string{"tid", "title", "uid"})
@@ -66,8 +67,8 @@ func (TopicController) Query(ctx echo.Context) error {
 	return renderQuery(ctx, "topic/query.html", data)
 }
 
-// Modify
-func (self TopicController) Modify(ctx echo.Context) error {
+// Modify .
+func (t TopicController) Modify(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
 	if ctx.FormValue("submit") == "1" {
@@ -80,7 +81,7 @@ func (self TopicController) Modify(ctx echo.Context) error {
 	}
 	article, err := logic.DefaultArticle.FindById(ctx, ctx.QueryParam("id"))
 	if err != nil {
-		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(self.List)))
+		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(t.List)))
 	}
 
 	data["article"] = article

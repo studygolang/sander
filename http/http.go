@@ -30,8 +30,10 @@ import (
 	"github.com/polaris1119/times"
 )
 
+// Store .
 var Store = sessions.NewCookieStore([]byte(config.ConfigFile.MustValue("global", "cookie_secret")))
 
+// SetLoginCookie .
 func SetLoginCookie(ctx echo.Context, username string) {
 	Store.Options.HttpOnly = true
 
@@ -49,6 +51,7 @@ func SetLoginCookie(ctx echo.Context, username string) {
 	session.Save(req, resp)
 }
 
+// SetCookie .
 func SetCookie(ctx echo.Context, key, value string) {
 	Store.Options.HttpOnly = true
 
@@ -59,6 +62,7 @@ func SetCookie(ctx echo.Context, key, value string) {
 	session.Save(req, resp)
 }
 
+// GetFromCookie .
 func GetFromCookie(ctx echo.Context, key string) string {
 	session := GetCookieSession(ctx)
 	val, ok := session.Values[key]
@@ -68,16 +72,18 @@ func GetFromCookie(ctx echo.Context, key string) string {
 	return ""
 }
 
-// 必须是 http.Request
+// GetCookieSession 必须是 http.Request
 func GetCookieSession(ctx echo.Context) *sessions.Session {
 	session, _ := Store.Get(Request(ctx), "user")
 	return session
 }
 
+// Request .
 func Request(ctx echo.Context) *http.Request {
 	return ctx.Request().(*standard.Request).Request
 }
 
+// ResponseWriter .
 func ResponseWriter(ctx echo.Context) http.ResponseWriter {
 	return ctx.Response().(*standard.Response).ResponseWriter
 }
@@ -195,7 +201,9 @@ func tplInclude(file string, dot map[string]interface{}) template.HTML {
 }
 
 const (
-	LayoutTpl      = "common/layout.html"
+	// LayoutTpl .
+	LayoutTpl = "common/layout.html"
+	// AdminLayoutTpl .
 	AdminLayoutTpl = "common.html"
 )
 
@@ -292,7 +300,7 @@ func RenderAdmin(ctx echo.Context, contentTpl string, data map[string]interface{
 	return executeTpl(ctx, tpl, data)
 }
 
-// 后台 query 查询返回结果
+// RenderQuery 后台 query 查询返回结果
 func RenderQuery(ctx echo.Context, contentTpl string, data map[string]interface{}) error {
 
 	contentTpl = "common_query.html," + contentTpl
@@ -352,9 +360,9 @@ func executeTpl(ctx echo.Context, tpl *template.Template, data map[string]interf
 	global.App.SetUptime()
 	global.App.SetCopyright()
 
-	isHttps := CheckIsHttps(ctx)
-	cdnDomain := global.App.CanonicalCDN(isHttps)
-	if isHttps {
+	boolHTTP := CheckIsHttps(ctx)
+	cdnDomain := global.App.CanonicalCDN(boolHTTP)
+	if boolHTTP {
 		global.App.BaseURL = "https://" + global.App.Domain + "/"
 	} else {
 		global.App.BaseURL = "http://" + global.App.Domain + "/"
@@ -366,7 +374,7 @@ func executeTpl(ctx echo.Context, tpl *template.Template, data map[string]interf
 	}
 
 	data["app"] = global.App
-	data["is_https"] = isHttps
+	data["is_https"] = boolHTTP
 	data["cdn_domain"] = cdnDomain
 	data["static_domain"] = staticDomain
 	data["is_pro"] = global.OnlineEnv()
@@ -388,22 +396,26 @@ func executeTpl(ctx echo.Context, tpl *template.Template, data map[string]interf
 	return ctx.HTML(http.StatusOK, buf.String())
 }
 
+// CheckIsHttps .
 func CheckIsHttps(ctx echo.Context) bool {
-	isHttps := goutils.MustBool(ctx.Request().Header().Get("X-Https"))
+	HTTPS := goutils.MustBool(ctx.Request().Header().Get("X-Https"))
 	if logic.WebsiteSetting.OnlyHttps {
-		isHttps = true
+		HTTPS = true
 	}
 
-	return isHttps
+	return HTTPS
 }
 
 ///////////////////////////////// APP 相关 //////////////////////////////
 
 const (
-	TokenSalt       = "b3%JFOykZx_golang_polaris"
+	// TokenSalt .
+	TokenSalt = "b3%JFOykZx_golang_polaris"
+	// NeedReLoginCode .
 	NeedReLoginCode = 600
 )
 
+// ParseToken .
 func ParseToken(token string) (int, bool) {
 	if len(token) < 32 {
 		return 0, false
@@ -416,6 +428,7 @@ func ParseToken(token string) (int, bool) {
 	return goutils.MustInt(token[pos+3:]), true
 }
 
+// ValidateToken .
 func ValidateToken(token string) bool {
 	_, ok := ParseToken(token)
 	if !ok {
@@ -429,6 +442,7 @@ func ValidateToken(token string) bool {
 	return false
 }
 
+// GenToken .
 func GenToken(uid int) string {
 	expireTime := time.Now().Add(30 * 24 * time.Hour).Unix()
 
@@ -440,6 +454,7 @@ func GenToken(uid int) string {
 	return buffer.String()
 }
 
+// AccessControl .
 func AccessControl(ctx echo.Context) {
 	ctx.Response().Header().Add("Access-Control-Allow-Origin", "*")
 }

@@ -1,5 +1,5 @@
 // Copyright 2013 The StudyGolang Authors. All rights reserved.
-// Use of self source code is governed by a BSD-style
+// Use of a source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -32,21 +32,21 @@ import (
 type AccountController struct{}
 
 // RegisterRoute 注册路由 .
-func (self AccountController) RegisterRoute(g *echo.Group) {
-	g.Any("/account/register", self.Register)
-	g.Post("/account/send_activate_email", self.SendActivateEmail)
-	g.Get("/account/activate", self.Activate)
-	g.Any("/account/login", self.Login)
-	g.Any("/account/edit", self.Edit, middleware.NeedLogin())
-	g.Post("/account/change_avatar", self.ChangeAvatar, middleware.NeedLogin())
-	g.Post("/account/changepwd", self.ChangePwd, middleware.NeedLogin())
-	g.Any("/account/forgetpwd", self.ForgetPasswd)
-	g.Any("/account/resetpwd", self.ResetPasswd)
-	g.Get("/account/logout", self.Logout, middleware.NeedLogin())
-	g.POST("/account/social/unbind", self.Unbind, middleware.NeedLogin())
+func (a AccountController) RegisterRoute(g *echo.Group) {
+	g.Any("/account/register", a.Register)
+	g.Post("/account/send_activate_email", a.SendActivateEmail)
+	g.Get("/account/activate", a.Activate)
+	g.Any("/account/login", a.Login)
+	g.Any("/account/edit", a.Edit, middleware.NeedLogin())
+	g.Post("/account/change_avatar", a.ChangeAvatar, middleware.NeedLogin())
+	g.Post("/account/changepwd", a.ChangePwd, middleware.NeedLogin())
+	g.Any("/account/forgetpwd", a.ForgetPasswd)
+	g.Any("/account/resetpwd", a.ResetPasswd)
+	g.Get("/account/logout", a.Logout, middleware.NeedLogin())
+	g.POST("/account/social/unbind", a.Unbind, middleware.NeedLogin())
 }
 
-func (self AccountController) Register(ctx echo.Context) error {
+func (a AccountController) Register(ctx echo.Context) error {
 	if _, ok := ctx.Get("user").(*model.Me); ok {
 		return ctx.Redirect(http.StatusSeeOther, "/")
 	}
@@ -136,7 +136,7 @@ func (self AccountController) Register(ctx echo.Context) error {
 }
 
 // SendActivateEmail 发送注册激活邮件
-func (self AccountController) SendActivateEmail(ctx echo.Context) error {
+func (a AccountController) SendActivateEmail(ctx echo.Context) error {
 	isHttps := xhttp.CheckIsHttps(ctx)
 
 	uuid := ctx.FormValue("uuid")
@@ -254,7 +254,7 @@ func (AccountController) Login(ctx echo.Context) error {
 }
 
 // Edit 用户编辑个人信息
-func (self AccountController) Edit(ctx echo.Context) error {
+func (a AccountController) Edit(ctx echo.Context) error {
 	me := ctx.Get("user").(*model.Me)
 
 	if ctx.Request().Method() != "POST" {

@@ -32,14 +32,14 @@ func init() {
 type ArticleController struct{}
 
 // 注册路由
-func (self ArticleController) RegisterRoute(g *echo.Group) {
-	g.Get("/articles", self.ReadList)
-	g.Get("/articles/crawl", self.Crawl)
+func (a ArticleController) RegisterRoute(g *echo.Group) {
+	g.Get("/articles", a.ReadList)
+	g.Get("/articles/crawl", a.Crawl)
 
-	g.Get("/articles/:id", self.Detail)
+	g.Get("/articles/:id", a.Detail)
 
-	g.Match([]string{"GET", "POST"}, "/articles/new", self.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
-	g.Match([]string{"GET", "POST"}, "/articles/modify", self.Modify, middleware.NeedLogin(), middleware.Sensivite())
+	g.Match([]string{"GET", "POST"}, "/articles/new", a.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.BalanceCheck(), middleware.PublishNotice())
+	g.Match([]string{"GET", "POST"}, "/articles/modify", a.Modify, middleware.NeedLogin(), middleware.Sensivite())
 }
 
 // ReadList 网友文章列表页

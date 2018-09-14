@@ -19,9 +19,9 @@ import (
 type ReadingController struct{}
 
 // 注册路由
-func (self ReadingController) RegisterRoute(g *echo.Group) {
-	g.GET("/readings", self.ReadingList)
-	g.GET("/readings/:id", self.IReading)
+func (r ReadingController) RegisterRoute(g *echo.Group) {
+	g.GET("/readings", r.ReadingList)
+	g.GET("/readings/:id", r.IReading)
 }
 
 // ReadingList 晨读列表页

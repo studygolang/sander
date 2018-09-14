@@ -20,15 +20,15 @@ import (
 type UserController struct{}
 
 // 注册路由
-func (self UserController) RegisterRoute(g *echo.Group) {
-	g.GET("/user/:username", self.Home)
-	g.GET("/user/:username/topics", self.Topics)
-	g.GET("/user/:username/articles", self.Articles)
-	g.GET("/user/:username/resources", self.Resources)
-	g.GET("/user/:username/projects", self.Projects)
-	g.GET("/user/:username/comments", self.Comments)
-	g.GET("/users", self.ReadList)
-	g.Match([]string{"GET", "POST"}, "/user/email/unsubscribe", self.EmailUnsub)
+func (u UserController) RegisterRoute(g *echo.Group) {
+	g.GET("/user/:username", u.Home)
+	g.GET("/user/:username/topics", u.Topics)
+	g.GET("/user/:username/articles", u.Articles)
+	g.GET("/user/:username/resources", u.Resources)
+	g.GET("/user/:username/projects", u.Projects)
+	g.GET("/user/:username/comments", u.Comments)
+	g.GET("/users", u.ReadList)
+	g.Match([]string{"GET", "POST"}, "/user/email/unsubscribe", u.EmailUnsub)
 }
 
 // Home 用户个人首页

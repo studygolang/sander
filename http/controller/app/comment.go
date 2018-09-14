@@ -15,10 +15,12 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// CommentController .
 type CommentController struct{}
 
-func (self CommentController) RegisterRoute(g *echo.Group) {
-	g.Post("/comment/:objid", self.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.PublishNotice())
+// RegisterRoute .
+func (c CommentController) RegisterRoute(g *echo.Group) {
+	g.Post("/comment/:objid", c.Create, middleware.NeedLogin(), middleware.Sensivite(), middleware.PublishNotice())
 }
 
 // Create 评论（或回复）

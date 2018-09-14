@@ -21,10 +21,10 @@ import (
 type MissionController struct{}
 
 // 注册路由
-func (self MissionController) RegisterRoute(g *echo.Group) {
-	g.Get("/mission/daily", self.Daily, middleware.NeedLogin())
-	g.Get("/mission/daily/redeem", self.DailyRedeem, middleware.NeedLogin())
-	g.Get("/mission/complete/:id", self.Complete, middleware.NeedLogin())
+func (m MissionController) RegisterRoute(g *echo.Group) {
+	g.Get("/mission/daily", m.Daily, middleware.NeedLogin())
+	g.Get("/mission/daily/redeem", m.DailyRedeem, middleware.NeedLogin())
+	g.Get("/mission/complete/:id", m.Complete, middleware.NeedLogin())
 }
 
 func (MissionController) Daily(ctx echo.Context) error {

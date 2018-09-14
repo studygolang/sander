@@ -15,12 +15,13 @@ import (
 	"sander/model"
 )
 
+// ProjectController .
 type ProjectController struct{}
 
-// 注册路由
-func (self ProjectController) RegisterRoute(g *echo.Group) {
-	g.GET("/projects", self.ReadList)
-	g.GET("/project/detail", self.Detail)
+// RegisterRoute 注册路由
+func (p ProjectController) RegisterRoute(g *echo.Group) {
+	g.GET("/projects", p.ReadList)
+	g.GET("/project/detail", p.Detail)
 }
 
 // ReadList 开源项目列表页

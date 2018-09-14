@@ -12,18 +12,23 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// CacheKeyAlgorithm .
 type CacheKeyAlgorithm interface {
 	GenCacheKey(echo.Context) string
 }
 
+// CacheKeyFunc .
 type CacheKeyFunc func(echo.Context) string
 
-func (self CacheKeyFunc) GenCacheKey(ctx echo.Context) string {
-	return self(ctx)
+// GenCacheKey .
+func (c CacheKeyFunc) GenCacheKey(ctx echo.Context) string {
+	return c(ctx)
 }
 
+// CacheKeyAlgorithmMap .
 var CacheKeyAlgorithmMap = make(map[string]CacheKeyAlgorithm)
 
+// LruCache .
 var LruCache = nosql.DefaultLRUCache
 
 // EchoCache 用于 echo 框架的缓存中间件。支持自定义 cache 数量

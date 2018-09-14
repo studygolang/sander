@@ -17,16 +17,17 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// ArticleController .
 type ArticleController struct{}
 
-// 注册路由
-func (self ArticleController) RegisterRoute(g *echo.Group) {
-	g.GET("/crawl/article/list", self.ArticleList)
-	g.POST("/crawl/article/query.html", self.ArticleQuery)
-	g.POST("/crawl/article/move", self.MoveToTopic)
-	g.Match([]string{"GET", "POST"}, "/crawl/article/new", self.CrawlArticle)
-	g.Match([]string{"GET", "POST"}, "/crawl/article/publish", self.Publish)
-	g.Match([]string{"GET", "POST"}, "/crawl/article/modify", self.Modify)
+// RegisterRoute 注册路由.
+func (a ArticleController) RegisterRoute(g *echo.Group) {
+	g.GET("/crawl/article/list", a.ArticleList)
+	g.POST("/crawl/article/query.html", a.ArticleQuery)
+	g.POST("/crawl/article/move", a.MoveToTopic)
+	g.Match([]string{"GET", "POST"}, "/crawl/article/new", a.CrawlArticle)
+	g.Match([]string{"GET", "POST"}, "/crawl/article/publish", a.Publish)
+	g.Match([]string{"GET", "POST"}, "/crawl/article/modify", a.Modify)
 }
 
 // ArticleList 所有文章（分页）
@@ -49,7 +50,7 @@ func (ArticleController) ArticleList(ctx echo.Context) error {
 	return render(ctx, "article/list.html,article/query.html", data)
 }
 
-// ArticleQuery
+// ArticleQuery .
 func (ArticleController) ArticleQuery(ctx echo.Context) error {
 	curPage, limit := parsePage(ctx)
 	conds := parseConds(ctx, []string{"id", "domain", "title"})
@@ -71,7 +72,7 @@ func (ArticleController) ArticleQuery(ctx echo.Context) error {
 	return renderQuery(ctx, "article/query.html", data)
 }
 
-// CrawlArticle
+// CrawlArticle .
 func (ArticleController) CrawlArticle(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
@@ -110,8 +111,8 @@ func (ArticleController) CrawlArticle(ctx echo.Context) error {
 	return render(ctx, "article/new.html", data)
 }
 
-// Publish
-func (self ArticleController) Publish(ctx echo.Context) error {
+// Publish .
+func (a ArticleController) Publish(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
 	if ctx.FormValue("submit") == "1" {
@@ -129,8 +130,8 @@ func (self ArticleController) Publish(ctx echo.Context) error {
 	return render(ctx, "article/publish.html", data)
 }
 
-// Modify
-func (self ArticleController) Modify(ctx echo.Context) error {
+// Modify .
+func (a ArticleController) Modify(ctx echo.Context) error {
 	var data = make(map[string]interface{})
 
 	if ctx.FormValue("submit") == "1" {
@@ -143,7 +144,7 @@ func (self ArticleController) Modify(ctx echo.Context) error {
 	}
 	article, err := logic.DefaultArticle.FindById(ctx, ctx.QueryParam("id"))
 	if err != nil {
-		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(self.ArticleList)))
+		return ctx.Redirect(http.StatusSeeOther, ctx.Echo().URI(echo.HandlerFunc(a.ArticleList)))
 	}
 
 	data["article"] = article
@@ -154,7 +155,7 @@ func (self ArticleController) Modify(ctx echo.Context) error {
 }
 
 // MoveToTopic 放入 Topic 中
-func (self ArticleController) MoveToTopic(ctx echo.Context) error {
+func (a ArticleController) MoveToTopic(ctx echo.Context) error {
 	user := ctx.Get("user").(*model.Me)
 	err := logic.DefaultArticle.MoveToTopic(ctx, ctx.QueryParam("id"), user)
 

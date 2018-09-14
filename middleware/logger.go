@@ -11,6 +11,7 @@ import (
 	"github.com/twinj/uuid"
 )
 
+// HeaderKey .
 const HeaderKey = "X-Request-Id"
 
 // EchoLogger 用于 echo 框架的日志中间件
@@ -64,10 +65,7 @@ func EchoLogger() echo.MiddlewareFunc {
 				logger.Info(uri)
 			}()
 
-			if err := next(ctx); err != nil {
-				return err
-			}
-			return nil
+			return next(ctx)
 		}
 	}
 }

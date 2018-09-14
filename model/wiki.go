@@ -1,5 +1,5 @@
 // Copyright 2016 The StudyGolang Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
+// Use of t source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -8,6 +8,7 @@ package model
 
 import "time"
 
+// Wiki .
 type Wiki struct {
 	Id      int       `json:"id" xorm:"pk autoincr"`
 	Title   string    `json:"title"`
@@ -23,8 +24,9 @@ type Wiki struct {
 	Users map[int]*User `xorm:"-"`
 }
 
-func (this *Wiki) BeforeInsert() {
-	if this.Tags == "" {
-		this.Tags = AutoTag(this.Title, this.Content, 4)
+// BeforeInsert .
+func (t *Wiki) BeforeInsert() {
+	if t.Tags == "" {
+		t.Tags = AutoTag(t.Title, t.Content, 4)
 	}
 }

@@ -1,5 +1,5 @@
 // Copyright 2017 The StudyGolang Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
+// Use of a source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -15,12 +15,13 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// ArticleController .
 type ArticleController struct{}
 
-// 注册路由
-func (this *ArticleController) RegisterRoute(g *echo.Group) {
-	g.Get("/articles", this.ReadList)
-	g.Get("/article/detail", this.Detail)
+// RegisterRoute 注册路由
+func (a *ArticleController) RegisterRoute(g *echo.Group) {
+	g.Get("/articles", a.ReadList)
+	g.Get("/article/detail", a.Detail)
 }
 
 // ReadList 网友文章列表页

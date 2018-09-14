@@ -15,15 +15,15 @@ import (
 	"golang.org/x/net/context"
 )
 
-// 是否异步处理
+// IsAsync 是否异步处理
 func IsAsync(ctx echo.Context) bool {
 	return goutils.MustBool(ctx.FormValue("async"), false)
 }
 
 // WrapContext 返回一个 context.Context 实例
 func WrapEchoContext(ctx echo.Context) context.Context {
-	requestId := ctx.Get("request_id")
-	return context.WithValue(ctx.Context(), "request_id", requestId)
+	r := ctx.Get("request_id")
+	return context.WithValue(ctx.Context(), "request_id", r)
 }
 
 // WrapContext 返回一个 context.Context 实例。如果 ctx == nil，需要确保 调用 logger.PutLogger()

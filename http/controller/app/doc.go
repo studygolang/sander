@@ -4,5 +4,4 @@
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
 
-// app Go 语言中文网 APP 接口
 package app

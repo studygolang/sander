@@ -17,9 +17,9 @@ import (
 type TopController struct{}
 
 // RegisterRoute 注册路由
-func (self TopController) RegisterRoute(g *echo.Group) {
-	g.Get("/top/dau", self.TopDAU)
-	g.Get("/top/rich", self.TopRich)
+func (t TopController) RegisterRoute(g *echo.Group) {
+	g.Get("/top/dau", t.TopDAU)
+	g.Get("/top/rich", t.TopRich)
 }
 
 // TopDAU .

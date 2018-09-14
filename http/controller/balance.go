@@ -17,9 +17,9 @@ import (
 type UserRichController struct{}
 
 // 注册路由
-func (self UserRichController) RegisterRoute(g *echo.Group) {
-	g.Get("/balance", self.MyBalance, middleware.NeedLogin())
-	g.Get("/balance/add", self.Add, middleware.NeedLogin())
+func (u UserRichController) RegisterRoute(g *echo.Group) {
+	g.Get("/balance", u.MyBalance, middleware.NeedLogin())
+	g.Get("/balance/add", u.Add, middleware.NeedLogin())
 }
 
 func (UserRichController) MyBalance(ctx echo.Context) error {

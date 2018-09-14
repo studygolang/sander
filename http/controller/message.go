@@ -22,18 +22,18 @@ import (
 type MessageController struct{}
 
 // 注册路由
-func (self MessageController) RegisterRoute(g *echo.Group) {
+func (m MessageController) RegisterRoute(g *echo.Group) {
 	messageG := g.Group("/message/", middleware.NeedLogin())
 
-	messageG.GET(":msgtype", self.ReadList)
-	messageG.GET("system", self.ReadList)
-	messageG.Match([]string{"GET", "POST"}, "send", self.Send)
-	messageG.POST("delete", self.Delete)
+	messageG.GET(":msgtype", m.ReadList)
+	messageG.GET("system", m.ReadList)
+	messageG.Match([]string{"GET", "POST"}, "send", m.Send)
+	messageG.POST("delete", m.Delete)
 
-	// g.GET("/message/:msgtype", self.ReadList, middleware.NeedLogin())
-	// g.GET("/message/system", self.ReadList, middleware.NeedLogin())
-	// g.Match([]string{"GET", "POST"}, "/message/send", self.Send, middleware.NeedLogin())
-	// g.POST("/message/delete", self.Delete, middleware.NeedLogin())
+	// g.GET("/message/:msgtype", m.ReadList, middleware.NeedLogin())
+	// g.GET("/message/system", m.ReadList, middleware.NeedLogin())
+	// g.Match([]string{"GET", "POST"}, "/message/send", m.Send, middleware.NeedLogin())
+	// g.POST("/message/delete", m.Delete, middleware.NeedLogin())
 }
 
 // Send 发短消息

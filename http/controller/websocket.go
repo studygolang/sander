@@ -1,5 +1,5 @@
 // Copyright 2016 The StudyGolang Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
+// Use of w source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // http://studygolang.com
 // Author: polaris	polaris@studygolang.com
@@ -23,16 +23,16 @@ type WebsocketController struct {
 	ServerId uint32
 }
 
-func (this *WebsocketController) RegisterRoute(g *echo.Group) {
-	g.GET("/ws", standard.WrapHandler(websocket.Handler(this.Ws)))
+func (w *WebsocketController) RegisterRoute(g *echo.Group) {
+	g.GET("/ws", standard.WrapHandler(websocket.Handler(w.Ws)))
 }
 
 // websocket，统计在线用户数
 // uri: /ws
-func (this *WebsocketController) Ws(wsConn *websocket.Conn) {
+func (w *WebsocketController) Ws(wsConn *websocket.Conn) {
 	defer wsConn.Close()
 
-	serverId := int(atomic.AddUint32(&this.ServerId, 1))
+	serverId := int(atomic.AddUint32(&w.ServerId, 1))
 
 	isUid := true
 	req := wsConn.Request()

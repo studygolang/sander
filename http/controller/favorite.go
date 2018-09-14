@@ -22,9 +22,9 @@ import (
 type FavoriteController struct{}
 
 // 注册路由
-func (self FavoriteController) RegisterRoute(g *echo.Group) {
-	g.Post("/favorite/:objid", self.Create, middleware.NeedLogin())
-	g.Get("/favorites/:username", self.ReadList)
+func (f FavoriteController) RegisterRoute(g *echo.Group) {
+	g.Post("/favorite/:objid", f.Create, middleware.NeedLogin())
+	g.Get("/favorites/:username", f.ReadList)
 }
 
 // Create 收藏(取消收藏)

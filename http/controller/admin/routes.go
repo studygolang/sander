@@ -8,6 +8,7 @@ package admin
 
 import "github.com/labstack/echo"
 
+// RegisterRoutes .
 func RegisterRoutes(g *echo.Group) {
 	new(AuthorityController).RegisterRoute(g)
 	new(UserController).RegisterRoute(g)

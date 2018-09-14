@@ -25,17 +25,19 @@ import (
 	"github.com/polaris1119/goutils"
 )
 
+// InstallController .
 type InstallController struct{}
 
-// 注册路由
-func (self InstallController) RegisterRoute(g *echo.Group) {
-	g.GET("/install", self.SetupConfig)
-	g.Match([]string{"GET", "POST"}, "/install/setup-config", self.SetupConfig)
-	g.Match([]string{"GET", "POST"}, "/install/do", self.DoInstall)
-	g.Match([]string{"GET", "POST"}, "/install/options", self.SetupOptions)
+// RegisterRoute 注册路由
+func (i InstallController) RegisterRoute(g *echo.Group) {
+	g.GET("/install", i.SetupConfig)
+	g.Match([]string{"GET", "POST"}, "/install/setup-config", i.SetupConfig)
+	g.Match([]string{"GET", "POST"}, "/install/do", i.DoInstall)
+	g.Match([]string{"GET", "POST"}, "/install/options", i.SetupOptions)
 }
 
-func (self InstallController) SetupConfig(ctx echo.Context) error {
+// SetupConfig .
+func (i InstallController) SetupConfig(ctx echo.Context) error {
 	// config/env.ini 存在
 	if db.MasterDB != nil {
 		if logic.DefaultInstall.IsTableExist(ctx) {
@@ -46,7 +48,7 @@ func (self InstallController) SetupConfig(ctx echo.Context) error {
 
 	step := goutils.MustInt(ctx.QueryParam("step"))
 	if step == 2 {
-		err := self.genConfig(ctx)
+		err := i.genConfig(ctx)
 		if err != nil {
 			data := map[string]interface{}{
 				"dbhost":   ctx.FormValue("dbhost"),
@@ -56,9 +58,9 @@ func (self InstallController) SetupConfig(ctx echo.Context) error {
 				"err_type": 1,
 			}
 
-			if err == db.ConnectDBErr {
+			if err == db.ErrConnectDB {
 				data["err_type"] = 1
-			} else if err == db.UseDBErr {
+			} else if err == db.ErrUseDB {
 				data["err_type"] = 2
 			}
 
@@ -69,7 +71,7 @@ func (self InstallController) SetupConfig(ctx echo.Context) error {
 }
 
 // DoInstall 执行安装，包括站点简单配置，安装数据库（创建数据库、表，填充基本数据）等
-func (self InstallController) DoInstall(ctx echo.Context) error {
+func (i InstallController) DoInstall(ctx echo.Context) error {
 	if db.MasterDB == nil {
 		return ctx.Redirect(http.StatusSeeOther, "/install")
 	}
@@ -142,7 +144,7 @@ func (self InstallController) DoInstall(ctx echo.Context) error {
 		data["os"] = runtime.GOOS
 
 		// 为了保证程序正常，需要重启
-		go self.reload()
+		go i.reload()
 	}
 	return renderInstall(ctx, "install/install.html", data)
 }

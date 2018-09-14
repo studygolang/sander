@@ -16,13 +16,14 @@ import (
 	"sander/logic"
 )
 
+// WechatController .
 type WechatController struct{}
 
 // RegisterRoute 注册路由
-func (self WechatController) RegisterRoute(g *echo.Group) {
-	g.GET("/wechat/check_session", self.CheckSession)
-	g.POST("/wechat/register", self.Register)
-	g.POST("/wechat/login", self.Login)
+func (w WechatController) RegisterRoute(g *echo.Group) {
+	g.GET("/wechat/check_session", w.CheckSession)
+	g.POST("/wechat/register", w.Register)
+	g.POST("/wechat/login", w.Login)
 }
 
 // CheckSession 校验小程序 session

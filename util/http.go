@@ -37,8 +37,10 @@ func FetchRealUrl(uri string) (realUrl string) {
 	return uri
 }
 
+// XRequestedWith .
 const XRequestedWith = "X-Requested-With"
 
+// IsAjax .
 func IsAjax(ctx echo.Context) bool {
 	if ctx.Request().Header().Get(XRequestedWith) == "XMLHttpRequest" {
 		return true
@@ -46,6 +48,7 @@ func IsAjax(ctx echo.Context) bool {
 	return false
 }
 
+// DoGet .
 func DoGet(url string, extras ...int) (body []byte, err error) {
 	// 默认重试次数
 	num := 3
@@ -88,6 +91,7 @@ func doGet(url string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
+// DoPost .
 func DoPost(url string, data url.Values, extras ...int) (body []byte, err error) {
 	// 默认重试次数
 	num := 3
@@ -134,6 +138,7 @@ func doPost(url string, data url.Values) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
+// DoPostRaw .
 func DoPostRaw(url string, bodyType string, data interface{}, extras ...int) (body []byte, err error) {
 	// 默认重试次数
 	num := 3

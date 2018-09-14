@@ -15,14 +15,15 @@ import (
 	"github.com/labstack/echo"
 )
 
+// UserController .
 type UserController struct{}
 
-// 注册路由
-func (self UserController) RegisterRoute(g *echo.Group) {
-	g.GET("/user/center", self.Center)
-	g.GET("/user/me", self.Me)
-	g.POST("/user/modify", self.Modify)
-	g.POST("/user/login", self.Login)
+// RegisterRoute 注册路由
+func (u UserController) RegisterRoute(g *echo.Group) {
+	g.GET("/user/center", u.Center)
+	g.GET("/user/me", u.Me)
+	g.POST("/user/modify", u.Modify)
+	g.POST("/user/login", u.Login)
 }
 
 // Center 用户自己个人中心
@@ -50,6 +51,7 @@ func (UserController) Me(ctx echo.Context) error {
 	return success(ctx, nil)
 }
 
+// Login .
 func (UserController) Login(ctx echo.Context) error {
 	if _, ok := ctx.Get("user").(*model.Me); ok {
 		return success(ctx, nil)
@@ -75,6 +77,7 @@ func (UserController) Login(ctx echo.Context) error {
 	return success(ctx, data)
 }
 
+// Modify .
 func (UserController) Modify(ctx echo.Context) error {
 	me, ok := ctx.Get("user").(*model.Me)
 	if !ok {
@@ -89,8 +92,8 @@ func (UserController) Modify(ctx echo.Context) error {
 
 	email := ctx.FormValue("email")
 	if me.Email != email {
-		isHttps := xhttp.CheckIsHttps(ctx)
-		go logic.DefaultEmail.SendActivateMail(email, helper.RegActivateCode.GenUUID(email), isHttps)
+		boolHTTP := xhttp.CheckIsHttps(ctx)
+		go logic.DefaultEmail.SendActivateMail(email, helper.RegActivateCode.GenUUID(email), boolHTTP)
 	}
 
 	return success(ctx, nil)

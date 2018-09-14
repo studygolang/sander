@@ -24,14 +24,14 @@ var RegActivateCode = &regActivateCode{
 	data: map[string]string{},
 }
 
-func (this *regActivateCode) GenUUID(email string) string {
-	this.locker.Lock()
-	defer this.locker.Unlock()
+func (r *regActivateCode) GenUUID(email string) string {
+	r.locker.Lock()
+	defer r.locker.Unlock()
 	var uuid string
 	for {
 		uuid = guuid.NewV4().String()
-		if _, ok := this.data[uuid]; !ok {
-			this.data[uuid] = email
+		if _, ok := r.data[uuid]; !ok {
+			r.data[uuid] = email
 			break
 		}
 		logger.Error("GenUUID 冲突....")
@@ -39,19 +39,19 @@ func (this *regActivateCode) GenUUID(email string) string {
 	return uuid
 }
 
-func (this *regActivateCode) GetEmail(uuid string) (email string, ok bool) {
-	this.locker.RLock()
-	defer this.locker.RUnlock()
+func (r *regActivateCode) GetEmail(uuid string) (email string, ok bool) {
+	r.locker.RLock()
+	defer r.locker.RUnlock()
 
-	if email, ok = this.data[uuid]; ok {
+	if email, ok = r.data[uuid]; ok {
 		return
 	}
 	return
 }
 
-func (this *regActivateCode) DelUUID(uuid string) {
-	this.locker.Lock()
-	defer this.locker.Unlock()
+func (r *regActivateCode) DelUUID(uuid string) {
+	r.locker.Lock()
+	defer r.locker.Unlock()
 
-	delete(this.data, uuid)
+	delete(r.data, uuid)
 }

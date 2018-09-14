@@ -30,18 +30,18 @@ import (
 type GCTTController struct{}
 
 // 注册路由
-func (self GCTTController) RegisterRoute(g *echo.Group) {
-	g.Get("/gctt", self.Index)
-	g.Get("/gctt-list", self.UserList)
-	g.Get("/gctt-issue", self.IssueList)
-	g.Get("/gctt/:username", self.User)
-	g.Get("/gctt-apply", self.Apply, middleware.NeedLogin())
-	g.Match([]string{"GET", "POST"}, "/gctt-new", self.Create, middleware.NeedLogin())
+func (g GCTTController) RegisterRoute(eg *echo.Group) {
+	eg.Get("/gctt", g.Index)
+	eg.Get("/gctt-list", g.UserList)
+	eg.Get("/gctt-issue", g.IssueList)
+	eg.Get("/gctt/:username", g.User)
+	eg.Get("/gctt-apply", g.Apply, middleware.NeedLogin())
+	eg.Match([]string{"GET", "POST"}, "/gctt-new", g.Create, middleware.NeedLogin())
 
-	g.Post("/gctt-webhook", self.Webhook)
+	eg.Post("/gctt-webhook", g.Webhook)
 }
 
-func (self GCTTController) Index(ctx echo.Context) error {
+func (g GCTTController) Index(ctx echo.Context) error {
 	gcttTimeLines := logic.DefaultGCTT.FindTimeLines(ctx)
 	gcttUsers := logic.DefaultGCTT.FindCoreUsers(ctx)
 	gcttIssues := logic.DefaultGCTT.FindUnTranslateIssues(ctx, 10)

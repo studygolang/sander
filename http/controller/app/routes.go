@@ -8,6 +8,7 @@ package app
 
 import "github.com/labstack/echo"
 
+// RegisterRoutes .
 func RegisterRoutes(g *echo.Group) {
 	new(IndexController).RegisterRoute(g)
 	new(ArticleController).RegisterRoute(g)

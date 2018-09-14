@@ -10,12 +10,12 @@ import (
 type SearchController struct{}
 
 // 注册路由
-func (self SearchController) RegisterRoute(g *echo.Group) {
-	g.GET("/search", self.Search)
-	g.Get("/tag/:name", self.TagList)
+func (s SearchController) RegisterRoute(g *echo.Group) {
+	g.GET("/search", s.Search)
+	g.Get("/tag/:name", s.TagList)
 }
 
-// Search
+// Search .
 func (SearchController) Search(ctx echo.Context) error {
 	q := ctx.QueryParam("q")
 	field := ctx.QueryParam("f")

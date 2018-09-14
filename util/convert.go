@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// Struct2Map .
 func Struct2Map(dest map[string]interface{}, src interface{}) error {
 	if dest == nil {
 		return fmt.Errorf("Struct2Map(dest is %v)", dest)
@@ -44,7 +45,7 @@ func Struct2Map(dest map[string]interface{}, src interface{}) error {
 	return nil
 }
 
-// model中类型提取其中的 idField(int 类型) 属性组成 slice 返回
+// Models2Intslice model中类型提取其中的 idField(int 类型) 属性组成 slice 返回
 func Models2Intslice(models interface{}, idField string) []int {
 	if models == nil {
 		return []int{}

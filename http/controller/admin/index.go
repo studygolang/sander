@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// AdminIndex .
 func AdminIndex(ctx echo.Context) error {
 	return render(ctx, "index.html", nil)
 }

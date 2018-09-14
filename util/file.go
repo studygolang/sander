@@ -10,14 +10,14 @@ import (
 	"os"
 )
 
-// 检查文件或目录是否存在
+// Exist 检查文件或目录是否存在
 // 如果由 filename 指定的文件或目录存在则返回 true，否则返回 false
 func Exist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
 }
 
-// 列出指定路径中的文件和目录
+// ScanDir 列出指定路径中的文件和目录
 // 如果目录不存在，则返回空slice
 func ScanDir(directory string) []string {
 	file, err := os.Open(directory)
@@ -31,13 +31,13 @@ func ScanDir(directory string) []string {
 	return names
 }
 
-// 判断给定文件名是否是一个目录
+// IsDir 判断给定文件名是否是一个目录
 // 如果文件名存在并且为目录则返回 true。如果 filename 是一个相对路径，则按照当前工作目录检查其相对路径。
 func IsDir(filename string) bool {
 	return isFileOrDir(filename, true)
 }
 
-// 判断给定文件名是否为一个正常的文件
+// IsFile 判断给定文件名是否为一个正常的文件
 // 如果文件存在且为正常的文件则返回 true
 func IsFile(filename string) bool {
 	return isFileOrDir(filename, false)

@@ -22,21 +22,21 @@ import (
 // 侧边栏的内容通过异步请求获取
 type SidebarController struct{}
 
-func (self SidebarController) RegisterRoute(g *echo.Group) {
-	g.GET("/readings/recent", self.RecentReading)
-	g.GET("/topics/:nid/others", self.OtherTopics)
-	g.GET("/websites/stat", self.WebsiteStat)
-	g.GET("/dynamics/recent", self.RecentDynamic)
-	g.GET("/topics/recent", self.RecentTopic)
-	g.GET("/articles/recent", self.RecentArticle)
-	g.GET("/projects/recent", self.RecentProject)
-	g.GET("/resources/recent", self.RecentResource)
-	g.GET("/comments/recent", self.RecentComment)
-	g.GET("/nodes/hot", self.HotNodes)
-	g.GET("/users/active", self.ActiveUser)
-	g.GET("/users/newest", self.NewestUser)
-	g.GET("/friend/links", self.FriendLinks)
-	g.GET("/rank/view", self.ViewRank)
+func (s SidebarController) RegisterRoute(g *echo.Group) {
+	g.GET("/readings/recent", s.RecentReading)
+	g.GET("/topics/:nid/others", s.OtherTopics)
+	g.GET("/websites/stat", s.WebsiteStat)
+	g.GET("/dynamics/recent", s.RecentDynamic)
+	g.GET("/topics/recent", s.RecentTopic)
+	g.GET("/articles/recent", s.RecentArticle)
+	g.GET("/projects/recent", s.RecentProject)
+	g.GET("/resources/recent", s.RecentResource)
+	g.GET("/comments/recent", s.RecentComment)
+	g.GET("/nodes/hot", s.HotNodes)
+	g.GET("/users/active", s.ActiveUser)
+	g.GET("/users/newest", s.NewestUser)
+	g.GET("/friend/links", s.FriendLinks)
+	g.GET("/rank/view", s.ViewRank)
 }
 
 // RecentReading 技术晨读

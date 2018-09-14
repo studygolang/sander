@@ -29,12 +29,12 @@ func init() {
 type BookController struct{}
 
 // 注册路由
-func (self BookController) RegisterRoute(g *echo.Group) {
-	g.Get("/books", self.ReadList)
+func (b BookController) RegisterRoute(g *echo.Group) {
+	g.Get("/books", b.ReadList)
 
-	g.Get("/book/:id", self.Detail)
+	g.Get("/book/:id", b.Detail)
 
-	g.Match([]string{"GET", "POST"}, "/book/new", self.Create, middleware.NeedLogin(), middleware.BalanceCheck(), middleware.PublishNotice())
+	g.Match([]string{"GET", "POST"}, "/book/new", b.Create, middleware.NeedLogin(), middleware.BalanceCheck(), middleware.PublishNotice())
 }
 
 // ReadList 图书列表页

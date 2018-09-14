@@ -26,9 +26,9 @@ const GoStoragePrefix = "https://dl.google.com/go/"
 type DownloadController struct{}
 
 // 注册路由
-func (self DownloadController) RegisterRoute(g *echo.Group) {
-	g.Get("/dl", self.GoDl)
-	g.Get("/dl/golang/:filename", self.FetchGoInstallPackage)
+func (d DownloadController) RegisterRoute(g *echo.Group) {
+	g.Get("/dl", d.GoDl)
+	g.Get("/dl/golang/:filename", d.FetchGoInstallPackage)
 }
 
 // GoDl Go 语言安装包下载
@@ -83,11 +83,11 @@ func (DownloadController) GoDl(ctx echo.Context) error {
 
 var filenameReg = regexp.MustCompile(`\d+\.\d[a-z\.]*\d+`)
 
-func (self DownloadController) FetchGoInstallPackage(ctx echo.Context) error {
+func (d DownloadController) FetchGoInstallPackage(ctx echo.Context) error {
 	filename := ctx.Param("filename")
 
 	officalUrl := GoStoragePrefix + filename
-	resp, err := self.headWithTimeout(officalUrl)
+	resp, err := d.headWithTimeout(officalUrl)
 	if err == nil && resp.StatusCode == http.StatusOK {
 		resp.Body.Close()
 		return ctx.Redirect(http.StatusSeeOther, officalUrl)
@@ -102,7 +102,7 @@ func (self DownloadController) FetchGoInstallPackage(ctx echo.Context) error {
 	dlUrls := strings.Split(config.ConfigFile.MustValue("download", "dl_urls"), ",")
 	for _, dlUrl := range dlUrls {
 		dlUrl += filePath
-		resp, err = self.headWithTimeout(dlUrl)
+		resp, err = d.headWithTimeout(dlUrl)
 		if err == nil && resp.StatusCode == http.StatusOK {
 			resp.Body.Close()
 			return ctx.Redirect(http.StatusSeeOther, dlUrl)

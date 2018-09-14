@@ -15,8 +15,8 @@ import (
 type LinkController struct{}
 
 // 注册路由
-func (self LinkController) RegisterRoute(g *echo.Group) {
-	g.GET("/links", self.FindLinks)
+func (l LinkController) RegisterRoute(g *echo.Group) {
+	g.GET("/links", l.FindLinks)
 }
 
 // FindLinks 友情链接
