@@ -1,6 +1,8 @@
 
 #### sander
 
+##### Version 0.0.2
+> 1.govendor fetch github.com/tylerb/graceful
 
 ##### Version 0.0.1
 > 1.log4go   

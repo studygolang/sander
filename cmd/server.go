@@ -35,6 +35,7 @@ var (
 	changeVersion = flag.String("changeVersion", "", usageStr)
 )
 
+// IndexingServer .
 func IndexingServer() {
 	if !flag.Parsed() {
 		flag.Parse()
@@ -69,6 +70,7 @@ func indexing(isAll bool) {
 	logic.DefaultSearcher.Indexing(isAll)
 }
 
+// CrawlServer .
 func CrawlServer() {
 	if !flag.Parsed() {
 		flag.Parse()
@@ -92,10 +94,10 @@ func autocrawl(needAll bool, whichSite string) {
 		// 抓取 reddit
 		go logic.DefaultReddit.Parse("")
 
-		projectUrl := config.ConfigFile.MustValue("crawl", "project_url")
-		if projectUrl != "" {
+		projectURL := config.ConfigFile.MustValue("crawl", "project_url")
+		if projectURL != "" {
 			// 抓取 project
-			go logic.DefaultProject.ParseProjectList(projectUrl)
+			go logic.DefaultProject.ParseProjectList(projectURL)
 		}
 
 		// 抓取 article
@@ -104,6 +106,7 @@ func autocrawl(needAll bool, whichSite string) {
 	c.Start()
 }
 
+// MigratorServer .
 func MigratorServer() {
 	if !flag.Parsed() {
 		flag.Parse()
